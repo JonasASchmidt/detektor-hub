@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TagCategory } from "@prisma/client";
 import { TagCategoryForm } from "@/components/tags/TagCategoryForm";
 import { Trash2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Props {
   initialCategories: TagCategory[];
@@ -14,10 +15,8 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
   const [categories, setCategories] = useState(initialCategories);
   const [error, setError] = useState("");
 
-  const handleNewCategory = (category: TagCategory) => {
-    console.log({ categories, category });
+  const handleNewCategory = (category: TagCategory) =>
     setCategories([category, ...categories]);
-  };
 
   const handleDeleteCategory = async (id: string) => {
     if (!window.confirm("Möchtest du diese Kategorie wirklich löschen?"))
@@ -32,7 +31,6 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
         throw new Error("Fehler beim Löschen.");
       }
 
-      // Remove the deleted category from the UI
       setCategories((prev) => prev.filter((category) => category.id !== id));
     } catch (error) {
       console.error("Fehler beim Löschen der Kategorie:", error);
@@ -57,6 +55,11 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
       </Card>
       <Card className="bg-white dark:bg-gray-900">
         <CardContent className="p-6 space-y-6">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           {categories.length === 0 ? (
             "Bisher wurden keine Kategorien erstellt"
           ) : (

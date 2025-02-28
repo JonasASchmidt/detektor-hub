@@ -38,4 +38,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Notes to myself
 
 - Start Prisma Studio: npx prisma studio
+- Update schema: npx prisma migrate dev --name add_icon_and_color_to_tags
 - Components from shadcn

@@ -57,6 +57,8 @@ model TagCategory {
 model Tag {
   id         String      @id @default(uuid())
   name       String      @unique
+  color      String
+  icon       String
   category   TagCategory @relation(fields: [categoryId], references: [id])
   categoryId String
 }

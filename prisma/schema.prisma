@@ -49,9 +49,11 @@ model Session {
 }
 
 model TagCategory {
-  id   String @id @default(uuid())
-  name String @unique
-  tags Tag[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  tags      Tag[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tag {
@@ -61,4 +63,46 @@ model Tag {
   icon       String
   category   TagCategory @relation(fields: [categoryId], references: [id])
   categoryId String
+  findings   Finding[]   @relation("FindingTags")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum FindingStatus {
+  DRAFT
+  COMPLETED
+}
+
+model Finding {
+  id                String        @id @default(uuid())
+  status            FindingStatus @default(DRAFT)
+  name              String?
+  latitude          Float
+  longitude         Float
+  depth             Float?
+  weight            Float?
+  diameter          Float?
+  description       String?
+  description_front String?
+  description_back  String?
+  dating            String?
+  dating_from       Int?
+  dating_to         Int?
+  references        String?
+  photos            Photo[]
+  tags              Tag[]         @relation("FindingTags")
+  relatedFindings   Finding[]     @relation("RelatedFindings")
+  relatedTo         Finding[]     @relation("RelatedFindings")
+  foundAt           DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model Photo {
+  id          String   @id @default(uuid())
+  finding     Finding  @relation(fields: [findingId], references: [id])
+  findingId   String
+  url         String
+  description String?
+  createdAt   DateTime @default(now())
 }

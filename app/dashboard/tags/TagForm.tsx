@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
-import { EraserIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tag, TagCategory } from "@prisma/client";
 import IconPicker from "../../../components/ui/input/icon-picker";
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import TagComponent from "../../../components/tags/Tag";
+import { toast } from "sonner";
 
 interface Props {
   initialTag?: Tag;
@@ -99,6 +100,7 @@ export function TagForm({
       return;
     }
 
+    toast.success("Tag wurde gespeichert!");
     onAddTag(data.tag);
   };
 
@@ -132,6 +134,7 @@ export function TagForm({
       return;
     }
 
+    toast.success("Tag wurde gespeichert!");
     onUpdateTag(data.tag);
   };
 
@@ -140,16 +143,6 @@ export function TagForm({
       className="relative p-6 md:p-8"
       onSubmit={initialTag ? handleUpdate : handleSubmit}
     >
-      {initialTag && (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-fit absolute top-2 right-2"
-          onClick={clearForm}
-        >
-          <EraserIcon />
-        </Button>
-      )}
       <div className="flex flex-col gap-6">
         <div className="grid gap-2">
           <Label htmlFor="email">Neuer Tag</Label>
@@ -166,7 +159,7 @@ export function TagForm({
           <Label htmlFor="category">Kategorie</Label>
           <Select
             onValueChange={handleChangeCategory}
-            value={initialTag?.categoryId}
+            value={formData.category}
           >
             <SelectTrigger id="category" className="w-full">
               <SelectValue placeholder="Kategorie" />
@@ -194,16 +187,30 @@ export function TagForm({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {loading ? (
-          <Button disabled>
-            <Loader2 className="animate-spin" />
-            Bitte warten
+        <div className="flex gap-2">
+          {initialTag && (
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={clearForm}
+            >
+              Abbrechen
+            </Button>
+          )}
+          <Button type="submit" className="flex-1" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Bitte warten
+              </>
+            ) : initialTag ? (
+              "Speichern"
+            ) : (
+              "Hinzufügen"
+            )}
           </Button>
-        ) : (
-          <Button type="submit" className="w-full">
-            {initialTag ? "Speichern" : "Hinzufügen"}
-          </Button>
-        )}
+        </div>
       </div>
     </form>
   );

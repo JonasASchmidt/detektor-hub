@@ -16,6 +16,7 @@ import {
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 export default async function DashboardLayout({
   children,
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
             </div>
           </header>
           {children}
+          <Toaster position="top-right" richColors />
         </SidebarInset>
       </SidebarProvider>
     </>

@@ -60,6 +60,11 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
           tagCategories={tagCategories}
         />
       </Card>
+      {tags.length > 0 && (
+        <p className="mt-2 text-md text-gray-600 dark:text-gray-400">
+          Klicke einen Tag an um ihn zu bearbeiten:
+        </p>
+      )}
       <Card className="bg-white dark:bg-gray-900">
         <CardContent className="p-6 flex flex-wrap gap-2 justify-center">
           {tags.length === 0

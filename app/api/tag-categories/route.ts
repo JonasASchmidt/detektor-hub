@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Fehler beim Erstellen der Kategorie:", error);
     return NextResponse.json(
-      { error: "Fehler beim Erstellen der Kategorie." },
+      { error: "Fehler beim Erstellen der Kategorie. XXX" },
       { status: 500 }
     );
   }

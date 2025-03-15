@@ -11,11 +11,25 @@ export async function DELETE(
     // Ensure the category exists before deleting
     const existingCategory = await prisma.tagCategory.findUnique({
       where: { id },
+      include: {
+        tags: true,
+      },
     });
 
     if (!existingCategory) {
       return NextResponse.json(
         { error: "Kategorie nicht gefunden." },
+        { status: 404 }
+      );
+    }
+
+    const tags = existingCategory?.tags ?? [];
+    if (tags.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Kategorie kann nicht gelöscht werden, da ihr Tags zugeordnet sind.",
+        },
         { status: 404 }
       );
     }

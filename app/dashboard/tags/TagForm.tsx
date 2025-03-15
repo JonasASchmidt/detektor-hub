@@ -57,7 +57,7 @@ export function TagForm({
     resetTag();
     setFormData({
       category: "",
-      color: "",
+      color: "#ffffff",
       name: "",
       icon: "",
     });
@@ -145,7 +145,9 @@ export function TagForm({
     >
       <div className="flex flex-col gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="email">Neuer Tag</Label>
+          <Label htmlFor="email">
+            {initialTag ? "Tag Bearbeiten" : "Neuer Tag"}
+          </Label>
           <Input
             id="name"
             type="text"

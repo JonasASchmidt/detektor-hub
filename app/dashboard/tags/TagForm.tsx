@@ -4,35 +4,63 @@ import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { EraserIcon, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tag, TagCategory } from "@prisma/client";
-import IconPicker from "../ui/input/icon-picker";
-import ColorPicker from "../ui/input/color-picker";
+import IconPicker from "../../../components/ui/input/icon-picker";
+import ColorPicker from "../../../components/ui/input/color-picker";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import TagComponent from "./Tag";
+} from "../../../components/ui/select";
+import TagComponent from "../../../components/tags/Tag";
 
 interface Props {
+  initialTag?: Tag;
   onAddTag: (tag: Tag) => void;
+  onUpdateTag: (tag: Tag) => void;
+  resetTag: () => void;
   tagCategories: TagCategory[];
 }
 
-export function TagForm({ onAddTag, tagCategories }: Props) {
+export function TagForm({
+  initialTag,
+  onAddTag,
+  onUpdateTag,
+  resetTag,
+  tagCategories,
+}: Props) {
   const [formData, setFormData] = useState({
-    category: "",
-    color: "",
-    name: "",
-    icon: "",
+    category: initialTag?.categoryId ?? "",
+    color: initialTag?.color ?? "",
+    name: initialTag?.name ?? "",
+    icon: initialTag?.icon ?? "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setFormData({
+      category: initialTag?.categoryId ?? "",
+      color: initialTag?.color ?? "",
+      name: initialTag?.name ?? "",
+      icon: initialTag?.icon ?? "",
+    });
+  }, [initialTag]);
+
+  const clearForm = () => {
+    resetTag();
+    setFormData({
+      category: "",
+      color: "",
+      name: "",
+      icon: "",
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -74,8 +102,54 @@ export function TagForm({ onAddTag, tagCategories }: Props) {
     onAddTag(data.tag);
   };
 
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!initialTag) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    const res = await fetch("/api/tags", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: initialTag?.id,
+        name: formData.name,
+        color: formData.color,
+        icon: formData.icon,
+        category: formData.category,
+      }),
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (!res.ok) {
+      setError(data.error || "Fehler beim Erstellen des Tags.");
+      return;
+    }
+
+    onUpdateTag(data.tag);
+  };
+
   return (
-    <form className="p-6 md:p-8" onSubmit={handleSubmit}>
+    <form
+      className="relative p-6 md:p-8"
+      onSubmit={initialTag ? handleUpdate : handleSubmit}
+    >
+      {initialTag && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-fit absolute top-2 right-2"
+          onClick={clearForm}
+        >
+          <EraserIcon />
+        </Button>
+      )}
       <div className="flex flex-col gap-6">
         <div className="grid gap-2">
           <Label htmlFor="email">Neuer Tag</Label>
@@ -90,7 +164,10 @@ export function TagForm({ onAddTag, tagCategories }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="category">Kategorie</Label>
-          <Select onValueChange={handleChangeCategory}>
+          <Select
+            onValueChange={handleChangeCategory}
+            value={initialTag?.categoryId}
+          >
             <SelectTrigger id="category" className="w-full">
               <SelectValue placeholder="Kategorie" />
             </SelectTrigger>
@@ -103,8 +180,8 @@ export function TagForm({ onAddTag, tagCategories }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <ColorPicker onChange={handleChangeColor} />
-        <IconPicker onChange={handleChangeIcon} />{" "}
+        <ColorPicker onChange={handleChangeColor} value={formData.color} />
+        <IconPicker onChange={handleChangeIcon} value={formData.icon} />{" "}
         <div className="space-y-2">
           <Label htmlFor="category">Vorschau</Label>
 
@@ -124,7 +201,7 @@ export function TagForm({ onAddTag, tagCategories }: Props) {
           </Button>
         ) : (
           <Button type="submit" className="w-full">
-            Hinzufügen
+            {initialTag ? "Speichern" : "Hinzufügen"}
           </Button>
         )}
       </div>

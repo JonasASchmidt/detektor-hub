@@ -3,14 +3,12 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
   Command,
   Frame,
   GalleryVerticalEnd,
+  LocateIcon,
   Map,
   PieChart,
-  Settings2,
-  SquareTerminal,
   Tag,
 } from "lucide-react";
 
@@ -52,14 +50,14 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Findings",
       url: "#",
-      icon: SquareTerminal,
+      icon: LocateIcon,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Log new Finding",
+          url: "/dashboard/findings",
         },
         {
           title: "Starred",
@@ -83,52 +81,6 @@ const data = {
         {
           title: "Kategorien",
           url: "/dashboard/tags/categories",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
         },
       ],
     },

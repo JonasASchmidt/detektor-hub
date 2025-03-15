@@ -64,3 +64,53 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const { category, name, color, icon, id } = await req.json();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Der Name des Tags ist erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    if (!color) {
+      return NextResponse.json(
+        { error: "Die Auswahl einer Farbe ist erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    if (!icon) {
+      return NextResponse.json(
+        { error: "Die Auswahl eines Icons ist erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    const existingTag = await prisma.tag.findUnique({
+      where: { name, NOT: { id } },
+    });
+
+    if (existingTag) {
+      return NextResponse.json(
+        { error: "Dieser Tag existiert bereits." },
+        { status: 400 }
+      );
+    }
+
+    const tag = await prisma.tag.update({
+      where: { id },
+      data: { category: { connect: { id: category } }, name, color, icon },
+    });
+
+    return NextResponse.json({ tag }, { status: 201 });
+  } catch {
+    return NextResponse.json(
+      { error: "Fehler beim Speichern des Tags." },
+      { status: 500 }
+    );
+  }
+}

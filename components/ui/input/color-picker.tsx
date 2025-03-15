@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import {
   Popover,
@@ -12,10 +12,19 @@ import { Label } from "@/components/ui/label";
 
 interface Props {
   onChange: (color: string) => void;
+  value?: string;
 }
 
-export default function ColorPicker({ onChange }: Props) {
-  const [color, setColor] = useState("#ff0000");
+export default function ColorPicker({ onChange, value }: Props) {
+  const [color, setColor] = useState(value ?? "#ff0000");
+
+  useEffect(() => {
+    if (!value) {
+      return;
+    }
+
+    setColor(value);
+  }, [value]);
 
   const handleChangeColor = (newColor: string) => {
     setColor(newColor);

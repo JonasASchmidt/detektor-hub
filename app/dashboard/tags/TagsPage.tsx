@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { Tag, TagCategory } from "@prisma/client";
-import { TagForm } from "@/components/tags/TagForm";
+import { TagForm } from "@/app/dashboard/tags/TagForm";
 import TagComponent from "@/components/tags/Tag";
 
 interface Props {
@@ -12,11 +12,29 @@ interface Props {
 }
 
 export default function Dashboard({ initialTags, tagCategories }: Props) {
+  const [selectedTag, setSelectedTag] = useState<Tag>();
   const [tags, setTags] = useState(initialTags);
+
+  const handleClickTag = (tag: Tag) => setSelectedTag(tag);
 
   const handleNewTag = (tag: Tag) => {
     setTags([tag, ...tags]);
-    console.log([tag, ...tags]);
+  };
+
+  const handleUpdateTag = (updatedTag: Tag) => {
+    setTags(
+      tags.map((tag) => {
+        if (tag.id === updatedTag.id) {
+          return updatedTag;
+        }
+        return tag;
+      })
+    );
+    resetTag();
+  };
+
+  const resetTag = () => {
+    setSelectedTag(undefined);
   };
 
   return (
@@ -34,13 +52,25 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
         dieser Seite kannst du neue Tags erstellen oder bestehende verwalten.
       </p>
       <Card className="bg-white dark:bg-gray-900">
-        <TagForm onAddTag={handleNewTag} tagCategories={tagCategories} />
+        <TagForm
+          onAddTag={handleNewTag}
+          onUpdateTag={handleUpdateTag}
+          initialTag={selectedTag}
+          resetTag={resetTag}
+          tagCategories={tagCategories}
+        />
       </Card>
       <Card className="bg-white dark:bg-gray-900">
-        <CardContent className="p-6 flex gap-2">
+        <CardContent className="p-6 flex flex-wrap gap-2 justify-center">
           {tags.length === 0
             ? "Bisher wurden keine Tags erstellt"
-            : tags.map((tag) => <TagComponent key={tag.id} tag={tag} />)}
+            : tags.map((tag) => (
+                <TagComponent
+                  key={tag.id}
+                  onClick={() => handleClickTag(tag)}
+                  tag={tag}
+                />
+              ))}
         </CardContent>
       </Card>
     </div>

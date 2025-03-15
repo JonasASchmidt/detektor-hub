@@ -1,7 +1,7 @@
 "use client";
 
 import * as LucideIcons from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Popover, PopoverContent } from "../popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
 import { Button } from "../button";
@@ -91,13 +91,26 @@ const icons = iconNames.reduce((acc, key) => {
 
 interface Props {
   onChange: (icon: keyof typeof LucideIcons) => void;
+  value?: string;
 }
 
-export default function IconPicker({ onChange }: Props) {
+export default function IconPicker({ onChange, value }: Props) {
   const [selectedIcon, setSelectedIcon] = useState<
     keyof typeof LucideIcons | null
-  >(null);
+  >(
+    value && iconNames.find((icon) => icon === value)
+      ? (value as keyof typeof LucideIcons)
+      : null
+  );
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!value || !iconNames.find((icon) => icon === value)) {
+      return;
+    }
+
+    setSelectedIcon(value as keyof typeof LucideIcons);
+  }, [value]);
 
   const handleSelectIcon = (icon: keyof typeof icons) => {
     setSelectedIcon(icon);

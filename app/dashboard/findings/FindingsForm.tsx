@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/input/date-picker";
+import LocationPicker from "@/components/ui/input/location-picker/location-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tag } from "@prisma/client";
@@ -43,6 +44,8 @@ export default function FindingsForm({ tags }: Props) {
     });
   };
 
+  const handleChangeLocation = () => {};
+
   const handleSubmit = () => {};
 
   return (
@@ -62,6 +65,14 @@ export default function FindingsForm({ tags }: Props) {
         <div className="grid gap-2">
           <Label>Funddatum</Label>
           <DatePicker value={formData.foundAt} onChange={handleChangeDate} />
+          <LocationPicker
+            id="location"
+            onChange={handleChangeLocation}
+            value={{
+              lat: 51,
+              lng: 13,
+            }}
+          />
         </div>
         <div className="flex flex-row gap-6 flex-1">
           <div className="grid gap-2 flex-1">

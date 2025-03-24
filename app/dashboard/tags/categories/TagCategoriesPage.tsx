@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { TagCategory } from "@prisma/client";
 import { TagCategoryForm } from "@/components/tags/TagCategoryForm";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   initialCategories: TagCategory[];
@@ -13,29 +15,26 @@ interface Props {
 
 export default function TagCategoriesPage({ initialCategories }: Props) {
   const [categories, setCategories] = useState(initialCategories);
-  const [error, setError] = useState("");
 
-  const handleNewCategory = (category: TagCategory) =>
+  const handleNewCategory = (category: TagCategory) => {
     setCategories([category, ...categories]);
+    toast.success("Tag-Kategorie wurde erstellt!");
+  };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!window.confirm("Möchtest du diese Kategorie wirklich löschen?"))
-      return;
+    const res = await fetch(`/api/tag-categories/${id}`, {
+      method: "DELETE",
+    });
 
-    try {
-      const res = await fetch(`/api/tag-categories/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        throw new Error("Fehler beim Löschen.");
-      }
-
-      setCategories((prev) => prev.filter((category) => category.id !== id));
-    } catch (error) {
-      console.error("Fehler beim Löschen der Kategorie:", error);
-      setError("Fehler beim Löschen der Kategorie.");
+    if (!res.ok) {
+      const data = await res.json();
+      return toast.error(data.error);
     }
+
+    setCategories((prev) => {
+      return prev.filter((category) => category.id !== id);
+    });
+    toast.success("Tag-Kategorie wurde gelöscht!");
   };
 
   return (
@@ -55,11 +54,6 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
       </Card>
       <Card className="bg-white dark:bg-gray-900">
         <CardContent className="p-6 space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
           {categories.length === 0 ? (
             "Bisher wurden keine Kategorien erstellt"
           ) : (
@@ -72,12 +66,19 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
                   <span className="text-gray-800 dark:text-gray-200">
                     {category.name}
                   </span>
-                  <button
-                    onClick={() => handleDeleteCategory(category.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded-md text-sm"
-                  >
-                    <Trash2 />
-                  </button>
+                  <ConfirmModal
+                    title="Tag-Kategorie löschen?"
+                    description="Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher?"
+                    onConfirm={() => handleDeleteCategory(category.id)}
+                    trigger={
+                      <Button
+                        variant="destructive"
+                        disabled={category.tags?.length > 0}
+                      >
+                        <Trash2 />
+                      </Button>
+                    }
+                  />
                 </li>
               ))}
             </ul>

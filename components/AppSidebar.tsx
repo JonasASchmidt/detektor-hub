@@ -10,6 +10,7 @@ import {
   Map,
   PieChart,
   Tag,
+  User,
 } from "lucide-react";
 
 import { NavMain } from "@/components/NavMain";
@@ -81,6 +82,17 @@ const data = {
         {
           title: "Kategorien",
           url: "/dashboard/tags/categories",
+        },
+      ],
+    },
+    {
+      title: "User",
+      url: "#",
+      icon: User,
+      items: [
+        {
+          title: "Foto-Gallerie",
+          url: "/dashboard/photo-gallery",
         },
       ],
     },

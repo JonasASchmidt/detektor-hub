@@ -25,6 +25,7 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  Photo    Photo[]
 }
 
 model Account {
@@ -105,7 +106,10 @@ model Photo {
   id          String   @id @default(uuid())
   finding     Finding? @relation(fields: [findingId], references: [id])
   findingId   String?
-  url         String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  url         String?
+  publicId    String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt

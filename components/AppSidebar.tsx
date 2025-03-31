@@ -51,13 +51,13 @@ const data = {
   ],
   navMain: [
     {
-      title: "Findings",
+      title: "Funde",
       url: "#",
       icon: LocateIcon,
       isActive: true,
       items: [
         {
-          title: "Log new Finding",
+          title: "Neuer Fund",
           url: "/dashboard/findings",
         },
         {

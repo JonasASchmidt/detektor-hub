@@ -9,6 +9,7 @@ import {
 } from "next-cloudinary";
 import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
+import { ClockArrowDown, ClockArrowUp, UploadCloud } from "lucide-react";
 
 export default function ImageGallery() {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -76,6 +77,7 @@ export default function ImageGallery() {
                 className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
                 onClick={() => open()}
               >
+                <UploadCloud />
                 Fotos hochladen
               </Button>
             )}
@@ -87,12 +89,14 @@ export default function ImageGallery() {
               variant={sort === "desc" ? "default" : "outline"}
               onClick={() => setSort("desc")}
             >
+              <ClockArrowDown />
               Neueste zuerst
             </Button>
             <Button
               variant={sort === "asc" ? "default" : "outline"}
               onClick={() => setSort("asc")}
             >
+              <ClockArrowUp />
               Älteste zuerst
             </Button>
           </div>

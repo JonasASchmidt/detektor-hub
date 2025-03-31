@@ -2,15 +2,17 @@
 
 import { Photo } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { Input } from "../ui/input";
-import { CldUploadWidget } from "next-cloudinary";
+import {
+  CldUploadWidget,
+  CloudinaryUploadWidgetError,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
 
 export default function ImageGallery() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [file, setFile] = useState<File | null>();
 
   useEffect(() => {
     fetch("/api/user-photos")
@@ -21,7 +23,16 @@ export default function ImageGallery() {
   const handleDelete = (id: string) =>
     setPhotos(photos.filter((photo) => photo.id !== id));
 
-  const handleUpload = async (cloudinaryResponse: any) => {
+  const handleUpload = async (
+    cloudinaryResponse: CloudinaryUploadWidgetResults
+  ) => {
+    if (
+      !cloudinaryResponse.info ||
+      typeof cloudinaryResponse.info == "string"
+    ) {
+      return;
+    }
+
     const res = await fetch("/api/photos", {
       method: "POST",
       body: JSON.stringify({
@@ -46,18 +57,21 @@ export default function ImageGallery() {
       </header>
       <div className="space-y-4">
         <div className="flex gap-4 items-center">
-          <Input
-            type="file"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
           <CldUploadWidget
             uploadPreset="detektor-hud-preset"
             onSuccess={(res) => handleUpload(res)}
-            onError={(error: any) => {
+            onError={(error: CloudinaryUploadWidgetError) => {
               console.error("Upload failed:", error);
             }}
           >
-            {({ open }) => <Button onClick={() => open()}>Upload Image</Button>}
+            {({ open }) => (
+              <Button
+                className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
+                onClick={() => open()}
+              >
+                Fotos hochladen
+              </Button>
+            )}
           </CldUploadWidget>
         </div>
 

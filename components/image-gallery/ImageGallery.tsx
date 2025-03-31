@@ -3,9 +3,9 @@
 import { Photo } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
-import { Card, CardContent } from "../ui/card";
-import { CldImage, CldUploadWidget } from "next-cloudinary";
+import { CldUploadWidget } from "next-cloudinary";
 import { Button } from "../ui/button";
+import ImageCard from "./ImageCard";
 
 export default function ImageGallery() {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -17,6 +17,9 @@ export default function ImageGallery() {
       .then((res) => res.json())
       .then(setPhotos);
   }, []);
+
+  const handleDelete = (id: string) =>
+    setPhotos(photos.filter((photo) => photo.id !== id));
 
   const handleUpload = async (cloudinaryResponse: any) => {
     const res = await fetch("/api/photos", {
@@ -60,8 +63,9 @@ export default function ImageGallery() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {photos.map((photo) => (
-            <Card
+            <ImageCard
               key={photo.id}
+              isSelected={selected.includes(photo.id)}
               onClick={() =>
                 setSelected((prev) =>
                   prev.includes(photo.id)
@@ -69,23 +73,9 @@ export default function ImageGallery() {
                     : [...prev, photo.id]
                 )
               }
-              className={`cursor-pointer transition ${
-                selected.includes(photo.id) ? "ring-2 ring-blue-500" : ""
-              }`}
-            >
-              <CardContent className="p-2">
-                <CldImage
-                  src={photo.publicId}
-                  width={200}
-                  height={200}
-                  crop="fill"
-                  gravity="auto"
-                  alt="Photo"
-                  quality="auto"
-                  format="auto"
-                />
-              </CardContent>
-            </Card>
+              onDelete={handleDelete}
+              photo={photo}
+            />
           ))}
         </div>
       </div>

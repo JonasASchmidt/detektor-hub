@@ -13,6 +13,7 @@ import ImageCard from "./ImageCard";
 export default function ImageGallery() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
+  const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     fetch("/api/user-photos")
@@ -48,6 +49,12 @@ export default function ImageGallery() {
     setPhotos((prev) => [...prev, newPhoto]);
   };
 
+  const filteredPhotos = photos.sort((a, b) => {
+    const aDate = new Date(a.createdAt).getTime();
+    const bDate = new Date(b.createdAt).getTime();
+    return sort === "desc" ? bDate - aDate : aDate - bDate;
+  });
+
   return (
     <div className="max-w-4xl mx-auto py-10 px-6 space-y-8">
       <header className="text-center">
@@ -74,9 +81,24 @@ export default function ImageGallery() {
             )}
           </CldUploadWidget>
         </div>
-
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex gap-2">
+            <Button
+              variant={sort === "desc" ? "default" : "outline"}
+              onClick={() => setSort("desc")}
+            >
+              Neueste zuerst
+            </Button>
+            <Button
+              variant={sort === "asc" ? "default" : "outline"}
+              onClick={() => setSort("asc")}
+            >
+              Älteste zuerst
+            </Button>
+          </div>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photos.map((photo) => (
+          {filteredPhotos.map((photo) => (
             <ImageCard
               key={photo.id}
               isSelected={selected.includes(photo.id)}

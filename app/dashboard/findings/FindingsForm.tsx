@@ -1,5 +1,7 @@
 "use client";
 
+import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import TagSelect from "@/components/tags/TagSelect";
 import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/input/date-picker";
 import LocationPicker from "@/components/ui/input/location-picker/location-picker";
@@ -9,10 +11,10 @@ import { Tag } from "@prisma/client";
 import { useState } from "react";
 
 interface Props {
-  tags: Tag[];
+  tagCategories: TagCategoryWithTags[];
 }
 
-export default function FindingsForm({ tags }: Props) {
+export default function FindingsForm({ tagCategories }: Props) {
   const [formData, setFormData] = useState({
     name: "",
     latitude: 0,
@@ -29,6 +31,7 @@ export default function FindingsForm({ tags }: Props) {
     references: "",
     thumbnailUrl: "",
     foundAt: new Date(),
+    selectedTags: [] as Tag[],
   });
 
   const handleChange = (
@@ -46,6 +49,13 @@ export default function FindingsForm({ tags }: Props) {
 
   const handleChangeLocation = () => {};
 
+  const handleChangeTags = (tags: Tag[]) => {
+    setFormData({
+      ...formData,
+      selectedTags: tags,
+    });
+  };
+
   const handleSubmit = () => {};
 
   return (
@@ -60,6 +70,15 @@ export default function FindingsForm({ tags }: Props) {
             value={formData.name}
             onChange={handleChange}
             required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="name">Tags</Label>
+          <TagSelect
+            tagCategories={tagCategories}
+            onChange={handleChangeTags}
+            placeholder={"Tags auswählen ..."}
+            selected={formData.selectedTags}
           />
         </div>
         <div className="grid gap-2">

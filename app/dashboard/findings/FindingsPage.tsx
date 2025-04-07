@@ -1,17 +1,17 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Tag } from "@prisma/client";
 import FindingsForm from "./FindingsForm";
 import ImageGallery from "@/components/image-gallery/ImageGallery";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 
 interface Props {
-  tags: Tag[];
+  tagCategories: TagCategoryWithTags[];
 }
 
-export default function FindingsPage({ tags }: Props) {
+export default function FindingsPage({ tagCategories }: Props) {
   const [images, setImages] = useState<string[]>([]);
 
   return (
@@ -39,7 +39,7 @@ export default function FindingsPage({ tags }: Props) {
         </div>
       </Card>
       <Card className="bg-white dark:bg-gray-900">
-        <FindingsForm tags={tags} />
+        <FindingsForm tagCategories={tagCategories} />
       </Card>
     </div>
   );

@@ -11,9 +11,13 @@ import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
 import { ClockArrowDown, ClockArrowUp, UploadCloud } from "lucide-react";
 
-export default function ImageGallery() {
+interface Props {
+  onSelect?: (ids: string[]) => void;
+  selected?: string[];
+}
+
+export default function ImageGallery({ onSelect, selected }: Props) {
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -24,6 +28,22 @@ export default function ImageGallery() {
 
   const handleDelete = (id: string) =>
     setPhotos(photos.filter((photo) => photo.id !== id));
+
+  const handleSelect = (imageId: string) => {
+    if (!onSelect) {
+      return;
+    }
+
+    if (selected?.includes(imageId)) {
+      return onSelect(selected.filter((id) => id !== imageId));
+    }
+
+    if (!selected) {
+      return [imageId];
+    }
+
+    return onSelect([...selected, imageId]);
+  }
 
   const handleUpload = async (
     cloudinaryResponse: CloudinaryUploadWidgetResults
@@ -57,68 +77,55 @@ export default function ImageGallery() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-6 space-y-8">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Foto-Gallerie
-        </h1>
-      </header>
-      <div className="space-y-4">
-        <div className="flex gap-4 items-center">
-          <CldUploadWidget
-            uploadPreset="detektor-hud-preset"
-            onSuccess={(res) => handleUpload(res)}
-            onError={(error: CloudinaryUploadWidgetError) => {
-              console.error("Upload failed:", error);
-            }}
+    <>
+      <div className="flex gap-4 items-center">
+        <CldUploadWidget
+          uploadPreset="detektor-hud-preset"
+          onSuccess={(res) => handleUpload(res)}
+          onError={(error: CloudinaryUploadWidgetError) => {
+            console.error("Upload failed:", error);
+          }}
+        >
+          {({ open }) => (
+            <Button
+              className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
+              onClick={() => open()}
+            >
+              <UploadCloud />
+              Fotos hochladen
+            </Button>
+          )}
+        </CldUploadWidget>
+      </div>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex gap-2">
+          <Button
+            variant={sort === "desc" ? "default" : "outline"}
+            onClick={() => setSort("desc")}
           >
-            {({ open }) => (
-              <Button
-                className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
-                onClick={() => open()}
-              >
-                <UploadCloud />
-                Fotos hochladen
-              </Button>
-            )}
-          </CldUploadWidget>
-        </div>
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex gap-2">
-            <Button
-              variant={sort === "desc" ? "default" : "outline"}
-              onClick={() => setSort("desc")}
-            >
-              <ClockArrowDown />
-              Neueste zuerst
-            </Button>
-            <Button
-              variant={sort === "asc" ? "default" : "outline"}
-              onClick={() => setSort("asc")}
-            >
-              <ClockArrowUp />
-              Älteste zuerst
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredPhotos.map((photo) => (
-            <ImageCard
-              key={photo.id}
-              isSelected={selected.includes(photo.id)}
-              onClick={() =>
-                setSelected((prev) =>
-                  prev.includes(photo.id)
-                    ? prev.filter((id) => id !== photo.id)
-                    : [...prev, photo.id]
-                )
-              }
-              onDelete={handleDelete}
-              photo={photo}
-            />
-          ))}
+            <ClockArrowDown />
+            Neueste zuerst
+          </Button>
+          <Button
+            variant={sort === "asc" ? "default" : "outline"}
+            onClick={() => setSort("asc")}
+          >
+            <ClockArrowUp />
+            Älteste zuerst
+          </Button>
         </div>
       </div>
-    </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredPhotos.map((photo) => (
+          <ImageCard
+            key={photo.id}
+            isSelected={selected?.includes(photo.id) ?? false}
+            onClick={handleSelect}
+            onDelete={handleDelete}
+            photo={photo}
+          />
+        ))}
+      </div>
+    </>
   );
 }

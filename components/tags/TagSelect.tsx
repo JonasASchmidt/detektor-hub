@@ -36,7 +36,7 @@ export default function TagSelect({
 
   return (
     <Command className="overflow-visible bg-transparent">
-      <div className="group border border-input px-3 py-2 text-sm ring-offset-background rounded-md focus-within:ring-1 focus-within:ring-ring focus-within:ring-offset-2">
+      <div className="group border border-input px-1 py-1 text-sm ring-offset-background rounded-md focus-within:ring-1 focus-within:ring-ring ">
         <div className="flex gap-1 flex-wrap items-center">
           {selected.map((option) => {
             return (
@@ -54,15 +54,15 @@ export default function TagSelect({
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
             placeholder={placeholder}
-            className="ml-2 bg-transparent outline-none placeholder:text-muted-foreground flex-1"
+            className="ml-2 py-0 bg-transparent outline-none placeholder:text-muted-foreground flex-1"
           />
         </div>
       </div>
       <div className="relative mt-2">
         {open ? (
-          <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+          <div className="absolute w-full z-10 top-0 rounded-md border border-black bg-popover text-popover-foreground shadow-md outline-none animate-in">
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>Keine Tags gefunden.</CommandEmpty>
               {tagCategories.map((category) => {
                 const filtered = category.tags.filter(
                   (tag) =>
@@ -75,7 +75,7 @@ export default function TagSelect({
                   <CommandGroup
                     key={category.id}
                     heading={category.name}
-                    className="h-full overflow-auto"
+                    className="h-full overflow-auto border-black"
                   >
                     <div className="flex flex-wrap gap-2">
                       {filtered.map((tag) => (

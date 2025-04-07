@@ -4,10 +4,11 @@ import { Photo } from "@prisma/client";
 import { Card, CardContent } from "../ui/card";
 import { CldImage } from "next-cloudinary";
 import { Button } from "../ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { MouseEventHandler, useRef } from "react";
 import { ConfirmModal } from "../modals/ConfirmModal";
 import { toast } from "sonner";
+import ImageEditor from "./ImageEditor";
 
 interface Props {
   isSelected: boolean;
@@ -29,10 +30,7 @@ export default function ImageCard({
     cardRef.current?.blur();
   };
 
-  const handleEdit: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    cardRef.current?.blur();
-  };
+  const handleChangeImage = (image: Photo) => {};
 
   const handleConfirm = async () => {
     const res = await fetch(`/api/photos/${photo.id}`, {
@@ -71,9 +69,7 @@ export default function ImageCard({
         />
 
         <div className="absolute bottom-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-          <Button size="icon" variant="secondary" disabled onClick={handleEdit}>
-            <Pencil className="w-4 h-4" />
-          </Button>
+          <ImageEditor image={photo} onChange={handleChangeImage} />
           <ConfirmModal
             onConfirm={handleConfirm}
             title="Foto löschen"

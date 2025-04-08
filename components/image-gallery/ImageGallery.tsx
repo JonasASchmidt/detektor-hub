@@ -1,6 +1,6 @@
 "use client";
 
-import { Photo } from "@prisma/client";
+import { Image } from "@prisma/client";
 import { useEffect, useState } from "react";
 import {
   CldUploadWidget,
@@ -17,17 +17,17 @@ interface Props {
 }
 
 export default function ImageGallery({ onSelect, selected }: Props) {
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
-    fetch("/api/user-photos")
+    fetch("/api/user-images")
       .then((res) => res.json())
-      .then(setPhotos);
+      .then(setImages);
   }, []);
 
   const handleDelete = (id: string) =>
-    setPhotos(photos.filter((photo) => photo.id !== id));
+    setImages(images.filter((image) => image.id !== id));
 
   const handleSelect = (imageId: string) => {
     if (!onSelect) {
@@ -43,7 +43,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     }
 
     return onSelect([...selected, imageId]);
-  }
+  };
 
   const handleUpload = async (
     cloudinaryResponse: CloudinaryUploadWidgetResults
@@ -55,7 +55,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       return;
     }
 
-    const res = await fetch("/api/photos", {
+    const res = await fetch("/api/images", {
       method: "POST",
       body: JSON.stringify({
         url: cloudinaryResponse.info.secure_url,
@@ -66,11 +66,11 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       },
     });
 
-    const newPhoto = await res.json();
-    setPhotos((prev) => [...prev, newPhoto]);
+    const newImage = await res.json();
+    setImages((prev) => [...prev, newImage]);
   };
 
-  const filteredPhotos = photos.sort((a, b) => {
+  const filteredImages = images.sort((a, b) => {
     const aDate = new Date(a.createdAt).getTime();
     const bDate = new Date(b.createdAt).getTime();
     return sort === "desc" ? bDate - aDate : aDate - bDate;
@@ -116,13 +116,13 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredPhotos.map((photo) => (
+        {filteredImages.map((image) => (
           <ImageCard
-            key={photo.id}
-            isSelected={selected?.includes(photo.id) ?? false}
+            key={image.id}
+            isSelected={selected?.includes(image.id) ?? false}
             onClick={handleSelect}
             onDelete={handleDelete}
-            photo={photo}
+            image={image}
           />
         ))}
       </div>

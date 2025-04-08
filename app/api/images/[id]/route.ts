@@ -8,21 +8,21 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  const existingPhoto = await prisma.photo.findUnique({
+  const existingImage = await prisma.image.findUnique({
     where: { id },
     include: {
       finding: true,
     },
   });
 
-  if (!existingPhoto) {
+  if (!existingImage) {
     return NextResponse.json(
       { error: "Foto nicht gefunden." },
       { status: 404 }
     );
   }
 
-  const finding = existingPhoto?.finding;
+  const finding = existingImage?.finding;
   if (finding) {
     return NextResponse.json(
       {
@@ -33,7 +33,7 @@ export async function DELETE(
     );
   }
 
-  const cldResponse = await cloudinary.uploader.destroy(existingPhoto.publicId);
+  const cldResponse = await cloudinary.uploader.destroy(existingImage.publicId);
 
   console.log({ cldResponse });
 
@@ -46,7 +46,7 @@ export async function DELETE(
     );
   }
 
-  await prisma.photo.delete({ where: { id } });
+  await prisma.image.delete({ where: { id } });
 
   return NextResponse.json(
     { message: "Foto erfolgreich gelöscht." },

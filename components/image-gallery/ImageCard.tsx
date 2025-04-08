@@ -1,6 +1,6 @@
 "use client";
 
-import { Photo } from "@prisma/client";
+import { Image } from "@prisma/client";
 import { Card, CardContent } from "../ui/card";
 import { CldImage } from "next-cloudinary";
 import { Button } from "../ui/button";
@@ -14,14 +14,14 @@ interface Props {
   isSelected: boolean;
   onClick: (id: string) => void;
   onDelete: (id: string) => void;
-  photo: Photo;
+  image: Image;
 }
 
 export default function ImageCard({
   isSelected,
   onClick,
   onDelete,
-  photo,
+  image,
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -30,10 +30,10 @@ export default function ImageCard({
     cardRef.current?.blur();
   };
 
-  const handleChangeImage = (image: Photo) => {};
+  const handleChangeImage = (image: Image) => {};
 
   const handleConfirm = async () => {
-    const res = await fetch(`/api/photos/${photo.id}`, {
+    const res = await fetch(`/api/images/${image.id}`, {
       method: "DELETE",
     });
 
@@ -43,13 +43,13 @@ export default function ImageCard({
     }
 
     toast.success("Foto wurde gelöscht!");
-    onDelete(photo.id);
+    onDelete(image.id);
   };
 
   return (
     <Card
       ref={cardRef}
-      onClick={() => onClick(photo.id)}
+      onClick={() => onClick(image.id)}
       className={`relative group cursor-pointer transition ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
@@ -57,19 +57,19 @@ export default function ImageCard({
     >
       <CardContent className="p-2">
         <CldImage
-          src={photo.publicId}
+          src={image.publicId}
           width={200}
           height={200}
           crop="fill"
           gravity="auto"
-          alt="Photo"
+          alt="Image"
           quality="auto"
           format="auto"
           className="rounded-lg object-cover w-full h-full"
         />
 
         <div className="absolute bottom-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-          <ImageEditor image={photo} onChange={handleChangeImage} />
+          <ImageEditor image={image} onChange={handleChangeImage} />
           <ConfirmModal
             onConfirm={handleConfirm}
             title="Foto löschen"

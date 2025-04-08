@@ -12,11 +12,11 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { Photo } from "@prisma/client";
+import { Image } from "@prisma/client";
 
 interface Props {
-  image: Photo;
-  onChange: (image: Photo) => void;
+  image: Image;
+  onChange: (image: Image) => void;
 }
 
 export default function ImageEditor({ image, onChange }: Props) {

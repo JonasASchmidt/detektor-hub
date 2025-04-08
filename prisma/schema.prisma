@@ -25,7 +25,8 @@ model User {
 
   accounts Account[]
   sessions Session[]
-  Photo    Photo[]
+  images   Image[]
+  findings Finding[]
 }
 
 model Account {
@@ -92,17 +93,22 @@ model Finding {
   dating_from       Int?
   dating_to         Int?
   references        String?
-  thumbnailUrl      String?
-  photos            Photo[]
+  thumbnailId       String?
+  photos            Image[]
   tags              Tag[]         @relation("FindingTags")
   relatedFindings   Finding[]     @relation("RelatedFindings")
   relatedTo         Finding[]     @relation("RelatedFindings")
+  detector          Detector?     @relation(fields: [detectorId], references: [id])
+  detectorId        String?
+  conductivity      Int?
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
   foundAt           DateTime      @default(now())
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @default(now()) @updatedAt
 }
 
-model Photo {
+model Image {
   id          String   @id @default(uuid())
   finding     Finding? @relation(fields: [findingId], references: [id])
   findingId   String?
@@ -114,4 +120,12 @@ model Photo {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model Detector {
+  id       String @id @default(uuid())
+  name     String
+  company  String
+  url      String
+  findings Finding[]
 }

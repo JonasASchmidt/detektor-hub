@@ -3,6 +3,7 @@
 import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 import ImageGallery from "@/components/image-gallery/ImageGallery";
 import TagSelect from "@/components/tags/TagSelect";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/input/date-picker";
@@ -10,6 +11,7 @@ import LocationPicker from "@/components/ui/input/location-picker/location-picke
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tag } from "@prisma/client";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -36,6 +38,7 @@ export default function FindingsForm({ tagCategories }: Props) {
     selectedTags: [] as Tag[],
     images: [] as string[],
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -65,7 +68,18 @@ export default function FindingsForm({ tagCategories }: Props) {
       images: ids,
     });
 
-  const handleSubmit = () => {};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const res = await fetch("/api/findings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    console.log(res);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
@@ -199,7 +213,7 @@ export default function FindingsForm({ tagCategories }: Props) {
               <Input
                 id="dating_from"
                 type="number"
-                placeholder="Tiefe in cm"
+                placeholder="Datierung ab Jahr"
                 value={formData.dating_from}
                 onChange={handleChange}
                 className="w-full"
@@ -210,7 +224,7 @@ export default function FindingsForm({ tagCategories }: Props) {
               <Input
                 id="dating_to"
                 type="number"
-                placeholder="Gewicht in g"
+                placeholder="Datierung bis Jahr"
                 value={formData.dating_to}
                 onChange={handleChange}
                 className="w-full"
@@ -227,6 +241,16 @@ export default function FindingsForm({ tagCategories }: Props) {
               onChange={handleChange}
             />
           </div>
+          {loading ? (
+            <Button disabled>
+              <Loader2 className="animate-spin" />
+              Bitte Warten
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full">
+              Speichern
+            </Button>
+          )}
         </div>
       </Card>
     </form>

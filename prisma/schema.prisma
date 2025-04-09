@@ -94,7 +94,7 @@ model Finding {
   dating_to         Int?
   references        String?
   thumbnailId       String?
-  photos            Image[]
+  images            Image[]
   tags              Tag[]         @relation("FindingTags")
   relatedFindings   Finding[]     @relation("RelatedFindings")
   relatedTo         Finding[]     @relation("RelatedFindings")

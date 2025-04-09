@@ -90,6 +90,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
             <Button
               className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
               onClick={() => open()}
+              type="button"
             >
               <UploadCloud />
               Fotos hochladen
@@ -102,6 +103,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
           <Button
             variant={sort === "desc" ? "default" : "outline"}
             onClick={() => setSort("desc")}
+            type="button"
           >
             <ClockArrowDown />
             Neueste zuerst
@@ -109,6 +111,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
           <Button
             variant={sort === "asc" ? "default" : "outline"}
             onClick={() => setSort("asc")}
+            type="button"
           >
             <ClockArrowUp />
             Älteste zuerst

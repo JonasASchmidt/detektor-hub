@@ -3,21 +3,24 @@ import { z } from "zod";
 export const findingSchemaCompleted = z
   .object({
     name: z.string({ required_error: "Name wird benötigt." }),
-    latitude: z.number({ required_error: "Latitude wird benötigt." }),
-    longitude: z.number({ required_error: "Longitude wird benötigt." }),
-    depth: z.number().nonnegative().optional(),
-    weight: z.number().nonnegative().optional(),
-    diameter: z.number().nonnegative().optional(),
+    latitude: z.coerce.number({ required_error: "Latitude wird benötigt." }),
+    longitude: z.coerce.number({ required_error: "Longitude wird benötigt." }),
+    depth: z.coerce.number().nonnegative().optional(),
+    weight: z.coerce.number().nonnegative().optional(),
+    diameter: z.coerce.number().nonnegative().optional(),
     description: z.string().optional(),
     description_front: z.string().optional(),
     description_back: z.string().optional(),
     dating: z.string().optional(),
-    dating_from: z.number().optional(),
-    dating_to: z.number().optional(),
+    dating_from: z.coerce.number().optional(),
+    dating_to: z.coerce.number().optional(),
     references: z.string().optional(),
     thumbnailId: z.string().optional(),
-    conductivity: z.number().optional(),
+    conductivity: z.coerce.number().optional(),
     foundAt: z.string(),
+    // Todo: Create zod schemas for tags
+    selectedTags: z.any().array(),
+    images: z.string().array(),
   })
   .refine(
     (data) => {

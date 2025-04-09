@@ -10,79 +10,57 @@ import DatePicker from "@/components/ui/input/date-picker";
 import LocationPicker from "@/components/ui/input/location-picker/location-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tag } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
 
 interface Props {
   tagCategories: TagCategoryWithTags[];
 }
 
 export default function FindingsForm({ tagCategories }: Props) {
-  const [formData, setFormData] = useState({
-    name: "",
-    latitude: 0,
-    longitude: 0,
-    depth: 0,
-    weight: 0,
-    diameter: 0,
-    description: "",
-    description_front: "",
-    description_back: " ",
-    dating: "",
-    dating_from: 0,
-    dating_to: 0,
-    references: "",
-    thumbnailUrl: "",
-    foundAt: new Date(),
-    selectedTags: [] as Tag[],
-    images: [] as string[],
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<FindingFormData>({
+    resolver: zodResolver(findingSchemaCompleted),
+    defaultValues: { location: { lat: 51, lng: 13 } },
   });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
-  };
+  const handleChangeImages = (ids: string[]) => setValue("images", ids);
 
-  const handleChangeDate = (date?: Date) => {
-    setFormData({
-      ...formData,
-      foundAt: date ?? new Date(),
-    });
-  };
-
-  const handleChangeLocation = () => {};
-
-  const handleChangeTags = (tags: Tag[]) => {
-    setFormData({
-      ...formData,
-      selectedTags: tags,
-    });
-  };
-
-  const handleChangeImages = (ids: string[]) =>
-    setFormData({
-      ...formData,
-      images: ids,
-    });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<FindingFormData> = async (data) => {
     setLoading(true);
 
     const res = await fetch("/api/findings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(data),
     });
 
-    console.log(res);
+    setLoading(false);
+
+    if (!res.ok) {
+      toast.error("Fund konnte nicht gespeichert werden.");
+      return;
+    }
+
+    toast.success("Neuer Fund wurde angelegt!");
   };
 
+  console.log(control);
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
       <Card className="bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto py-4 px-6 space-y-4">
           <div className="grid gap-2">
@@ -91,30 +69,31 @@ export default function FindingsForm({ tagCategories }: Props) {
               id="name"
               type="text"
               placeholder="Titel des Fundes"
-              value={formData.name}
-              onChange={handleChange}
               required
+              {...register("name", { required: true })}
             />
           </div>
           <div className="grid gap-2">
             <Label>Funddatum</Label>
-            <DatePicker value={formData.foundAt} onChange={handleChangeDate} />
+            <DatePicker
+              control={control}
+              name="foundAt"
+              rules={{ required: true }}
+              placeholder="TEST"
+            />
           </div>
           <LocationPicker
-            id="location"
-            onChange={handleChangeLocation}
-            value={{
-              lat: 51,
-              lng: 13,
-            }}
+            control={control}
+            name="location"
+            rules={{ required: true }}
           />
           <div className="grid gap-2">
             <Label htmlFor="name">Tags</Label>
             <TagSelect
+              control={control}
               tagCategories={tagCategories}
-              onChange={handleChangeTags}
-              placeholder={"Tags auswählen ..."}
-              selected={formData.selectedTags}
+              placeholder="Tags auswählen ..."
+              name="tags"
             />
           </div>
         </div>
@@ -126,7 +105,7 @@ export default function FindingsForm({ tagCategories }: Props) {
             Hier können dem Fund Bilder aus Ihrer Gallerie zugeordnet werden.
           </p>
           <ImageGallery
-            selected={formData.images}
+            selected={watch("images")}
             onSelect={handleChangeImages}
           />
         </div>
@@ -140,9 +119,8 @@ export default function FindingsForm({ tagCategories }: Props) {
                 id="depth"
                 type="number"
                 placeholder="Tiefe in cm"
-                value={formData.depth}
-                onChange={handleChange}
                 className="w-full"
+                {...register("depth")}
               />
             </div>
             <div className="grid gap-2 flex-1">
@@ -151,9 +129,8 @@ export default function FindingsForm({ tagCategories }: Props) {
                 id="weight"
                 type="number"
                 placeholder="Gewicht in g"
-                value={formData.weight}
-                onChange={handleChange}
                 className="w-full"
+                {...register("weight")}
               />
             </div>
             <div className="grid gap-2 flex-1">
@@ -162,9 +139,8 @@ export default function FindingsForm({ tagCategories }: Props) {
                 id="diameter"
                 type="number"
                 placeholder="Durchmesser in cm"
-                value={formData.diameter}
-                onChange={handleChange}
                 className="w-full"
+                {...register("diameter")}
               />
             </div>
           </div>
@@ -174,8 +150,7 @@ export default function FindingsForm({ tagCategories }: Props) {
             <Textarea
               placeholder="Allgemeine Beschreibung des Fundes."
               id="description"
-              value={formData.description}
-              onChange={handleChange}
+              {...register("description")}
             />
           </div>
           <div className="grid w-full gap-1.5">
@@ -183,8 +158,7 @@ export default function FindingsForm({ tagCategories }: Props) {
             <Textarea
               placeholder="Beschreibung der Vorderseite."
               id="description_front"
-              value={formData.description_front}
-              onChange={handleChange}
+              {...register("description_front")}
             />
           </div>
           <div className="grid w-full gap-1.5">
@@ -192,8 +166,7 @@ export default function FindingsForm({ tagCategories }: Props) {
             <Textarea
               placeholder="Beschreibung der Rückseite."
               id="description_back"
-              value={formData.description_back}
-              onChange={handleChange}
+              {...register("description_back")}
             />
           </div>
           <hr />
@@ -203,8 +176,7 @@ export default function FindingsForm({ tagCategories }: Props) {
               id="dating"
               type="text"
               placeholder="Datierung des Fundes"
-              value={formData.dating}
-              onChange={handleChange}
+              {...register("dating")}
             />
           </div>
           <div className="flex flex-row gap-6 flex-1">
@@ -214,9 +186,8 @@ export default function FindingsForm({ tagCategories }: Props) {
                 id="dating_from"
                 type="number"
                 placeholder="Datierung ab Jahr"
-                value={formData.dating_from}
-                onChange={handleChange}
                 className="w-full"
+                {...register("dating_from")}
               />
             </div>
             <div className="grid gap-2 flex-1">
@@ -225,9 +196,8 @@ export default function FindingsForm({ tagCategories }: Props) {
                 id="dating_to"
                 type="number"
                 placeholder="Datierung bis Jahr"
-                value={formData.dating_to}
-                onChange={handleChange}
                 className="w-full"
+                {...register("dating_to")}
               />
             </div>
           </div>
@@ -237,8 +207,7 @@ export default function FindingsForm({ tagCategories }: Props) {
             <Textarea
               placeholder="Auflistung der Referenzen"
               id="references"
-              value={formData.references}
-              onChange={handleChange}
+              {...register("references")}
             />
           </div>
           {loading ? (

@@ -2,8 +2,7 @@ import { z } from "zod";
 
 export interface FindingFormData {
   name: string;
-  latitude: number;
-  longitude: number;
+  location: { lat: number; lng: number };
   depth?: number;
   weight?: number;
   diameter?: number;
@@ -25,8 +24,10 @@ export interface FindingFormData {
 export const findingSchemaCompleted = z
   .object({
     name: z.string({ required_error: "Name wird benötigt." }),
-    latitude: z.coerce.number({ required_error: "Latitude wird benötigt." }),
-    longitude: z.coerce.number({ required_error: "Longitude wird benötigt." }),
+    location: z.object({
+      lat: z.coerce.number({ required_error: "Latitude wird benötigt." }),
+      lng: z.coerce.number({ required_error: "Longitude wird benötigt." }),
+    }),
     depth: z.coerce.number().nonnegative().optional(),
     weight: z.coerce.number().nonnegative().optional(),
     diameter: z.coerce.number().nonnegative().optional(),

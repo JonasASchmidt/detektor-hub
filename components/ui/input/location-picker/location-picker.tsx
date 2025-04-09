@@ -2,7 +2,7 @@ import { LatLngLiteral } from "leaflet";
 import {
   ChangeEventHandler,
   FocusEventHandler,
-  useEffect,
+  useCallback,
   useState,
 } from "react";
 import LocationModal from "./location-modal";
@@ -10,34 +10,36 @@ import { MapPinCheckIcon } from "lucide-react";
 import { Input } from "../../input";
 import { Label } from "../../label";
 import { Button } from "../../button";
+import {
+  FieldValues,
+  useController,
+  UseControllerProps,
+} from "react-hook-form";
 
 interface Props {
   disabled?: boolean;
-  id: string;
-  required?: boolean;
-  onChange: (value: LatLngLiteral) => void;
-  value: LatLngLiteral;
 }
 
-export default function LocationPicker({
+export default function LocationPicker<TFieldValues extends FieldValues>({
+  control,
   disabled,
-  id,
-  required,
-  onChange,
-  value,
-}: Props) {
+  name,
+  rules,
+}: UseControllerProps<TFieldValues> & Props) {
+  const { field, fieldState } = useController({ name, control, rules });
+
   const [currentInput, setCurrentInput] = useState<string>();
   const [currentValue, setCurrentValue] = useState<string>();
   const [showModal, setShowModal] = useState(false);
 
-  const [lat, setLat] = useState<number>(51);
-  const [lng, setLng] = useState<number>(13);
+  const [lat, setLat] = useState<number>(field.value?.lat ?? 51);
+  const [lng, setLng] = useState<number>(field.value?.lng ?? 13);
 
-  useEffect(() => {
+  useCallback(() => {
     if (lat && lng) {
-      onChange({ lat, lng });
+      field.onChange({ lat, lng });
     }
-  }, [lat, lng, onChange]);
+  }, [field, lat, lng]);
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = () => {
     if (!currentInput || !currentValue) {

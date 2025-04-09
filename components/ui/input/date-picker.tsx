@@ -7,24 +7,35 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../calendar";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import {
+  FieldValues,
+  useController,
+  UseControllerProps,
+} from "react-hook-form";
 
-interface Props {
-  onChange: (value?: Date) => void;
-  value?: Date;
-}
+export default function DatePicker<TFieldValues extends FieldValues>({
+  control,
+  name,
+  rules,
+  placeholder,
+}: UseControllerProps<TFieldValues> & { placeholder: string }) {
+  const { field, fieldState } = useController({
+    name,
+    control,
+    rules,
+  });
 
-export default function DatePicker({ onChange, value }: Props) {
-  const [date, setDate] = useState<Date | undefined>(value);
+  const [date, setDate] = useState<Date | undefined>(field.value);
 
   useEffect(() => {
-    if (value) {
-      setDate(value);
+    if (field.value) {
+      setDate(field.value);
     }
-  }, [value]);
+  }, [field.value]);
 
   const onChangeDate = (updatedDate?: Date) => {
     setDate(updatedDate);
-    onChange(updatedDate);
+    field.onChange(updatedDate);
   };
 
   return (
@@ -38,7 +49,7 @@ export default function DatePicker({ onChange, value }: Props) {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
+          {date ? format(date, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

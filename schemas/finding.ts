@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+export interface FindingFormData {
+  name: string;
+  latitude: number;
+  longitude: number;
+  depth?: number;
+  weight?: number;
+  diameter?: number;
+  description?: string;
+  description_front?: string;
+  description_back?: string;
+  dating?: string;
+  dating_from?: number;
+  dating_to?: number;
+  references?: string;
+  thumbnailId?: string;
+  detectorId?: string;
+  conductivity?: number;
+  foundAt: Date;
+  tags: string[];
+  images: string[];
+}
+
 export const findingSchemaCompleted = z
   .object({
     name: z.string({ required_error: "Name wird benötigt." }),
@@ -17,9 +39,8 @@ export const findingSchemaCompleted = z
     references: z.string().optional(),
     thumbnailId: z.string().optional(),
     conductivity: z.coerce.number().optional(),
-    foundAt: z.string(),
-    // Todo: Create zod schemas for tags
-    selectedTags: z.any().array(),
+    foundAt: z.date(),
+    tags: z.string().array(),
     images: z.string().array(),
   })
   .refine(

@@ -2,7 +2,6 @@
 
 import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 import ImageGallery from "@/components/image-gallery/ImageGallery";
-import TagSelect from "@/components/tags/TagSelect";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,7 @@ import { toast } from "sonner";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
+import TagPicker from "@/components/ui/input/tag-picker/tag-picker";
 
 interface Props {
   tagCategories: TagCategoryWithTags[];
@@ -57,8 +57,6 @@ export default function FindingsForm({ tagCategories }: Props) {
     toast.success("Neuer Fund wurde angelegt!");
   };
 
-  console.log(control);
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
       <Card className="bg-white dark:bg-gray-900">
@@ -88,11 +86,9 @@ export default function FindingsForm({ tagCategories }: Props) {
             rules={{ required: true }}
           />
           <div className="grid gap-2">
-            <Label htmlFor="name">Tags</Label>
-            <TagSelect
+            <TagPicker
               control={control}
               tagCategories={tagCategories}
-              placeholder="Tags auswählen ..."
               name="tags"
             />
           </div>

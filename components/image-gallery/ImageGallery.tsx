@@ -39,7 +39,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     }
 
     if (!selected) {
-      return [imageId];
+      return onSelect([imageId]);
     }
 
     return onSelect([...selected, imageId]);

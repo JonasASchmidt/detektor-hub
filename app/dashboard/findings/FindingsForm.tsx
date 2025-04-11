@@ -85,13 +85,11 @@ export default function FindingsForm({ tagCategories }: Props) {
             name="location"
             rules={{ required: true }}
           />
-          <div className="grid gap-2">
-            <TagPicker
-              control={control}
-              tagCategories={tagCategories}
-              name="tags"
-            />
-          </div>
+          <TagPicker
+            control={control}
+            tagCategories={tagCategories}
+            name="tags"
+          />
         </div>
       </Card>
       <Card className="bg-white dark:bg-gray-900">

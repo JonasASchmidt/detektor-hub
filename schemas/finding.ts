@@ -40,7 +40,7 @@ export const findingSchemaCompleted = z
     references: z.string().optional(),
     thumbnailId: z.string().optional(),
     conductivity: z.coerce.number().optional(),
-    foundAt: z.date(),
+    foundAt: z.coerce.date(),
     tags: z.string().array(),
     images: z.string().array(),
   })

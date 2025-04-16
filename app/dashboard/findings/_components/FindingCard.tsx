@@ -39,9 +39,10 @@ export default function FindingCard({ finding }: FindingCardProps) {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {finding.name}
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {formattedDate}
-          </p>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            <p>{formattedDate}</p>
+            <p>{finding.user.name ?? "anonymous"}</p>
+          </div>
         </div>
 
         <div className="mt-1 flex flex-wrap gap-2">

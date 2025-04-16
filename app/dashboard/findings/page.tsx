@@ -1,14 +1,16 @@
-import prisma from "@/lib/prisma";
-import FindingsPage from "./FindingsPage";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+"use client";
 
-export default async function FindingsServer() {
-  const tagCategories: TagCategoryWithTags[] =
-    await prisma.tagCategory.findMany({
-      include: {
-        tags: true,
-      },
-    });
+import { useState } from "react";
+import FindingsFilters from "./_components/FindingFilters";
+import FindingsList from "./_components/FindingList";
 
-  return <FindingsPage tagCategories={tagCategories} />;
+export default function FindingsPage() {
+  const [filters, setFilters] = useState({ search: "", sort: "newest" });
+
+  return (
+    <div className="space-y-6">
+      <FindingsFilters onChange={setFilters} />
+      <FindingsList filters={filters} />
+    </div>
+  );
 }

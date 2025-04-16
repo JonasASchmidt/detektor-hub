@@ -34,19 +34,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Detektor Hub",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
     },
   ],
   navMain: [
@@ -57,16 +47,12 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Neuer Fund",
+          title: "Alle Funde",
           url: "/dashboard/findings",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Neuer Fund",
+          url: "/dashboard/findings/new",
         },
       ],
     },
@@ -99,17 +85,17 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "1",
       url: "#",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "2",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "3",
       url: "#",
       icon: Map,
     },

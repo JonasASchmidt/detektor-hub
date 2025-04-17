@@ -1,10 +1,5 @@
 import { LatLngLiteral } from "leaflet";
-import {
-  ChangeEventHandler,
-  FocusEventHandler,
-  useCallback,
-  useState,
-} from "react";
+import { ChangeEventHandler, FocusEventHandler, useState } from "react";
 import LocationModal from "./location-modal";
 import { MapPinCheckIcon } from "lucide-react";
 import { Input } from "../../input";
@@ -35,27 +30,20 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   const [lat, setLat] = useState<number>(field.value?.lat ?? 51);
   const [lng, setLng] = useState<number>(field.value?.lng ?? 13);
 
-  useCallback(() => {
-    if (lat && lng) {
-      field.onChange({ lat, lng });
-    }
-  }, [field, lat, lng]);
-
   const handleBlur: FocusEventHandler<HTMLInputElement> = () => {
     if (!currentInput || !currentValue) {
       return;
     }
 
-    if (currentInput === "lat") {
-      setLat(parseFloat(currentValue));
-    }
+    const newLat = currentInput === "lat" ? parseFloat(currentValue) : lat;
+    const newLng = currentInput === "lng" ? parseFloat(currentValue) : lng;
 
-    if (currentInput === "lng") {
-      setLng(parseFloat(currentValue));
-    }
-
+    setLat(newLat);
+    setLng(newLng);
     setCurrentInput(undefined);
     setCurrentValue(undefined);
+
+    field.onChange({ lat: newLat, lng: newLng });
   };
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = ({
@@ -68,6 +56,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   const handleSubmitModal = (value: LatLngLiteral | undefined) => {
     setLat(value?.lat || 0);
     setLng(value?.lng || 0);
+    field.onChange({ lat: value?.lat || 0, lng: value?.lng || 0 });
     setShowModal(false);
   };
 
@@ -94,6 +83,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
               value={currentInput === "lat" ? currentValue : lat}
               min={-90}
               max={90}
+              step="any"
               disabled={disabled}
             />
           </div>
@@ -109,6 +99,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
               value={currentInput === "lng" ? currentValue : lng}
               min={-90}
               max={90}
+              step="any"
               disabled={disabled}
             />
           </div>

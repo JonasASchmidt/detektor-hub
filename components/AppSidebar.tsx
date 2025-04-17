@@ -1,20 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-  AudioWaveform,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  LocateIcon,
-  Map,
-  PieChart,
-  Tag,
-  User,
-} from "lucide-react";
+import { GalleryVerticalEnd, LocateIcon, Tag, User } from "lucide-react";
 
 import { NavMain } from "@/components/NavMain";
-import { NavProjects } from "@/components/NavProjects";
 import { NavUser } from "@/components/NavUser";
 import { TeamSwitcher } from "@/components/TeamSwitcher";
 import {
@@ -47,12 +36,16 @@ const data = {
       isActive: true,
       items: [
         {
+          title: "Neuer Fund",
+          url: "/dashboard/findings/new",
+        },
+        {
           title: "Alle Funde",
           url: "/dashboard/findings",
         },
         {
-          title: "Neuer Fund",
-          url: "/dashboard/findings/new",
+          title: "Karte",
+          url: "/dashboard/findings/map",
         },
       ],
     },
@@ -83,23 +76,6 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "1",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "2",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "3",
-      url: "#",
-      icon: Map,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -110,7 +86,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

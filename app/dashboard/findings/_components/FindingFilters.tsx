@@ -25,7 +25,7 @@ export default function FindingsFilters({
   }, [debouncedSearch, onChange, sort]);
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-4 bg-muted rounded-xl items-center">
+    <div className="flex flex-col md:flex-row gap-4 p-4 bg-muted items-center">
       <Input
         placeholder="Suche nach Name oder Beschreibung..."
         value={search}

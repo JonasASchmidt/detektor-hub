@@ -4,22 +4,32 @@ import { format } from "date-fns";
 import Tag from "@/components/tags/Tag";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import { CldImage } from "next-cloudinary";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { EyeIcon, PencilIcon } from "lucide-react";
 
 interface FindingCardProps {
   finding: FindingWithRelations;
 }
 
 export default function FindingCard({ finding }: FindingCardProps) {
+  const router = useRouter();
+
   const formattedDate = format(new Date(finding.createdAt), "dd.MM.yyyy");
 
+  const handleClick = () => router.push(`findings/${finding.id}`);
+
+  const handleClickEdit = () => router.push(`findings/${finding.id}/edit`);
+
   return (
-    <div className="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
-      <div className="w-16 h-16 flex-shrink-0 relative">
+    <div className="flex gap-4 p-4 border rounded-lg bg-white dark:bg-gray-900 hover:shadow-lg transition">
+      {/* Image */}
+      <div className="w-24 h-24 flex-shrink-0 relative">
         {finding.images.length > 0 ? (
           <CldImage
             src={finding.images[0].publicId}
-            width={64}
-            height={64}
+            width={256}
+            height={256}
             crop="fill"
             gravity="auto"
             alt="Image"
@@ -34,26 +44,40 @@ export default function FindingCard({ finding }: FindingCardProps) {
         )}
       </div>
 
-      <div className="flex-1">
+      <div className="flex flex-1 flex-col">
         <div className="flex justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {finding.name}
-          </h2>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            <p>{formattedDate}</p>
-            <p>{finding.user.name ?? "anonymous"}</p>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                {finding.name}
+              </h2>
+              <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <p>{formattedDate}</p>
+                <span>•</span>
+                <p>{finding.user?.name ?? "Anonymous"}</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+              {finding.description}
+            </p>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              {finding.tags?.map((tag) => (
+                <Tag key={tag.id} tag={tag} />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-2 ml-4">
+            <Button onClick={handleClick} size="sm">
+              <EyeIcon className="w-4 h-4" />
+            </Button>
+            <Button onClick={handleClickEdit} size="sm" disabled>
+              <PencilIcon className="w-4 h-4" />
+            </Button>
           </div>
         </div>
-
-        <div className="mt-1 flex flex-wrap gap-2">
-          {finding.tags?.map((tag) => (
-            <Tag key={tag.id} tag={tag} />
-          ))}
-        </div>
-
-        <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-          {finding.description}
-        </p>
       </div>
     </div>
   );

@@ -27,6 +27,7 @@ model User {
   sessions Session[]
   images   Image[]
   findings Finding[]
+  comments Comment[]
 }
 
 model Account {
@@ -95,6 +96,7 @@ model Finding {
   references        String?
   thumbnailId       String?
   images            Image[]
+  comments          Comment[]
   tags              Tag[]         @relation("FindingTags")
   relatedFindings   Finding[]     @relation("RelatedFindings")
   relatedTo         Finding[]     @relation("RelatedFindings")
@@ -128,4 +130,13 @@ model Detector {
   company  String
   url      String
   findings Finding[]
+}
+
+model Comment {
+  id          String @id @default(uuid())
+  text        String
+  user        User @relation(fields: [userId], references: [id])
+  userId      String
+  finding     Finding @relation(fields: [findingId], references: [id])
+  findingId   String
 }

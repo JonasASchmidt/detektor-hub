@@ -1,0 +1,5 @@
+import { Prisma } from "@prisma/client";
+
+export type FindingWithRelations = Prisma.FindingGetPayload<{
+  include: { images: true; tags: true; user: true };
+}>;

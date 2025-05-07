@@ -1,6 +1,6 @@
 "use client";
 
-import { Photo } from "@prisma/client";
+import { Image } from "@prisma/client";
 import { useEffect, useState } from "react";
 import {
   CldUploadWidget,
@@ -11,19 +11,39 @@ import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
 import { ClockArrowDown, ClockArrowUp, UploadCloud } from "lucide-react";
 
-export default function ImageGallery() {
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
+interface Props {
+  onSelect?: (ids: string[]) => void;
+  selected?: string[];
+}
+
+export default function ImageGallery({ onSelect, selected }: Props) {
+  const [images, setImages] = useState<Image[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
-    fetch("/api/user-photos")
+    fetch("/api/user-images")
       .then((res) => res.json())
-      .then(setPhotos);
+      .then(setImages);
   }, []);
 
   const handleDelete = (id: string) =>
-    setPhotos(photos.filter((photo) => photo.id !== id));
+    setImages(images.filter((image) => image.id !== id));
+
+  const handleSelect = (imageId: string) => {
+    if (!onSelect) {
+      return;
+    }
+
+    if (selected?.includes(imageId)) {
+      return onSelect(selected.filter((id) => id !== imageId));
+    }
+
+    if (!selected) {
+      return onSelect([imageId]);
+    }
+
+    return onSelect([...selected, imageId]);
+  };
 
   const handleUpload = async (
     cloudinaryResponse: CloudinaryUploadWidgetResults
@@ -35,7 +55,7 @@ export default function ImageGallery() {
       return;
     }
 
-    const res = await fetch("/api/photos", {
+    const res = await fetch("/api/images", {
       method: "POST",
       body: JSON.stringify({
         url: cloudinaryResponse.info.secure_url,
@@ -46,79 +66,69 @@ export default function ImageGallery() {
       },
     });
 
-    const newPhoto = await res.json();
-    setPhotos((prev) => [...prev, newPhoto]);
+    const newImage = await res.json();
+    setImages((prev) => [...prev, newImage]);
   };
 
-  const filteredPhotos = photos.sort((a, b) => {
+  const filteredImages = images.sort((a, b) => {
     const aDate = new Date(a.createdAt).getTime();
     const bDate = new Date(b.createdAt).getTime();
     return sort === "desc" ? bDate - aDate : aDate - bDate;
   });
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-6 space-y-8">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Foto-Gallerie
-        </h1>
-      </header>
-      <div className="space-y-4">
-        <div className="flex gap-4 items-center">
-          <CldUploadWidget
-            uploadPreset="detektor-hud-preset"
-            onSuccess={(res) => handleUpload(res)}
-            onError={(error: CloudinaryUploadWidgetError) => {
-              console.error("Upload failed:", error);
-            }}
+    <>
+      <div className="flex gap-4 items-center">
+        <CldUploadWidget
+          uploadPreset="detektor-hud-preset"
+          onSuccess={(res) => handleUpload(res)}
+          onError={(error: CloudinaryUploadWidgetError) => {
+            console.error("Upload failed:", error);
+          }}
+        >
+          {({ open }) => (
+            <Button
+              className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
+              onClick={() => open()}
+              type="button"
+            >
+              <UploadCloud />
+              Fotos hochladen
+            </Button>
+          )}
+        </CldUploadWidget>
+      </div>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex gap-2">
+          <Button
+            variant={sort === "desc" ? "default" : "outline"}
+            onClick={() => setSort("desc")}
+            type="button"
           >
-            {({ open }) => (
-              <Button
-                className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
-                onClick={() => open()}
-              >
-                <UploadCloud />
-                Fotos hochladen
-              </Button>
-            )}
-          </CldUploadWidget>
-        </div>
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex gap-2">
-            <Button
-              variant={sort === "desc" ? "default" : "outline"}
-              onClick={() => setSort("desc")}
-            >
-              <ClockArrowDown />
-              Neueste zuerst
-            </Button>
-            <Button
-              variant={sort === "asc" ? "default" : "outline"}
-              onClick={() => setSort("asc")}
-            >
-              <ClockArrowUp />
-              Älteste zuerst
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredPhotos.map((photo) => (
-            <ImageCard
-              key={photo.id}
-              isSelected={selected.includes(photo.id)}
-              onClick={() =>
-                setSelected((prev) =>
-                  prev.includes(photo.id)
-                    ? prev.filter((id) => id !== photo.id)
-                    : [...prev, photo.id]
-                )
-              }
-              onDelete={handleDelete}
-              photo={photo}
-            />
-          ))}
+            <ClockArrowDown />
+            Neueste zuerst
+          </Button>
+          <Button
+            variant={sort === "asc" ? "default" : "outline"}
+            onClick={() => setSort("asc")}
+            type="button"
+          >
+            <ClockArrowUp />
+            Älteste zuerst
+          </Button>
         </div>
       </div>
-    </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredImages.map((image) => (
+          <ImageCard
+            key={image.id}
+            isSelected={selected?.includes(image.id) ?? false}
+            onClick={handleSelect}
+            onDelete={handleDelete}
+            image={image}
+          />
+        ))}
+      </div>
+    </>
   );
 }

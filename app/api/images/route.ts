@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const photo = await prisma.photo.create({
+  const image = await prisma.image.create({
     data: {
       publicId,
       url,
@@ -26,5 +26,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(photo);
+  return NextResponse.json(image);
 }

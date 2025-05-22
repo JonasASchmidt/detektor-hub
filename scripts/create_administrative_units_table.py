@@ -75,6 +75,7 @@ def main() -> None:
     gdf_federal_state["id_country"] = 0
     gdf_federal_state = gdf_federal_state.rename(columns={"sn_l": "id_federal_state", "gen": "name"})
     gdf_federal_state = gdf_federal_state.loc[:, ["id_country", "id_federal_state", "name", "geometry"]]
+    gdf_federal_state = gdf_federal_state.astype({"id_federal_state": int})
 
     gdf_county = gpd.read_file(LOCAL_FILE, layer="vg5000_krs")
     gdf_county = gdf_county.rename(columns=str.lower)
@@ -82,6 +83,7 @@ def main() -> None:
     gdf_county = gdf_county.to_crs("EPSG:4326")
     gdf_county = gdf_county.rename(columns={"sn_l": "id_federal_state", "sn_k": "id_county", "gen": "name"})
     gdf_county = gdf_county.loc[:, ["id_federal_state", "id_county", "name", "geometry"]]
+    gdf_county = gdf_county.astype({"id_federal_state": int, "id_county": int})
 
     gdf_municipality = gpd.read_file(LOCAL_FILE, layer="vg5000_gem")
     gdf_municipality = gdf_municipality.rename(columns=str.lower)
@@ -89,16 +91,33 @@ def main() -> None:
     gdf_municipality = gdf_municipality.to_crs("EPSG:4326")
     gdf_municipality = gdf_municipality.rename(columns={"sn_k": "id_county", "sn_g": "id_municipality", "gen": "name"})
     gdf_municipality = gdf_municipality.loc[:, ["id_county", "id_municipality", "name", "geometry"]]
+    gdf_municipality = gdf_municipality.astype({"id_county": int, "id_municipality": int})
 
     # write to database
     engine = create_engine(settings.postgres_url)
-
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
-
     gdf_country.to_postgis(
-        name="AdministrativeUnitsCountry",
+        name="administrative_units_country",
+        con=engine,
+        if_exists="replace",
+        index=False,
+        schema="public"
+    )
+    gdf_federal_state.to_postgis(
+        name="administrative_units_federal_states",
+        con=engine,
+        if_exists="replace",
+        index=False,
+        schema="public"
+    )
+    gdf_county.to_postgis(
+        name="administrative_units_counties",
+        con=engine,
+        if_exists="replace",
+        index=False,
+        schema="public"
+    )
+    gdf_municipality.to_postgis(
+        name="administrative_units_municipalities",
         con=engine,
         if_exists="replace",
         index=False,
@@ -107,11 +126,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-    from shapely import Point
-    import json
-
-    point = Point(
-        11.8,
-        50.5,
-    )

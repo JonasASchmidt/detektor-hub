@@ -1,17 +1,13 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  extensions        = [postgis()]
 }
 
 model User {
@@ -22,12 +18,11 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String    @default("USER")
-
-  accounts Account[]
-  sessions Session[]
-  images   Image[]
-  findings Finding[]
-  comments Comment[]
+  accounts      Account[]
+  comments      Comment[]
+  findings      Finding[]
+  images        Image[]
+  sessions      Session[]
 }
 
 model Account {
@@ -39,8 +34,7 @@ model Account {
   access_token      String?
   expires_at        Int?
   refresh_token     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
@@ -48,34 +42,27 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TagCategory {
   id        String   @id @default(uuid())
   name      String   @unique
-  tags      Tag[]
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  tags      Tag[]
 }
 
 model Tag {
   id         String      @id @default(uuid())
   name       String      @unique
+  categoryId String
   color      String
   icon       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @default(now()) @updatedAt
   category   TagCategory @relation(fields: [categoryId], references: [id])
-  categoryId String
   findings   Finding[]   @relation("FindingTags")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-}
-
-enum FindingStatus {
-  DRAFT
-  COMPLETED
 }
 
 model Finding {
@@ -94,27 +81,25 @@ model Finding {
   dating_from       Int?
   dating_to         Int?
   references        String?
-  thumbnailId       String?
-  images            Image[]
-  comments          Comment[]
-  tags              Tag[]         @relation("FindingTags")
-  relatedFindings   Finding[]     @relation("RelatedFindings")
-  relatedTo         Finding[]     @relation("RelatedFindings")
-  detector          Detector?     @relation(fields: [detectorId], references: [id])
-  detectorId        String?
-  conductivity      Int?
-  userId            String
-  user              User          @relation(fields: [userId], references: [id])
   foundAt           DateTime      @default(now())
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @default(now()) @updatedAt
+  conductivity      Int?
+  detectorId        String?
+  thumbnailId       String?
+  userId            String
+  comments          Comment[]
+  detector          Detector?     @relation(fields: [detectorId], references: [id])
+  user              User          @relation(fields: [userId], references: [id])
+  images            Image[]
+  tags              Tag[]         @relation("FindingTags")
+  Finding_A         Finding[]     @relation("RelatedFindings")
+  Finding_B         Finding[]     @relation("RelatedFindings")
 }
 
 model Image {
   id          String   @id @default(uuid())
-  finding     Finding? @relation(fields: [findingId], references: [id])
   findingId   String?
-  user        User     @relation(fields: [userId], references: [id])
   userId      String
   url         String?
   publicId    String
@@ -122,10 +107,12 @@ model Image {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+  finding     Finding? @relation(fields: [findingId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Detector {
-  id       String @id @default(uuid())
+  id       String    @id @default(uuid())
   name     String
   company  String
   url      String
@@ -133,10 +120,15 @@ model Detector {
 }
 
 model Comment {
-  id          String @id @default(uuid())
-  text        String
-  user        User @relation(fields: [userId], references: [id])
-  userId      String
-  finding     Finding @relation(fields: [findingId], references: [id])
-  findingId   String
+  id        String  @id @default(uuid())
+  userId    String
+  findingId String
+  text      String
+  finding   Finding @relation(fields: [findingId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+enum FindingStatus {
+  DRAFT
+  COMPLETED
 }

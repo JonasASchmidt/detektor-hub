@@ -71,7 +71,7 @@ const data = {
       items: [
         {
           title: "Foto-Gallerie",
-          url: "/dashboard/photo-gallery",
+          url: "/dashboard/image-gallery",
         },
       ],
     },

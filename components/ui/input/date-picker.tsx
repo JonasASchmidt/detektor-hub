@@ -19,7 +19,7 @@ export default function DatePicker<TFieldValues extends FieldValues>({
   rules,
   placeholder,
 }: UseControllerProps<TFieldValues> & { placeholder: string }) {
-  const { field, fieldState } = useController({
+  const { field, fieldState: _fieldState } = useController({
     name,
     control,
     rules,

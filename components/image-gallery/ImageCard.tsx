@@ -30,7 +30,7 @@ export default function ImageCard({
     cardRef.current?.blur();
   };
 
-  const handleChangeImage = (image: Image) => {};
+  const handleChangeImage = (_image: Image) => {};
 
   const handleConfirm = async () => {
     const res = await fetch(`/api/images/${image.id}`, {

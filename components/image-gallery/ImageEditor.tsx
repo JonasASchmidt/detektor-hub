@@ -19,7 +19,7 @@ interface Props {
   onChange: (image: Image) => void;
 }
 
-export default function ImageEditor({ image, onChange }: Props) {
+export default function ImageEditor({ image, onChange: _onChange }: Props) {
   return (
     <Dialog>
       <DialogTrigger asChild>

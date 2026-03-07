@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
-import { TagCategory } from "@prisma/client";
+import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 import TagCategoriesPage from "./TagCategoriesPage";
 
 export default async function TagCategoriesServer() {
-  const categories: TagCategory[] = await prisma.tagCategory.findMany({
+  const categories: TagCategoryWithTags[] = await prisma.tagCategory.findMany({
     orderBy: { name: "asc" },
     include: { tags: true }
   });

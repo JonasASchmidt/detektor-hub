@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Ensure the category exists before deleting
     const existingCategory = await prisma.tagCategory.findUnique({

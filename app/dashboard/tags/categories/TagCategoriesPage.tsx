@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
+import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 import { TagCategory } from "@prisma/client";
 import { TagCategoryForm } from "@/components/tags/TagCategoryForm";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
@@ -10,14 +11,14 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  initialCategories: TagCategory[];
+  initialCategories: TagCategoryWithTags[];
 }
 
 export default function TagCategoriesPage({ initialCategories }: Props) {
   const [categories, setCategories] = useState(initialCategories);
 
   const handleNewCategory = (category: TagCategory) => {
-    setCategories([category, ...categories]);
+    setCategories([{ ...category, tags: [] }, ...categories]);
     toast.success("Tag-Kategorie wurde erstellt!");
   };
 

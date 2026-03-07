@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { LocateFixedIcon } from "lucide-react";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
-import TagList from "@/components/tags/TagList";
 import TagComponent from "@/components/tags/Tag";
 
 interface Props {

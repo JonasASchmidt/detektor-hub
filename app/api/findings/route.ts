@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { findingSchemaCompleted } from "@/schemas/finding";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

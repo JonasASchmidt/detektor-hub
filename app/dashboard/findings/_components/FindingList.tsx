@@ -30,7 +30,7 @@ export default function FindingsList({ filters }: Props) {
     [filters.search, filters.sort, page]
   );
 
-  const { findings, total, loading, error } = useFindings(queryParams);
+  const { findings, total, loading, error: _error } = useFindings(queryParams);
 
   useEffect(() => {
     setPage(1);

@@ -3,9 +3,9 @@ import FindingDetail from "../_components/FindingDetail";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function FindingDetailPage({ params }: Props) {

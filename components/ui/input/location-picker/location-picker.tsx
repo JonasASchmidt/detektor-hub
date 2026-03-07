@@ -21,7 +21,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   name,
   rules,
 }: UseControllerProps<TFieldValues> & Props) {
-  const { field, fieldState } = useController({ name, control, rules });
+  const { field, fieldState: _fieldState } = useController({ name, control, rules });
 
   const [currentInput, setCurrentInput] = useState<string>();
   const [currentValue, setCurrentValue] = useState<string>();

@@ -1,6 +1,5 @@
 "use client";
 
-import Error from "next/error";
 import { useEffect, useState } from "react";
 import { FindingWithRelations } from "../_types/FindingWithRelations.type";
 
@@ -46,7 +45,7 @@ export function useFindings(params: UseFindingsParams) {
 
         setData({ findings: json.findings, total: json.total });
       } catch (err) {
-        setError(err.message || "Unknown error");
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }

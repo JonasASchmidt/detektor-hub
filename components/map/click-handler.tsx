@@ -9,7 +9,7 @@ interface MapProps {
 }
 
 const ClickHandler: React.FC<MapProps> = ({ onClick }) => {
-  const map = useMapEvents({
+  const _map = useMapEvents({
     click(e) {
       onClick?.(e.latlng);
     },

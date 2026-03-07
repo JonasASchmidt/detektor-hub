@@ -27,7 +27,7 @@ export default function FindingsList({ filters }: Props) {
     [filters.search]
   );
 
-  const { findings, total, loading, error } = useFindings(queryParams);
+  const { findings, total: _total, loading: _loading, error: _error } = useFindings(queryParams);
 
   const onClick = () => {};
 

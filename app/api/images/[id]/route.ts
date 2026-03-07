@@ -4,7 +4,7 @@ import cloudinary from "@/lib/cloudinary";
 
 export async function DELETE(
   _: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
 

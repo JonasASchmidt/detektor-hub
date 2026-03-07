@@ -22,7 +22,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
   rules,
   tagCategories,
 }: UseControllerProps<TFieldValues> & Props) {
-  const { field, fieldState } = useController({ name, control, rules });
+  const { field, fieldState: _fieldState } = useController({ name, control, rules });
 
   const [showModal, setShowModal] = useState(false);
 

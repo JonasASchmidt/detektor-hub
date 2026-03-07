@@ -29,7 +29,7 @@ export default function FindingsForm({ tagCategories }: Props) {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors: _errors, isSubmitting: _isSubmitting },
   } = useForm<FindingFormData>({
     resolver: zodResolver(findingSchemaCompleted),
     defaultValues: { location: { lat: 51, lng: 13 } },

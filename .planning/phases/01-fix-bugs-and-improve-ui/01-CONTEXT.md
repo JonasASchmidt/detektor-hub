@@ -8,6 +8,8 @@
 
 Fix existing bugs (map 500, Cloudinary upload, missing avatar, zustand import) and improve UI: add a prominent app header bar, fix navigation behavior, merge "Alle Funde" into the main Funde page with extensive filters, and wire up real user data throughout the sidebar.
 
+**Domain context:** Detektorhub is a web platform for legal, digital registration of archaeological metal detector finds in Germany. Users are certified detectorists ("Sondengänger") who log finds with location, tags, and images. State archaeology authorities manage permissions and receive reports. The app already has find registration, tag selector, location picker, image gallery, comment system, determination score, and map/list views. This phase stabilizes and polishes the existing MVP.
+
 </domain>
 
 <decisions>
@@ -36,7 +38,7 @@ Fix existing bugs (map 500, Cloudinary upload, missing avatar, zustand import) a
 - Plan label: "Starter Plan" (instead of "Enterprise")
 
 ### Funde Main Page
-- Top section: overview dashboard with stat cards (total finds, finds this month, most used tag, unidentified count) AND a mini map showing recent find locations
+- Top section: overview dashboard with stat cards (total finds, finds this month, most used tag, unidentified count — "unidentified" ties to the existing Determination Score system) AND a mini map showing recent find locations
 - Below: full findings list with inline filter bar
 - Filter dimensions: tags, date range, location radius, status (identified/unidentified, reported/unreported)
 - Sort options: newest, oldest, A-Z (keep existing)

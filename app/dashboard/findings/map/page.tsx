@@ -17,9 +17,12 @@ function MapPageContent() {
   const filters = useFiltersFromURL();
 
   return (
-    <div className="h-full">
+    <div className="h-full p-6 flex flex-col gap-4">
+      <h1 className="text-xl font-bold">Karte</h1>
       <FindingsFilters />
-      <FindingsMap filters={{ search: filters.search || "", sort: "newest" }} />
+      <div className="flex-1 min-h-0 rounded-lg overflow-hidden border">
+        <FindingsMap filters={{ search: filters.search || "", sort: "newest" }} />
+      </div>
     </div>
   );
 }

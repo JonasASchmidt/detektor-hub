@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Calendar, Tag, HelpCircle } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { MapPin, Calendar, Tag, HelpCircle, ChevronDown } from "lucide-react";
 
 const FindingsMap = dynamic(() => import("./FindingMap"), {
   ssr: false,
@@ -108,9 +109,17 @@ export default function FindingDashboard() {
         </Card>
       </div>
 
-      <div className="h-[300px] rounded-lg overflow-hidden border">
-        <FindingsMap filters={{ search: "", sort: "newest" }} />
-      </div>
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
+          <ChevronDown className="size-4 transition-transform group-data-[state=closed]:-rotate-90" />
+          Karte
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="h-[40vh] rounded-lg overflow-hidden border mt-2">
+            <FindingsMap filters={{ search: "", sort: "newest" }} />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

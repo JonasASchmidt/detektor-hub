@@ -10,6 +10,7 @@ function FindingsPageContent() {
 
   return (
     <div className="p-6 space-y-6">
+      <h1 className="text-xl font-bold">Funde</h1>
       <FindingDashboard />
       <div className="space-y-4">
         <FindingsFilters />

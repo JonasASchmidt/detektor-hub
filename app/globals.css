@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Keep Leaflet map below app UI overlays */
+.leaflet-pane,
+.leaflet-control {
+  z-index: 0 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1 !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -58,7 +68,7 @@
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 0 0% 18%;
 
     --sidebar-primary-foreground: 0 0% 98%;
 

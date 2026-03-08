@@ -217,7 +217,7 @@ export default function FindingsFilters() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-3 p-4 bg-muted rounded-lg items-center">
+      <div className="flex flex-wrap gap-3 p-4 bg-muted rounded-lg items-center [&_input]:bg-white [&_button]:bg-white [&_[role=combobox]]:bg-white">
         {/* Search */}
         <Input
           placeholder="Suche nach Name..."

@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="overflow-hidden h-full">
+      <body className="overflow-hidden h-full overscroll-none">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

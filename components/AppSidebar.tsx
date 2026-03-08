@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ImageIcon,
-  LayoutGrid,
-  LocateIcon,
-  Tag,
-} from "lucide-react";
+import { LocateIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/NavMain";
@@ -15,7 +10,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";

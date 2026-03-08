@@ -47,7 +47,7 @@ export default function FindingsList({ filters }: Props) {
       ))}
 
       <div className="flex items-center justify-between mt-4">
-        <Button onClick={handlePrevious} disabled={page === 1 || loading}>
+        <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
           Zurück
         </Button>
 
@@ -55,7 +55,7 @@ export default function FindingsList({ filters }: Props) {
           Seite {page} von {totalPages}
         </span>
 
-        <Button onClick={handleNext} disabled={page === totalPages || loading}>
+        <Button variant="ghost" onClick={handleNext} disabled={page === totalPages || loading}>
           Weiter
         </Button>
       </div>

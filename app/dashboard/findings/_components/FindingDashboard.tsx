@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MapPin, Calendar, Tag, HelpCircle, ChevronDown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Calendar, Tag, HelpCircle } from "lucide-react";
 
 const FindingsMap = dynamic(() => import("./FindingMap"), {
   ssr: false,
@@ -42,84 +41,60 @@ export default function FindingDashboard() {
     fetchStats();
   }, []);
 
+  const kpis = [
+    {
+      label: "Gesamte Funde",
+      value: stats?.totalFindings ?? 0,
+      icon: MapPin,
+    },
+    {
+      label: "Funde diesen Monat",
+      value: stats?.findingsThisMonth ?? 0,
+      icon: Calendar,
+    },
+    {
+      label: "Tag mit den meisten Funden",
+      value: stats?.mostUsedTag
+        ? `${stats.mostUsedTag.name} (${stats.mostUsedTag.count})`
+        : "–",
+      icon: Tag,
+    },
+    {
+      label: "Unbestimmte Funde",
+      value: stats?.unidentifiedCount ?? 0,
+      icon: HelpCircle,
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gesamt Funde</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.totalFindings ?? 0}</div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Funde diesen Monat</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.findingsThisMonth ?? 0}</div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Beliebtester Tag</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-            ) : stats?.mostUsedTag ? (
-              <div>
-                <div className="text-2xl font-bold">{stats.mostUsedTag.name}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.mostUsedTag.count} Funde
-                </p>
+    <div className="grid grid-cols-2 gap-4">
+      {/* Left card: all KPIs */}
+      <Card className="aspect-[2/1]">
+        <CardContent className="h-full flex flex-col justify-center gap-4 p-6">
+          {kpis.map((kpi) => (
+            <div key={kpi.label} className="flex items-center gap-3">
+              <kpi.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="text-sm text-muted-foreground truncate">
+                  {kpi.label}
+                </span>
+                {loading ? (
+                  <div className="h-5 w-12 animate-pulse bg-muted rounded" />
+                ) : (
+                  <span className="text-lg font-bold whitespace-nowrap">
+                    {kpi.value}
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">Keine Tags</div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unbestimmt</CardTitle>
-            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.unidentifiedCount ?? 0}</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
-          <ChevronDown className="size-4 transition-transform group-data-[state=closed]:-rotate-90" />
-          Karte
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="h-[40vh] rounded-lg overflow-hidden border mt-2">
-            <FindingsMap filters={{ search: "", sort: "newest" }} />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Right card: map */}
+      <Card className="aspect-[2/1] overflow-hidden">
+        <FindingsMap filters={{ search: "", sort: "newest" }} />
+      </Card>
     </div>
   );
 }

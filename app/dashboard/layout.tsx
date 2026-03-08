@@ -21,18 +21,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       <AppHeaderBar />
-      <SidebarProvider
-        className="flex-1 overflow-hidden"
-        style={
-          {
-            "--sidebar-height": "calc(100vh - 60px)",
-          } as React.CSSProperties
-        }
-      >
+      <SidebarProvider className="flex-1 min-h-0 overflow-hidden">
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="overflow-auto overscroll-none min-h-0">
           {children}
           <Toaster position="top-right" richColors />
         </SidebarInset>

@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
@@ -33,6 +34,18 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
+
+  const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const item of items) {
+      const hasActiveChild =
+        item.items?.some((sub) => pathname === sub.url) ?? false;
+      const isParentActive = pathname.startsWith(item.url);
+      initial[item.title] = hasActiveChild || isParentActive;
+    }
+    return initial;
+  });
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -42,31 +55,58 @@ export function NavMain({
             key={item.title}
             asChild
             className="group/collapsible"
-            defaultOpen={
-              item.items?.find((item) => item.url === pathname) !== undefined
+            open={openState[item.title]}
+            onOpenChange={(open) =>
+              setOpenState((prev) => ({ ...prev, [item.title]: open }))
             }
           >
             <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                isActive={pathname.startsWith(item.url)}
+              >
+                <Link
+                  href={item.url}
+                  onClick={() =>
+                    setOpenState((prev) => ({
+                      ...prev,
+                      [item.title]: !prev[item.title],
+                    }))
+                  }
+                >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
+                  {item.items && item.items.length > 0 && (
+                    <ChevronRight
+                      className="ml-auto transition-transform duration-200"
+                      style={{
+                        transform: openState[item.title]
+                          ? "rotate(90deg)"
+                          : undefined,
+                      }}
+                    />
+                  )}
+                </Link>
+              </SidebarMenuButton>
+              {item.items && item.items.length > 0 && (
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname === subItem.url}
+                        >
+                          <Link href={subItem.url}>
+                            <span>{subItem.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              )}
             </SidebarMenuItem>
           </Collapsible>
         ))}

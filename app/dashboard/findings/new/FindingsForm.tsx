@@ -32,7 +32,7 @@ export default function FindingsForm({ tagCategories }: Props) {
     formState: { errors: _errors, isSubmitting: _isSubmitting },
   } = useForm<FindingFormData>({
     resolver: zodResolver(findingSchemaCompleted),
-    defaultValues: { location: { lat: 51, lng: 13 } },
+    defaultValues: { location: { lat: 51, lng: 13 }, tags: [], images: [] },
   });
   const [loading, setLoading] = useState(false);
 

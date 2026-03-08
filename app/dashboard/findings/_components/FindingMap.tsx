@@ -55,7 +55,7 @@ export default function FindingsList({ filters }: Props) {
     <MapContainer
       center={(center as L.LatLngExpression) || [51, 13]}
       zoom={center ? 4 : 2}
-      scrollWheelZoom={true}
+      scrollWheelZoom={false}
       className="w-full h-full"
     >
       <TileLayer

@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFindings, UseFindingsParams } from "@/app/_hooks/useFindings";
+import { useURLFilters } from "@/app/_hooks/useURLFilters";
+import { SelectFilter } from "@/components/filters";
+import { sortOptions } from "./FindingFilters";
 import FindingCard from "./FindingCard";
 
 interface Props {
@@ -40,25 +43,39 @@ export default function FindingsList({ filters }: Props) {
     setPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  const { searchParams, setFilter } = useURLFilters();
+  const currentSort = searchParams.get("sort") || "newest";
+
   return (
     <div className="max-w-4xl mx-auto grid py-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">{total} Funde</h2>
+        <SelectFilter
+          value={currentSort}
+          onChange={(v) => setFilter("sort", v)}
+          options={sortOptions}
+          placeholder="Sortieren"
+        />
+      </div>
       {findings.map((finding) => (
         <FindingCard key={finding.id} finding={finding} />
       ))}
 
-      <div className="flex items-center justify-between mt-4">
-        <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
-          Zurück
-        </Button>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
+            Zurück
+          </Button>
 
-        <span className="text-sm text-muted-foreground">
-          Seite {page} von {totalPages}
-        </span>
+          <span className="text-sm text-muted-foreground">
+            Seite {page} von {totalPages}
+          </span>
 
-        <Button variant="ghost" onClick={handleNext} disabled={page === totalPages || loading}>
-          Weiter
-        </Button>
-      </div>
+          <Button variant="ghost" onClick={handleNext} disabled={page === totalPages || loading}>
+            Weiter
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

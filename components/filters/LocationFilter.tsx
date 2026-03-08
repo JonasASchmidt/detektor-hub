@@ -15,7 +15,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { MapPin } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Loader2, LocateFixed, MapPin, Map } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const SimpleMap = dynamic(() => import("@/components/map/simple-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[35vh] bg-muted animate-pulse rounded-lg" />
+  ),
+});
 
 interface LocationFilterProps {
   lat: string;
@@ -48,6 +62,8 @@ export function LocationFilter({
   const [locLat, setLocLat] = useState(lat);
   const [locLng, setLocLng] = useState(lng);
   const [locRadius, setLocRadius] = useState(radius || defaultRadius);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
 
   const handleApply = () => {
     if (locLat && locLng) {
@@ -63,87 +79,150 @@ export function LocationFilter({
   };
 
   const useCurrentPosition = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const newLat = pos.coords.latitude.toFixed(6);
-          const newLng = pos.coords.longitude.toFixed(6);
-          setLocLat(newLat);
-          setLocLng(newLng);
-          onApply(newLat, newLng, locRadius);
-        },
-        (err) => {
-          console.error("Geolocation error:", err);
-        }
-      );
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const newLat = pos.coords.latitude.toFixed(6);
+        const newLng = pos.coords.longitude.toFixed(6);
+        setLocLat(newLat);
+        setLocLng(newLng);
+        setGeoLoading(false);
+        onApply(newLat, newLng, locRadius);
+      },
+      () => {
+        setGeoLoading(false);
+      }
+    );
+  };
+
+  const handleMapClick = (location: { lat: number; lng: number }) => {
+    const newLat = location.lat.toFixed(6);
+    const newLng = location.lng.toFixed(6);
+    setLocLat(newLat);
+    setLocLng(newLng);
+  };
+
+  const handleMapConfirm = () => {
+    setMapOpen(false);
+    if (locLat && locLng) {
+      onApply(locLat, locLng, locRadius);
     }
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1">
-          <MapPin className="h-3.5 w-3.5" />
-          {lat ? `Umkreis: ${radius || defaultRadius}km` : "Umkreis"}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-72">
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground">Breitengrad</label>
-            <Input
-              type="number"
-              step="any"
-              placeholder="z.B. 51.0504"
-              value={locLat}
-              onChange={(e) => setLocLat(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground">Laengengrad</label>
-            <Input
-              type="number"
-              step="any"
-              placeholder="z.B. 13.7373"
-              value={locLng}
-              onChange={(e) => setLocLng(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground">Radius (km)</label>
-            <Select value={locRadius} onValueChange={setLocRadius}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {radiusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleApply} className="flex-1">
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1">
+            <MapPin className="h-3.5 w-3.5" />
+            {lat ? `Umkreis: ${radius || defaultRadius}km` : "Umkreis"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72">
+          <div className="space-y-3">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full gap-2"
+              onClick={useCurrentPosition}
+              disabled={geoLoading}
+            >
+              {geoLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LocateFixed className="h-3.5 w-3.5" />
+              )}
+              Mein Standort
+            </Button>
+
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Umkreis</label>
+              <Select value={locRadius} onValueChange={setLocRadius}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {radiusOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <hr className="border-border" />
+
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Breitengrad</label>
+              <Input
+                type="number"
+                step="any"
+                placeholder="z.B. 51.0504"
+                value={locLat}
+                onChange={(e) => setLocLat(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground">Längengrad</label>
+              <Input
+                type="number"
+                step="any"
+                placeholder="z.B. 13.7373"
+                value={locLng}
+                onChange={(e) => setLocLng(e.target.value)}
+              />
+            </div>
+
+            <Button size="sm" onClick={handleApply} className="w-full">
               Anwenden
             </Button>
-            <Button size="sm" variant="outline" onClick={useCurrentPosition}>
-              Aktuelle Position
-            </Button>
-          </div>
-          {lat && (
+
+            <hr className="border-border" />
+
             <Button
-              variant="ghost"
               size="sm"
-              className="w-full"
-              onClick={handleClear}
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => setMapOpen(true)}
             >
-              Umkreis entfernen
+              <Map className="h-3.5 w-3.5" />
+              Standort auswählen
             </Button>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+
+            {lat && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={handleClear}
+              >
+                Umkreis entfernen
+              </Button>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      <Dialog open={mapOpen} onOpenChange={setMapOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Standort auswählen</DialogTitle>
+          </DialogHeader>
+          <SimpleMap
+            center={
+              locLat && locLng
+                ? [parseFloat(locLat), parseFloat(locLng)]
+                : undefined
+            }
+            onClick={handleMapClick}
+          />
+          <Button onClick={handleMapConfirm} className="w-full" disabled={!locLat || !locLng}>
+            Bestätigen
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

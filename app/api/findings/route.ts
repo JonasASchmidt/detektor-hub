@@ -50,7 +50,11 @@ export async function GET(req: Request) {
           }
         : {},
       ...(tagIds.length > 0 ? [{ tags: { some: { id: { in: tagIds } } } }] : []),
-      ...(status ? [{ status: status as FindingStatus }] : []),
+      ...(status
+        ? status.includes(",")
+          ? [{ status: { in: status.split(",") as FindingStatus[] } }]
+          : [{ status: status as FindingStatus }]
+        : []),
       ...(dateFrom ? [{ foundAt: { gte: new Date(dateFrom) } }] : []),
       ...(dateTo ? [{ foundAt: { lte: new Date(dateTo) } }] : []),
       ...(reportedParam !== null ? [{ reported: reportedParam === "true" }] : []),

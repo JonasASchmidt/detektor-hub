@@ -7,30 +7,60 @@ import { UseFindingsParams } from "@/app/_hooks/useFindings";
 import {
   FilterBar,
   SearchFilter,
-  SelectFilter,
   DateRangeFilter,
   LocationFilter,
   TagSelectFilter,
   TagOption,
+  MultiSelectFilter,
+  FilterChips,
 } from "@/components/filters";
+import type { MultiSelectOption } from "@/components/filters";
 
-const sortOptions = [
+export const sortOptions = [
   { value: "newest", label: "Neueste zuerst" },
-  { value: "oldest", label: "Alteste zuerst" },
+  { value: "oldest", label: "Älteste zuerst" },
   { value: "az", label: "A-Z" },
 ];
 
-const statusOptions = [
-  { value: "all", label: "Alle Status" },
-  { value: "COMPLETED", label: "Bestimmt" },
-  { value: "DRAFT", label: "Unbestimmt" },
+const statusFilterOptions: MultiSelectOption[] = [
+  { value: "status:COMPLETED", label: "Aktiv", group: "status" },
+  { value: "status:DRAFT", label: "Entwurf", group: "status" },
+  { value: "reported:true", label: "Gemeldet", group: "reported" },
+  { value: "reported:false", label: "Nicht gemeldet", group: "reported" },
 ];
 
-const reportedOptions = [
-  { value: "all", label: "Alle" },
-  { value: "true", label: "Gemeldet" },
-  { value: "false", label: "Nicht gemeldet" },
-];
+// Parse combined filter chips into status and reported URL params
+function chipsToParams(chips: string[]) {
+  const statuses = chips
+    .filter((c) => c.startsWith("status:"))
+    .map((c) => c.replace("status:", ""));
+  const reportedChips = chips.filter((c) => c.startsWith("reported:"));
+
+  return {
+    status: statuses.length > 0 ? statuses.join(",") : null,
+    reported:
+      reportedChips.length === 1
+        ? reportedChips[0].replace("reported:", "")
+        : null,
+  };
+}
+
+// Parse URL params back into chip values
+function paramsToChips(
+  status: string | null,
+  reported: string | null
+): string[] {
+  const chips: string[] = [];
+  if (status) {
+    for (const s of status.split(",").filter(Boolean)) {
+      chips.push(`status:${s}`);
+    }
+  }
+  if (reported && reported !== "all") {
+    chips.push(`reported:${reported}`);
+  }
+  return chips;
+}
 
 export function useFiltersFromURL(): UseFindingsParams {
   const searchParams = useSearchParams();
@@ -44,14 +74,19 @@ export function useFiltersFromURL(): UseFindingsParams {
     : undefined;
   const dateFrom = searchParams.get("dateFrom") || undefined;
   const dateTo = searchParams.get("dateTo") || undefined;
-  const lat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : undefined;
-  const lng = searchParams.get("lng") ? parseFloat(searchParams.get("lng")!) : undefined;
+  const lat = searchParams.get("lat")
+    ? parseFloat(searchParams.get("lat")!)
+    : undefined;
+  const lng = searchParams.get("lng")
+    ? parseFloat(searchParams.get("lng")!)
+    : undefined;
   const radius = searchParams.get("radius")
     ? parseFloat(searchParams.get("radius")!)
     : undefined;
 
   const orderBy = sort === "az" ? "name" : "createdAt";
-  const order: "asc" | "desc" = sort === "oldest" || sort === "az" ? "asc" : "desc";
+  const order: "asc" | "desc" =
+    sort === "oldest" || sort === "az" ? "asc" : "desc";
 
   return {
     search: q || undefined,
@@ -69,7 +104,8 @@ export function useFiltersFromURL(): UseFindingsParams {
 }
 
 export default function FindingsFilters() {
-  const { searchParams, setFilter, setMultipleFilters, clearAll } = useURLFilters();
+  const { searchParams, setFilter, setMultipleFilters, clearAll } =
+    useURLFilters();
   const [availableTags, setAvailableTags] = useState<TagOption[]>([]);
 
   useEffect(() => {
@@ -79,9 +115,10 @@ export default function FindingsFilters() {
       .catch(() => {});
   }, []);
 
-  const currentSort = searchParams.get("sort") || "newest";
-  const currentStatus = searchParams.get("status") || "all";
-  const currentReported = searchParams.get("reported") || "all";
+  const currentStatus = searchParams.get("status") || null;
+  const currentReported = searchParams.get("reported") || null;
+  const selectedChips = paramsToChips(currentStatus, currentReported);
+
   const currentTags = searchParams.get("tags")
     ? searchParams.get("tags")!.split(",").filter(Boolean)
     : [];
@@ -92,12 +129,20 @@ export default function FindingsFilters() {
   const currentRadius = searchParams.get("radius") || "";
 
   const hasActiveFilters =
-    currentStatus !== "all" ||
-    currentReported !== "all" ||
+    selectedChips.length > 0 ||
     currentTags.length > 0 ||
     currentDateFrom ||
     currentDateTo ||
     currentLat;
+
+  const handleChipsChange = (chips: string[]) => {
+    const params = chipsToParams(chips);
+    setMultipleFilters(params);
+  };
+
+  const handleRemoveChip = (chip: string) => {
+    handleChipsChange(selectedChips.filter((c) => c !== chip));
+  };
 
   return (
     <FilterBar hasActiveFilters={!!hasActiveFilters} onClearAll={clearAll}>
@@ -107,26 +152,11 @@ export default function FindingsFilters() {
         placeholder="Suche nach Name..."
       />
 
-      <SelectFilter
-        value={currentSort}
-        onChange={(v) => setFilter("sort", v)}
-        options={sortOptions}
-        placeholder="Sortieren"
-      />
-
-      <SelectFilter
-        value={currentStatus}
-        onChange={(v) => setFilter("status", v)}
-        options={statusOptions}
+      <MultiSelectFilter
+        selected={selectedChips}
+        onChange={handleChipsChange}
+        options={statusFilterOptions}
         placeholder="Status"
-      />
-
-      <SelectFilter
-        value={currentReported}
-        onChange={(v) => setFilter("reported", v)}
-        options={reportedOptions}
-        placeholder="Gemeldet"
-        className="w-[170px]"
       />
 
       <TagSelectFilter
@@ -152,7 +182,15 @@ export default function FindingsFilters() {
         onApply={(lat, lng, radius) =>
           setMultipleFilters({ lat, lng, radius })
         }
-        onClear={() => setMultipleFilters({ lat: null, lng: null, radius: null })}
+        onClear={() =>
+          setMultipleFilters({ lat: null, lng: null, radius: null })
+        }
+      />
+
+      <FilterChips
+        selected={selectedChips}
+        options={statusFilterOptions}
+        onRemove={handleRemoveChip}
       />
     </FilterBar>
   );

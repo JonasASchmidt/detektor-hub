@@ -6,3 +6,5 @@ export { DateRangeFilter } from "./DateRangeFilter";
 export { LocationFilter } from "./LocationFilter";
 export { TagSelectFilter } from "./TagSelectFilter";
 export type { TagOption } from "./TagSelectFilter";
+export { MultiSelectFilter, FilterChips } from "./MultiSelectFilter";
+export type { MultiSelectOption } from "./MultiSelectFilter";

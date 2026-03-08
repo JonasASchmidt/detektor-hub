@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, Tag, HelpCircle } from "lucide-react";
+import { MapPin, Calendar, Tag, FileEdit } from "lucide-react";
 
 const FindingsMap = dynamic(() => import("./FindingMap"), {
   ssr: false,
@@ -16,7 +16,7 @@ interface Stats {
   totalFindings: number;
   findingsThisMonth: number;
   mostUsedTag: { name: string; count: number } | null;
-  unidentifiedCount: number;
+  draftCount: number;
 }
 
 export default function FindingDashboard() {
@@ -41,7 +41,7 @@ export default function FindingDashboard() {
         : "–",
       icon: Tag,
     },
-    { label: "Unbestimmte Funde", value: stats?.unidentifiedCount ?? 0, icon: HelpCircle },
+    { label: "Offene Entwürfe", value: stats?.draftCount ?? 0, icon: FileEdit },
   ];
 
   return (

@@ -1,15 +1,11 @@
 "use client";
 
 import { Image } from "@prisma/client";
-import { useEffect, useState } from "react";
-import {
-  CldUploadWidget,
-  CloudinaryUploadWidgetError,
-  CloudinaryUploadWidgetResults,
-} from "next-cloudinary";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
-import { ClockArrowDown, ClockArrowUp, UploadCloud } from "lucide-react";
+import { ClockArrowDown, ClockArrowUp, Loader2, UploadCloud } from "lucide-react";
+import { toast } from "sonner";
 
 interface Props {
   onSelect?: (ids: string[]) => void;
@@ -19,6 +15,8 @@ interface Props {
 export default function ImageGallery({ onSelect, selected }: Props) {
   const [images, setImages] = useState<Image[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/user-images")
@@ -30,9 +28,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     setImages(images.filter((image) => image.id !== id));
 
   const handleSelect = (imageId: string) => {
-    if (!onSelect) {
-      return;
-    }
+    if (!onSelect) return;
 
     if (selected?.includes(imageId)) {
       return onSelect(selected.filter((id) => id !== imageId));
@@ -45,29 +41,36 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     return onSelect([...selected, imageId]);
   };
 
-  const handleUpload = async (
-    cloudinaryResponse: CloudinaryUploadWidgetResults
-  ) => {
-    if (
-      !cloudinaryResponse.info ||
-      typeof cloudinaryResponse.info == "string"
-    ) {
-      return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/images", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          toast.error(`Upload fehlgeschlagen: ${file.name}`);
+          continue;
+        }
+
+        const newImage = await res.json();
+        setImages((prev) => [...prev, newImage]);
+      } catch {
+        toast.error(`Upload fehlgeschlagen: ${file.name}`);
+      }
     }
 
-    const res = await fetch("/api/images", {
-      method: "POST",
-      body: JSON.stringify({
-        url: cloudinaryResponse.info.secure_url,
-        publicId: cloudinaryResponse.info.public_id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const newImage = await res.json();
-    setImages((prev) => [...prev, newImage]);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const filteredImages = images.sort((a, b) => {
@@ -79,24 +82,27 @@ export default function ImageGallery({ onSelect, selected }: Props) {
   return (
     <>
       <div className="flex gap-4 items-center">
-        <CldUploadWidget
-          uploadPreset="detektor-hub-preset"
-          onSuccess={(res) => handleUpload(res)}
-          onError={(error: CloudinaryUploadWidgetError) => {
-            console.error("Upload failed:", error);
-          }}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <Button
+          className="w-full"
+          onClick={() => fileInputRef.current?.click()}
+          type="button"
+          disabled={uploading}
         >
-          {({ open }) => (
-            <Button
-              className="bg-gradient-to-r w-full from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:brightness-110"
-              onClick={() => open()}
-              type="button"
-            >
-              <UploadCloud />
-              Fotos hochladen
-            </Button>
+          {uploading ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <UploadCloud />
           )}
-        </CldUploadWidget>
+          {uploading ? "Wird hochgeladen..." : "Fotos hochladen"}
+        </Button>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex gap-2">

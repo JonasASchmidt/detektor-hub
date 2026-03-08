@@ -27,7 +27,7 @@ export default function FindingsPage() {
 function FindingsPageContent() {
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-4xl font-bold">Funde</h1>
+      <h1 className="text-4xl font-bold">Deine Funde</h1>
       <FindingDashboard />
       <FindingsClient />
     </div>

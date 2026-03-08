@@ -51,6 +51,11 @@ export default function FindingCard({ finding }: FindingCardProps) {
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 {finding.name}
               </h2>
+              {finding.status === "DRAFT" && (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                  Entwurf
+                </span>
+              )}
               <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <p>{formattedDate}</p>
                 <span>•</span>

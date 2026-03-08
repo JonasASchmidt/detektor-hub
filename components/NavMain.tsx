@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
+  const { state: sidebarState } = useSidebar();
 
   const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -81,7 +83,7 @@ export function NavMain({
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                  {item.items && item.items.length > 0 && (
+                  {item.items && item.items.length > 0 && sidebarState === "expanded" && (
                     <CollapsibleTrigger asChild>
                       <button
                         className="absolute right-1 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md hover:bg-sidebar-accent"

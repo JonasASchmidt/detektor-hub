@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { CldImage } from "next-cloudinary";
-import { MapContainer, TileLayer } from "react-leaflet";
-import { Marker } from "@adamscybot/react-leaflet-component-marker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
-import { LocateFixedIcon } from "lucide-react";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import TagComponent from "@/components/tags/Tag";
+
+const FindingDetailMap = dynamic(() => import("./FindingDetailMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-muted animate-pulse rounded-lg" />
+  ),
+});
 
 interface Props {
   finding: FindingWithRelations;
@@ -55,21 +60,10 @@ export default function FindingDetail({ finding }: Props) {
           </div>
         )}
 
-        <MapContainer
-          center={[finding.latitude, finding.longitude]}
-          zoom={13}
-          scrollWheelZoom={false}
-          className="w-full h-full rounded-lg"
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <Marker
-            position={[finding.latitude, finding.longitude]}
-            icon={<LocateFixedIcon />}
-          />
-        </MapContainer>
+        <FindingDetailMap
+          latitude={finding.latitude}
+          longitude={finding.longitude}
+        />
       </div>
       <div className="col-span-1 space-y-2">
         <h2 className="text-xl font-semibold">Informationen zum Fund</h2>

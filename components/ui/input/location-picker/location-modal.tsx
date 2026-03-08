@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { LatLng, LatLngLiteral } from "leaflet";
-import SimpleMap from "@/components/map/simple-map";
+import dynamic from "next/dynamic";
+
+const SimpleMap = dynamic(() => import("@/components/map/simple-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] bg-muted animate-pulse rounded-lg" />
+  ),
+});
 import {
   Dialog,
   DialogContent,

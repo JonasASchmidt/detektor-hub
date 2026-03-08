@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import FindingsFilters from "./_components/FindingFilters";
+import { Suspense } from "react";
+import FindingDashboard from "./_components/FindingDashboard";
+import FindingsFilters, { useFiltersFromURL } from "./_components/FindingFilters";
 import FindingsList from "./_components/FindingList";
 
-export default function FindingsPage() {
-  const [filters, setFilters] = useState({ search: "", sort: "newest" });
+function FindingsPageContent() {
+  const filters = useFiltersFromURL();
 
   return (
-    <div className="space-y-6">
-      <FindingsFilters onChange={setFilters} />
-      <FindingsList filters={filters} />
+    <div className="p-6 space-y-6">
+      <FindingDashboard />
+      <div className="space-y-4">
+        <FindingsFilters />
+        <FindingsList filters={filters} />
+      </div>
     </div>
+  );
+}
+
+export default function FindingsPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Laden...</div>}>
+      <FindingsPageContent />
+    </Suspense>
   );
 }

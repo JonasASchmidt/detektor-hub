@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import FindingsFilters from "../_components/FindingFilters";
+import FindingsFilters, {
+  useFiltersFromURL,
+} from "../_components/FindingFilters";
 
 const FindingsMap = dynamic(() => import("../_components/FindingMap"), {
   ssr: false,
@@ -11,13 +13,21 @@ const FindingsMap = dynamic(() => import("../_components/FindingMap"), {
   ),
 });
 
-export default function FindingsPage() {
-  const [filters, setFilters] = useState({ search: "", sort: "newest" });
+function MapPageContent() {
+  const filters = useFiltersFromURL();
 
   return (
     <div className="h-full">
-      <FindingsFilters onChange={setFilters} />
-      <FindingsMap filters={filters} />
+      <FindingsFilters />
+      <FindingsMap filters={{ search: filters.search || "", sort: "newest" }} />
     </div>
+  );
+}
+
+export default function FindingsPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Laden...</div>}>
+      <MapPageContent />
+    </Suspense>
   );
 }

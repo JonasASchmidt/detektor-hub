@@ -6,10 +6,7 @@ import { useFindings, UseFindingsParams } from "@/app/_hooks/useFindings";
 import FindingCard from "./FindingCard";
 
 interface Props {
-  filters: {
-    search: string;
-    sort: string;
-  };
+  filters: UseFindingsParams;
 }
 
 const PAGE_SIZE = 20;
@@ -20,14 +17,11 @@ export default function FindingsList({ filters }: Props) {
   const queryParams = useMemo(
     () =>
       ({
-        search: filters.search,
-        tag: "",
+        ...filters,
         page,
         pageSize: PAGE_SIZE,
-        orderBy: "createdAt",
-        order: filters.sort === "newest" ? "desc" : "asc",
       } as UseFindingsParams),
-    [filters.search, filters.sort, page]
+    [filters, page]
   );
 
   const { findings, total, loading, error: _error } = useFindings(queryParams);

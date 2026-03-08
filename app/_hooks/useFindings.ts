@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FindingWithRelations } from "../_types/FindingWithRelations.type";
 
 export interface UseFindingsParams {
@@ -10,6 +10,14 @@ export interface UseFindingsParams {
   pageSize?: number;
   orderBy?: string;
   order?: "asc" | "desc";
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  tags?: string[];
+  reported?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 export function useFindings(params: UseFindingsParams) {
@@ -23,18 +31,31 @@ export function useFindings(params: UseFindingsParams) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
+  // Stabilize params to avoid infinite re-renders when parent creates new object refs
+  const stableParams = useMemo(() => JSON.stringify(params), [params]);
+
   useEffect(() => {
     const fetchFindings = async () => {
       setLoading(true);
       setError(null);
 
+      const p: UseFindingsParams = JSON.parse(stableParams);
+
       const query = new URLSearchParams({
-        ...(params.search ? { q: params.search } : {}),
-        ...(params.tag ? { tag: params.tag } : {}),
-        ...(params.page ? { page: params.page.toString() } : {}),
-        ...(params.pageSize ? { pageSize: params.pageSize.toString() } : {}),
-        ...(params.orderBy ? { orderBy: params.orderBy } : {}),
-        ...(params.order ? { order: params.order } : {}),
+        ...(p.search ? { q: p.search } : {}),
+        ...(p.tag ? { tag: p.tag } : {}),
+        ...(p.page ? { page: p.page.toString() } : {}),
+        ...(p.pageSize ? { pageSize: p.pageSize.toString() } : {}),
+        ...(p.orderBy ? { orderBy: p.orderBy } : {}),
+        ...(p.order ? { order: p.order } : {}),
+        ...(p.status ? { status: p.status } : {}),
+        ...(p.dateFrom ? { dateFrom: p.dateFrom } : {}),
+        ...(p.dateTo ? { dateTo: p.dateTo } : {}),
+        ...(p.tags && p.tags.length > 0 ? { tags: p.tags.join(",") } : {}),
+        ...(p.reported ? { reported: p.reported } : {}),
+        ...(p.lat !== undefined ? { lat: p.lat.toString() } : {}),
+        ...(p.lng !== undefined ? { lng: p.lng.toString() } : {}),
+        ...(p.radius !== undefined ? { radius: p.radius.toString() } : {}),
       });
 
       try {
@@ -52,7 +73,7 @@ export function useFindings(params: UseFindingsParams) {
     };
 
     fetchFindings();
-  }, [params]);
+  }, [stableParams]);
 
   return { ...data, loading, error };
 }

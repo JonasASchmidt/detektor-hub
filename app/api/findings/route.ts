@@ -69,7 +69,10 @@ export async function GET(req: Request) {
 
     const total = await prisma.finding.count({ where });
 
-    return NextResponse.json({ findings, total });
+    return NextResponse.json(
+      { findings, total },
+      { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } }
+    );
   } catch (error) {
     console.error("Error fetching findings:", error);
     return NextResponse.json(

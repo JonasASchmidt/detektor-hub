@@ -45,12 +45,10 @@ export async function GET() {
         ? { name: mostUsedTagResult[0].name, count: mostUsedTagResult[0]._count.findings }
         : null;
 
-    return NextResponse.json({
-      totalFindings,
-      findingsThisMonth,
-      mostUsedTag,
-      unidentifiedCount,
-    });
+    return NextResponse.json(
+      { totalFindings, findingsThisMonth, mostUsedTag, unidentifiedCount },
+      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } }
+    );
   } catch (error) {
     console.error("Error fetching finding stats:", error);
     return NextResponse.json(

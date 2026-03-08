@@ -39,7 +39,7 @@ export default function FindingsList({ filters }: Props) {
   const renderMarker = (finding: FindingWithRelations) => {
     const firstTag = finding.tags.length > 0 ? finding.tags[0] : null;
     const IconComponent = firstTag ? getIcon(firstTag.icon) : null;
-    const color = firstTag?.color ?? "#000";
+    const color = firstTag?.color ?? "#2d2d2d";
     const FallbackIcon = LucideIcons.LocateFixed;
 
     return (

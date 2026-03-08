@@ -18,6 +18,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
   items,
@@ -65,36 +66,41 @@ export function NavMain({
               }
             >
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                  isActive={isParentActive}
-                  className={isParentActive || hasActiveChild ? "font-bold" : ""}
-                >
-                  <Link href={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-                {item.items && item.items.length > 0 && (
-                  <CollapsibleTrigger asChild>
-                    <button
-                      className="absolute right-2 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md hover:bg-sidebar-accent"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <ChevronRight
-                        className="h-4 w-4 transition-transform duration-200"
-                        style={{
-                          transform: openState[item.title]
-                            ? "rotate(90deg)"
-                            : undefined,
+                <div className="relative flex items-center w-full">
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    isActive={isParentActive}
+                    className={cn(
+                      isParentActive || hasActiveChild ? "font-bold" : "",
+                      item.items && item.items.length > 0 ? "pr-8" : ""
+                    )}
+                  >
+                    <Link href={item.url}>
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                  {item.items && item.items.length > 0 && (
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md hover:bg-sidebar-accent"
+                        onClick={(e) => {
+                          e.stopPropagation();
                         }}
-                      />
-                    </button>
-                  </CollapsibleTrigger>
-                )}
+                      >
+                        <ChevronRight
+                          className="h-4 w-4 transition-transform duration-200"
+                          style={{
+                            transform: openState[item.title]
+                              ? "rotate(90deg)"
+                              : undefined,
+                          }}
+                        />
+                      </button>
+                    </CollapsibleTrigger>
+                  )}
+                </div>
                 {item.items && item.items.length > 0 && (
                   <CollapsibleContent>
                     <SidebarMenuSub>
@@ -109,7 +115,7 @@ export function NavMain({
                               isActive={isSubActive}
                               className={
                                 isNewFund
-                                  ? "bg-zinc-400 text-foreground font-medium hover:bg-zinc-500"
+                                  ? "bg-zinc-300 text-foreground font-medium hover:bg-zinc-400"
                                   : ""
                               }
                             >

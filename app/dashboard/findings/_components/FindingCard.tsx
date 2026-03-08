@@ -22,7 +22,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
   const handleClickEdit = () => router.push(`findings/${finding.id}/edit`);
 
   return (
-    <div className="flex gap-4 p-4 border rounded-lg bg-white dark:bg-gray-900 hover:shadow-lg transition">
+    <div className="flex gap-4 p-4 border rounded-xl bg-white dark:bg-gray-900 hover:shadow-lg transition">
       {/* Image */}
       <div className="w-24 h-24 flex-shrink-0 relative">
         {finding.images.length > 0 ? (

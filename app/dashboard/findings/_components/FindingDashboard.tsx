@@ -8,7 +8,7 @@ import { MapPin, Calendar, Tag, HelpCircle } from "lucide-react";
 const FindingsMap = dynamic(() => import("./FindingMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-muted animate-pulse rounded-lg" />
+    <div className="w-full h-full bg-muted animate-pulse rounded-xl" />
   ),
 });
 
@@ -24,34 +24,16 @@ export default function FindingDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch("/api/findings/stats");
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch stats:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
+    fetch("/api/findings/stats")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const kpis = [
-    {
-      label: "Gesamte Funde",
-      value: stats?.totalFindings ?? 0,
-      icon: MapPin,
-    },
-    {
-      label: "Funde diesen Monat",
-      value: stats?.findingsThisMonth ?? 0,
-      icon: Calendar,
-    },
+    { label: "Gesamte Funde", value: stats?.totalFindings ?? 0, icon: MapPin },
+    { label: "Funde diesen Monat", value: stats?.findingsThisMonth ?? 0, icon: Calendar },
     {
       label: "Tag mit den meisten Funden",
       value: stats?.mostUsedTag
@@ -59,16 +41,11 @@ export default function FindingDashboard() {
         : "–",
       icon: Tag,
     },
-    {
-      label: "Unbestimmte Funde",
-      value: stats?.unidentifiedCount ?? 0,
-      icon: HelpCircle,
-    },
+    { label: "Unbestimmte Funde", value: stats?.unidentifiedCount ?? 0, icon: HelpCircle },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      {/* Left card: all KPIs */}
       <Card className="aspect-[2/1]">
         <CardContent className="h-full flex flex-col justify-center gap-4 p-6">
           {kpis.map((kpi) => (
@@ -91,7 +68,6 @@ export default function FindingDashboard() {
         </CardContent>
       </Card>
 
-      {/* Right card: map */}
       <Card className="aspect-[2/1] overflow-hidden">
         <FindingsMap filters={{ search: "", sort: "newest" }} />
       </Card>

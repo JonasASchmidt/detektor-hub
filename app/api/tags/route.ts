@@ -8,7 +8,9 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json(tags);
+    return NextResponse.json(tags, {
+      headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=600" },
+    });
   } catch (error) {
     console.error("Error fetching tags:", error);
     return NextResponse.json({ error: "Error fetching tags" }, { status: 500 });

@@ -2,28 +2,34 @@
 
 import { Suspense } from "react";
 import FindingDashboard from "./_components/FindingDashboard";
-import FindingsFilters, { useFiltersFromURL } from "./_components/FindingFilters";
-import FindingsList from "./_components/FindingList";
+import FindingsClient from "./_components/FindingsClient";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function FindingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 space-y-6">
+          <Skeleton className="h-10 w-32" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="aspect-[2/1] rounded-xl" />
+            <Skeleton className="aspect-[2/1] rounded-xl" />
+          </div>
+          <Skeleton className="h-10 w-full" />
+        </div>
+      }
+    >
+      <FindingsPageContent />
+    </Suspense>
+  );
+}
 
 function FindingsPageContent() {
-  const filters = useFiltersFromURL();
-
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-4xl font-bold">Funde</h1>
       <FindingDashboard />
-      <div className="space-y-4">
-        <FindingsFilters />
-        <FindingsList filters={filters} />
-      </div>
+      <FindingsClient />
     </div>
-  );
-}
-
-export default function FindingsPage() {
-  return (
-    <Suspense fallback={<div className="p-6">Laden...</div>}>
-      <FindingsPageContent />
-    </Suspense>
   );
 }

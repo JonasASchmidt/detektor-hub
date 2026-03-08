@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectTrigger,
@@ -20,9 +20,11 @@ export default function FindingsFilters({
   const [sort, setSort] = useState("newest");
   const debouncedSearch = useDebounce(search, 300);
 
-  useCallback(() => {
+  // Deliberately exclude onChange from deps to prevent infinite re-render loops
+  // (parent creates new function ref on each render)
+  useEffect(() => {
     onChange({ search: debouncedSearch, sort });
-  }, [debouncedSearch, onChange, sort]);
+  }, [debouncedSearch, sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 bg-muted items-center">

@@ -80,7 +80,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     <>
       <div className="flex gap-4 items-center">
         <CldUploadWidget
-          uploadPreset="detektor-hud-preset"
+          uploadPreset="detektor-hub-preset"
           onSuccess={(res) => handleUpload(res)}
           onError={(error: CloudinaryUploadWidgetError) => {
             console.error("Upload failed:", error);

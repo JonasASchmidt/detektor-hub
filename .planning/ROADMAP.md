@@ -20,4 +20,11 @@ Plans:
 **Goal:** Add per-finding and per-user opt-in controls for displaying the finder's name on the Öffentlich community page, with a new settings page, schema migrations, and UI toggles — while ensuring lat/lng is never exposed.
 **Requirements**: TBD
 **Depends on:** Phase 1
-**Plans:** TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md -- Schema migration, Prisma types, shadcn Switch install
+- [ ] 02-02-PLAN.md -- API layer: Zod schema, POST update, PUT handler, community route, PATCH /api/user
+- [ ] 02-03-PLAN.md -- Create form toggle + settings page
+- [ ] 02-04-PLAN.md -- Edit finding form (new route)
+- [ ] 02-05-PLAN.md -- Community page finderName display + sidebar/NavUser navigation

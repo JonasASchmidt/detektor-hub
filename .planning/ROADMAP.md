@@ -14,3 +14,10 @@ Plans:
 - [x] 01-01-PLAN.md -- Fix bugs (map SSR, filters, Cloudinary) and wire user data into sidebar
 - [ ] 01-02-PLAN.md -- Create app header bar and restructure sidebar navigation
 - [ ] 01-03-PLAN.md -- Build enhanced Funde page with dashboard stats, filters, and mini map
+
+### Phase 2: Finder Name Privacy & Öffentlich Opt-In
+
+**Goal:** Add per-finding and per-user opt-in controls for displaying the finder's name on the Öffentlich community page, with a new settings page, schema migrations, and UI toggles — while ensuring lat/lng is never exposed.
+**Requirements**: TBD
+**Depends on:** Phase 1
+**Plans:** TBD

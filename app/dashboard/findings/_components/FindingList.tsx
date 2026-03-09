@@ -47,7 +47,7 @@ export default function FindingsList({ filters }: Props) {
   const currentSort = searchParams.get("sort") || "newest";
 
   return (
-    <div className="max-w-4xl mx-auto grid py-6">
+    <div className="grid py-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">{total} Funde</h2>
         <SelectFilter

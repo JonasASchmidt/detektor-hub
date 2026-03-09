@@ -9,7 +9,7 @@ interface Props {
 
 export default function FindingsPage({ tagCategories }: Props) {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-4xl font-bold">Neuer Fund</h1>
       <FindingsForm tagCategories={tagCategories} />
     </div>

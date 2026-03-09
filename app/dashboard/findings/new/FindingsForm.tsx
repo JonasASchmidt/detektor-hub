@@ -9,8 +9,11 @@ import DatePicker from "@/components/ui/input/date-picker";
 import LocationPicker from "@/components/ui/input/location-picker/location-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ImageIcon, Loader2, X } from "lucide-react";
 import { useState } from "react";
+import { CldImage } from "next-cloudinary";
+import { Image as ImageType } from "@prisma/client";
 import { toast } from "sonner";
 
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -35,8 +38,16 @@ export default function FindingsForm({ tagCategories }: Props) {
     defaultValues: { location: { lat: 51, lng: 13 }, tags: [], images: [] },
   });
   const [loading, setLoading] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [allImages, setAllImages] = useState<ImageType[]>([]);
+
+  const selectedImageIds = watch("images") || [];
 
   const handleChangeImages = (ids: string[]) => setValue("images", ids);
+
+  const handleRemoveImage = (id: string) => {
+    setValue("images", selectedImageIds.filter((i: string) => i !== id));
+  };
 
   const onSubmit: SubmitHandler<FindingFormData> = async (data) => {
     setLoading(true);
@@ -94,14 +105,55 @@ export default function FindingsForm({ tagCategories }: Props) {
       </Card>
       <Card className="bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto py-4 px-6 space-y-4">
-          <Label htmlFor="name">Fotos</Label>
-          <p className="mt-2 text-md text-gray-600 dark:text-gray-400">
-            Hier können dem Fund Bilder aus Ihrer Gallerie zugeordnet werden.
-          </p>
-          <ImageGallery
-            selected={watch("images")}
-            onSelect={handleChangeImages}
-          />
+          <Label>Fotos</Label>
+          {selectedImageIds.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedImageIds.map((id: string) => (
+                <div key={id} className="relative group w-20 h-20">
+                  <CldImage
+                    src={allImages.find((img) => img.id === id)?.publicId || id}
+                    width={80}
+                    height={80}
+                    crop="fill"
+                    gravity="auto"
+                    alt="Ausgewählt"
+                    className="rounded-md object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(id)}
+                    className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline">
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Bilder auswählen ({selectedImageIds.length})
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Bilder aus Galerie wählen</DialogTitle>
+              </DialogHeader>
+              <ImageGallery
+                selected={selectedImageIds}
+                onSelect={(ids) => {
+                  handleChangeImages(ids);
+                  // Track images for thumbnails
+                  fetch("/api/user-images")
+                    .then((r) => r.json())
+                    .then(setAllImages)
+                    .catch(() => {});
+                }}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </Card>
       <Card className="bg-white dark:bg-gray-900 relative p-6 md:p-8">

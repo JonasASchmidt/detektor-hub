@@ -123,7 +123,7 @@ export default function CommunityPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-3xl">
       <h1 className="text-4xl font-bold">Community</h1>
       <Input
         placeholder="Suche..."

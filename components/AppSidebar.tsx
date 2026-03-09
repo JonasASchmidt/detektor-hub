@@ -47,7 +47,7 @@ const navMain = [
     ],
   },
   {
-    title: "Community",
+    title: "Öffentlich",
     url: "/dashboard/community",
     icon: UsersIcon,
   },

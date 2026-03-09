@@ -103,7 +103,7 @@ export function NavMain({
                 </div>
                 {item.items && item.items.length > 0 && (
                   <CollapsibleContent>
-                    <SidebarMenuSub>
+                    <SidebarMenuSub className="mr-0">
                       {item.items.map((subItem) => {
                         const isNewFund = subItem.title === "+ Neuer Fund";
                         const isSubActive = pathname === subItem.url;
@@ -115,7 +115,7 @@ export function NavMain({
                               isActive={isSubActive}
                               className={
                                 isNewFund
-                                  ? "bg-zinc-300 text-foreground font-medium hover:bg-zinc-400"
+                                  ? "bg-[#2d2d2d] text-white font-medium hover:bg-zinc-700"
                                   : ""
                               }
                             >

@@ -57,9 +57,11 @@ export default function FindingsList({ filters }: Props) {
           placeholder="Sortieren"
         />
       </div>
-      {findings.map((finding) => (
-        <FindingCard key={finding.id} finding={finding} />
-      ))}
+      <div className="flex flex-col gap-3">
+        {findings.map((finding) => (
+          <FindingCard key={finding.id} finding={finding} />
+        ))}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">

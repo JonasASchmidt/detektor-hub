@@ -39,7 +39,7 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
+    <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
       <h1 className="text-4xl font-bold">Tag Kategorien</h1>
       <p className="mt-2 text-md text-gray-600 dark:text-gray-400">
         Tag-Kategorien helfen dabei, archäologische Funde systematisch zu

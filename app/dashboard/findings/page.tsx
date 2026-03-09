@@ -9,7 +9,7 @@ export default function FindingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 space-y-6 max-w-3xl">
+        <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
           <Skeleton className="h-10 w-32" />
           <div className="grid grid-cols-2 gap-4">
             <Skeleton className="aspect-[2/1] rounded-xl" />
@@ -26,7 +26,7 @@ export default function FindingsPage() {
 
 function FindingsPageContent() {
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
+    <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
       <h1 className="text-4xl font-bold">Deine Funde</h1>
       <FindingDashboard />
       <FindingsClient />

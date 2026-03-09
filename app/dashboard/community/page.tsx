@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { CldImage } from "next-cloudinary";
 import Tag from "@/components/tags/Tag";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { Tag as TagType, Image as ImageType } from "@prisma/client";
 
 interface CommunityFinding {
@@ -64,7 +65,7 @@ function CommunityCard({ finding }: { finding: CommunityFinding }) {
 
       <div className="flex flex-1 flex-col min-w-0">
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+          <h3 className="text-lg font-bold truncate">
             {finding.name}
           </h3>
           <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -108,21 +109,39 @@ function SectionSkeleton() {
 
 export default function CommunityPage() {
   const { findings, loading } = useCommunityFindings();
+  const [search, setSearch] = useState("");
+
+  const lowerSearch = search.toLowerCase();
+  const filtered = findings.filter((f) => {
+    if (!lowerSearch) return true;
+    return (
+      f.name.toLowerCase().includes(lowerSearch) ||
+      f.description?.toLowerCase().includes(lowerSearch) ||
+      f.dating?.toLowerCase().includes(lowerSearch) ||
+      f.tags.some((t) => t.name.toLowerCase().includes(lowerSearch))
+    );
+  });
 
   return (
-    <div className="p-6 space-y-10 max-w-4xl mx-auto">
+    <div className="p-6 space-y-6">
       <h1 className="text-4xl font-bold">Community</h1>
+      <Input
+        placeholder="Suche..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full md:max-w-[200px]"
+      />
       <section>
         <h2 className="text-2xl font-bold mb-4">Neueste Beiträge</h2>
         {loading ? (
           <SectionSkeleton />
-        ) : findings.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <p className="text-muted-foreground text-sm">
             Noch keine Funde vorhanden.
           </p>
         ) : (
           <div className="space-y-3">
-            {findings.map((f) => (
+            {filtered.map((f) => (
               <CommunityCard key={f.id} finding={f} />
             ))}
           </div>

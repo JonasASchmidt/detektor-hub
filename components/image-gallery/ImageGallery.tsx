@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
 import { ClockArrowDown, ClockArrowUp, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "../ui/input";
+import ImageDetailDialog from "./ImageDetailDialog";
 
 interface Props {
   onSelect?: (ids: string[]) => void;
@@ -16,6 +18,8 @@ export default function ImageGallery({ onSelect, selected }: Props) {
   const [images, setImages] = useState<Image[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [uploading, setUploading] = useState(false);
+  const [detailIndex, setDetailIndex] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -24,21 +28,37 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       .then(setImages);
   }, []);
 
+  const lowerSearch = search.toLowerCase();
+  const sortedImages = [...images]
+    .filter((img) => {
+      if (!lowerSearch) return true;
+      return (
+        img.title?.toLowerCase().includes(lowerSearch) ||
+        img.originalFilename?.toLowerCase().includes(lowerSearch) ||
+        img.description?.toLowerCase().includes(lowerSearch)
+      );
+    })
+    .sort((a, b) => {
+      const aDate = new Date(a.createdAt).getTime();
+      const bDate = new Date(b.createdAt).getTime();
+      return sort === "desc" ? bDate - aDate : aDate - bDate;
+    });
+
   const handleDelete = (id: string) =>
     setImages(images.filter((image) => image.id !== id));
 
-  const handleSelect = (imageId: string) => {
-    if (!onSelect) return;
-
-    if (selected?.includes(imageId)) {
-      return onSelect(selected.filter((id) => id !== imageId));
+  const handleClick = (imageId: string) => {
+    if (onSelect) {
+      if (selected?.includes(imageId)) {
+        return onSelect(selected.filter((id) => id !== imageId));
+      }
+      if (!selected) {
+        return onSelect([imageId]);
+      }
+      return onSelect([...selected, imageId]);
     }
-
-    if (!selected) {
-      return onSelect([imageId]);
-    }
-
-    return onSelect([...selected, imageId]);
+    const idx = sortedImages.findIndex((img) => img.id === imageId);
+    if (idx !== -1) setDetailIndex(idx);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,12 +93,6 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const filteredImages = images.sort((a, b) => {
-    const aDate = new Date(a.createdAt).getTime();
-    const bDate = new Date(b.createdAt).getTime();
-    return sort === "desc" ? bDate - aDate : aDate - bDate;
-  });
-
   return (
     <>
       <div className="flex gap-4 items-center">
@@ -105,6 +119,12 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         </Button>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <Input
+          placeholder="Suche..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:max-w-[200px]"
+        />
         <div className="flex gap-2">
           <Button
             variant={sort === "desc" ? "default" : "outline"}
@@ -125,16 +145,29 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredImages.map((image) => (
+        {sortedImages.map((image) => (
           <ImageCard
             key={image.id}
             isSelected={selected?.includes(image.id) ?? false}
-            onClick={handleSelect}
+            onClick={handleClick}
             onDelete={handleDelete}
             image={image}
           />
         ))}
       </div>
+
+      <ImageDetailDialog
+        image={detailIndex !== null ? sortedImages[detailIndex] : null}
+        onClose={() => setDetailIndex(null)}
+        onPrev={() => setDetailIndex((i) => (i !== null && i > 0 ? i - 1 : i))}
+        onNext={() =>
+          setDetailIndex((i) =>
+            i !== null && i < sortedImages.length - 1 ? i + 1 : i
+          )
+        }
+        hasPrev={detailIndex !== null && detailIndex > 0}
+        hasNext={detailIndex !== null && detailIndex < sortedImages.length - 1}
+      />
     </>
   );
 }

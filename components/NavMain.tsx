@@ -36,7 +36,7 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
-  const { state: sidebarState } = useSidebar();
+  const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -78,7 +78,7 @@ export function NavMain({
                       item.items && item.items.length > 0 ? "pr-8" : ""
                     )}
                   >
-                    <Link href={item.url}>
+                    <Link href={item.url} onClick={() => isMobile && setOpenMobile(false)}>
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
                     </Link>
@@ -121,7 +121,7 @@ export function NavMain({
                                   : ""
                               }
                             >
-                              <Link href={subItem.url}>
+                              <Link href={subItem.url} onClick={() => isMobile && setOpenMobile(false)}>
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>

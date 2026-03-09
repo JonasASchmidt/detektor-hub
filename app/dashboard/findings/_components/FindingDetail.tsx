@@ -49,14 +49,41 @@ export default function FindingDetail({ finding }: Props) {
         </div>
 
         {finding.images.length > 0 && (
-          <div className="w-full h-56 mt-4">
-            <CldImage
-              src={finding.images[0].publicId}
-              width={500}
-              height={500}
-              alt="Finding Thumbnail"
-              className="w-full h-full object-cover rounded-lg"
-            />
+          <div className="mt-4 space-y-6">
+            {finding.images.map((image, index) => (
+              <div key={image.id} className="space-y-2">
+                <a
+                  href={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${image.publicId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block cursor-zoom-in"
+                >
+                  <CldImage
+                    src={image.publicId}
+                    width={1200}
+                    height={900}
+                    alt={image.title || `Bild ${index + 1}`}
+                    className="w-full max-h-[80vh] object-contain rounded-xl bg-muted"
+                  />
+                </a>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  {image.originalFilename && (
+                    <span>{image.originalFilename}</span>
+                  )}
+                  <span>{format(new Date(image.createdAt), "dd.MM.yyyy, HH:mm")} Uhr</span>
+                  {image.fileSize && (
+                    <span>
+                      {image.fileSize < 1024 * 1024
+                        ? `${(image.fileSize / 1024).toFixed(1)} KB`
+                        : `${(image.fileSize / (1024 * 1024)).toFixed(1)} MB`}
+                    </span>
+                  )}
+                  {image.width && image.height && (
+                    <span>{image.width} × {image.height} px</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, UsersIcon } from "lucide-react";
+import { LocateIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/NavMain";
@@ -10,9 +10,12 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarHeader,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
 
 const navMain = [
   {
@@ -50,6 +53,25 @@ const navMain = [
   },
 ];
 
+function MobileHeader() {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  if (!isMobile) return null;
+
+  return (
+    <SidebarHeader className="flex-row items-center justify-between px-4 py-3 border-b">
+      <span className="text-lg font-bold">Sondlr</span>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpenMobile(false)}
+      >
+        <X className="h-5 w-5" />
+      </Button>
+    </SidebarHeader>
+  );
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
 
@@ -61,12 +83,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
+      <MobileHeader />
       <SidebarContent>
         <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />
-        <SidebarTrigger className="w-full justify-end group-data-[collapsible=icon]:justify-center px-2" />
+        <SidebarTrigger className="w-full justify-end group-data-[collapsible=icon]:justify-center px-2 mb-1" />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

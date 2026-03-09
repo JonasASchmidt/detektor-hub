@@ -48,7 +48,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
         <div className="flex justify-between">
           <div className="flex flex-col">
             <div className="flex items-center gap-4">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-bold">
                 {finding.name}
               </h2>
               {finding.status === "DRAFT" && (

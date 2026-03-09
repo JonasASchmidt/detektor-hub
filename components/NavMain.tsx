@@ -58,16 +58,14 @@ export function NavMain({
             item.items?.some((sub) => pathname === sub.url) ?? false;
 
           return (
-            <Collapsible
-              key={item.title}
-              asChild
-              className="group/collapsible"
-              open={openState[item.title]}
-              onOpenChange={(open) =>
-                setOpenState((prev) => ({ ...prev, [item.title]: open }))
-              }
-            >
-              <SidebarMenuItem>
+            <SidebarMenuItem key={item.title}>
+              <Collapsible
+                className="group/collapsible"
+                open={openState[item.title]}
+                onOpenChange={(open) =>
+                  setOpenState((prev) => ({ ...prev, [item.title]: open }))
+                }
+              >
                 <div className="relative flex items-center w-full">
                   <SidebarMenuButton
                     asChild
@@ -131,8 +129,8 @@ export function NavMain({
                     </SidebarMenuSub>
                   </CollapsibleContent>
                 )}
-              </SidebarMenuItem>
-            </Collapsible>
+              </Collapsible>
+            </SidebarMenuItem>
           );
         })}
       </SidebarMenu>

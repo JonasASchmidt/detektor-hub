@@ -13,6 +13,7 @@ export async function GET(
       include: {
         tags: true,
         user: true,
+        images: true,
       },
     });
 
@@ -23,7 +24,9 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ finding });
+    return NextResponse.json({ finding }, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
+    });
   } catch (error) {
     console.error("Fehler beim Zugriff auf den Fund:", error);
     return NextResponse.json(

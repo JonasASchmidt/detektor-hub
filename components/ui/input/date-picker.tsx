@@ -44,12 +44,12 @@ export default function DatePicker<TFieldValues extends FieldValues>({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[280px] justify-start text-left font-normal",
+            "h-8 w-auto justify-start text-left font-normal px-3",
             !date && "text-muted-foreground"
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP") : <span>{placeholder}</span>}
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          {date ? format(date, "dd.MM.yyyy") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

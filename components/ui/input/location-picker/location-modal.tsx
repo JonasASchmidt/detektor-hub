@@ -1,8 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { LatLng, LatLngLiteral } from "leaflet";
-import SimpleMap from "@/components/map/simple-map";
+import type { LatLng, LatLngLiteral } from "leaflet";
+import dynamic from "next/dynamic";
+
+const SimpleMap = dynamic(() => import("@/components/map/simple-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] bg-muted animate-pulse rounded-lg" />
+  ),
+});
 import {
   Dialog,
   DialogContent,
@@ -27,7 +34,7 @@ export default function LocationModal({
   value,
 }: Props) {
   const [location, setLocation] = useState<LatLng | undefined>(
-    value ? new LatLng(value?.lat, value?.lng) : undefined
+    value ? ({ lat: value.lat, lng: value.lng } as LatLng) : undefined
   );
 
   const handleSubmit = () => {

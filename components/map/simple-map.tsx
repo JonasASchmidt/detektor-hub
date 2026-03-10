@@ -16,7 +16,7 @@ export default function SimpleMap({ center, onClick }: Props) {
     <MapContainer
       center={(center as L.LatLngExpression) || [51, 13]}
       zoom={center ? 4 : 2}
-      scrollWheelZoom={true}
+      scrollWheelZoom={false}
       className="h-[35vh] rounded-lg"
     >
       <TileLayer

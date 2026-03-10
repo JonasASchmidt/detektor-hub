@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
-import { TagCategory } from "@prisma/client";
+import type { TagCategory } from "@prisma/client";
 import { TagCategoryForm } from "@/components/tags/TagCategoryForm";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 import { toast } from "sonner";
@@ -39,12 +39,8 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-6 space-y-8">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-          Tag Kategorien
-        </h1>
-      </header>
+    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+      <h1 className="text-4xl font-bold">Tag Kategorien</h1>
       <p className="mt-2 text-md text-gray-600 dark:text-gray-400">
         Tag-Kategorien helfen dabei, archäologische Funde systematisch zu
         organisieren. Jede Kategorie enthält spezifische Tags, die eine genauere

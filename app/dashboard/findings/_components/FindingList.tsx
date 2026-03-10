@@ -1,33 +1,33 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ScanSearch, Shovel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFindings, UseFindingsParams } from "@/app/_hooks/useFindings";
+import { useURLFilters } from "@/app/_hooks/useURLFilters";
+import { SelectFilter } from "@/components/filters";
+import { sortOptions } from "./FindingFilters";
 import FindingCard from "./FindingCard";
 
 interface Props {
-  filters: {
-    search: string;
-    sort: string;
-  };
+  filters: UseFindingsParams;
+  onTotalChange?: (total: number) => void;
 }
 
 const PAGE_SIZE = 20;
 
-export default function FindingsList({ filters }: Props) {
+export default function FindingsList({ filters, onTotalChange }: Props) {
   const [page, setPage] = useState(1);
 
   const queryParams = useMemo(
     () =>
       ({
-        search: filters.search,
-        tag: "",
+        ...filters,
         page,
         pageSize: PAGE_SIZE,
-        orderBy: "createdAt",
-        order: filters.sort === "newest" ? "desc" : "asc",
       } as UseFindingsParams),
-    [filters.search, filters.sort, page]
+    [filters, page]
   );
 
   const { findings, total, loading, error: _error } = useFindings(queryParams);
@@ -35,6 +35,10 @@ export default function FindingsList({ filters }: Props) {
   useEffect(() => {
     setPage(1);
   }, [filters]);
+
+  useEffect(() => {
+    if (!loading) onTotalChange?.(total);
+  }, [total, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -46,25 +50,77 @@ export default function FindingsList({ filters }: Props) {
     setPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  const { searchParams, setFilter, clearAll } = useURLFilters();
+  const currentSort = searchParams.get("sort") || "newest";
+
+  const hasActiveFilters = !!(
+    filters.search ||
+    filters.status ||
+    filters.reported ||
+    (filters.tags && filters.tags.length > 0) ||
+    filters.dateFrom ||
+    filters.dateTo ||
+    filters.lat
+  );
+
   return (
-    <div className="max-w-4xl mx-auto grid py-6">
-      {findings.map((finding) => (
-        <FindingCard key={finding.id} finding={finding} />
-      ))}
-
-      <div className="flex items-center justify-between mt-4">
-        <Button onClick={handlePrevious} disabled={page === 1 || loading}>
-          Zurück
-        </Button>
-
-        <span className="text-sm text-muted-foreground">
-          Seite {page} von {totalPages}
-        </span>
-
-        <Button onClick={handleNext} disabled={page === totalPages || loading}>
-          Weiter
-        </Button>
+    <div className="grid py-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">{total} Funde</h2>
+        <SelectFilter
+          value={currentSort}
+          onChange={(v) => setFilter("sort", v)}
+          options={sortOptions}
+          placeholder="Sortieren"
+        />
       </div>
+
+      {!loading && total === 0 && (
+        hasActiveFilters ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <ScanSearch className="h-10 w-10 text-muted-foreground/50" />
+            <p className="text-lg font-medium">Keine Funde gefunden</p>
+            <p className="text-sm text-muted-foreground">Deine Filter ergeben keine Treffer.</p>
+            <div className="flex gap-2 mt-2">
+              <Button variant="outline" onClick={clearAll}>Filter zurücksetzen</Button>
+              <Button asChild>
+                <Link href="/dashboard/findings/new">+ Neuer Fund</Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <Shovel className="h-10 w-10 text-muted-foreground/50" />
+            <p className="text-lg font-medium">Noch keine Funde</p>
+            <p className="text-sm text-muted-foreground">Erfasse deinen ersten Fund und dokumentiere ihn hier.</p>
+            <Button asChild className="mt-2">
+              <Link href="/dashboard/findings/new">+ Neuer Fund erfassen</Link>
+            </Button>
+          </div>
+        )
+      )}
+
+      <div className="flex flex-col gap-5">
+        {findings.map((finding) => (
+          <FindingCard key={finding.id} finding={finding} />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
+            Zurück
+          </Button>
+
+          <span className="text-sm text-muted-foreground">
+            Seite {page} von {totalPages}
+          </span>
+
+          <Button variant="ghost" onClick={handleNext} disabled={page === totalPages || loading}>
+            Weiter
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

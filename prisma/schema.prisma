@@ -4,10 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
-  extensions        = [postgis()]
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [postgis()]
 }
 
 model User {
@@ -23,6 +23,8 @@ model User {
   findings      Finding[]
   images        Image[]
   sessions      Session[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
 }
 
 model Account {
@@ -68,6 +70,7 @@ model Tag {
 model Finding {
   id                String        @id @default(uuid())
   status            FindingStatus @default(DRAFT)
+  reported          Boolean       @default(false)
   name              String?
   latitude          Float
   longitude         Float
@@ -98,17 +101,24 @@ model Finding {
 }
 
 model Image {
-  id          String   @id @default(uuid())
-  findingId   String?
-  userId      String
-  url         String?
-  publicId    String
-  title       String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  finding     Finding? @relation(fields: [findingId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
+  id               String   @id @default(uuid())
+  findingId        String?
+  commentId        String?
+  userId           String
+  url              String?
+  publicId         String
+  title            String?
+  description      String?
+  originalFilename String?
+  fileSize         Int?
+  width            Int?
+  height           Int?
+  folder           String   @default("All")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+  finding          Finding? @relation(fields: [findingId], references: [id])
+  comment          Comment? @relation(fields: [commentId], references: [id])
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model Detector {
@@ -120,12 +130,39 @@ model Detector {
 }
 
 model Comment {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   findingId String
+  parentId  String?
   text      String
-  finding   Finding @relation(fields: [findingId], references: [id])
-  user      User    @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  
+  finding   Finding   @relation(fields: [findingId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  children  Comment[] @relation("CommentReplies")
+  attachments Image[]
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  recipientId String
+  actorId     String?
+  findingId   String?
+  commentId   String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+}
+
+enum NotificationType {
+  MENTION
+  REPLY
+  FINDING_COMMENT
 }
 
 enum FindingStatus {

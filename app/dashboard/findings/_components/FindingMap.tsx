@@ -31,29 +31,22 @@ export default function FindingsList({ filters }: Props) {
 
   const onClick = () => {};
 
+  const getIcon = (iconName: string): LucideIcons.LucideIcon | null => {
+    const pascalName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+    return (LucideIcons[pascalName as keyof typeof LucideIcons] as LucideIcons.LucideIcon) || null;
+  };
+
   const renderMarker = (finding: FindingWithRelations) => {
     const firstTag = finding.tags.length > 0 ? finding.tags[0] : null;
-
-    if (!firstTag) {
-      return (
-        <Marker
-          key={`finding_marker_${finding.id}`}
-          position={[finding.latitude, finding.longitude]}
-          icon={LucideIcons["LocateFixedIcon"]}
-        />
-      );
-    }
-
-    const IconComponent = LucideIcons[
-      firstTag.icon as keyof typeof LucideIcons
-    ] as LucideIcons.LucideIcon;
-    const color = firstTag.color ?? "#000";
+    const IconComponent = firstTag ? getIcon(firstTag.icon) : null;
+    const color = firstTag?.color ?? "#2d2d2d";
+    const FallbackIcon = LucideIcons.LocateFixed;
 
     return (
       <Marker
         key={`finding_marker_${finding.id}`}
         position={[finding.latitude, finding.longitude]}
-        icon={<IconComponent color={color} size={20} />}
+        icon={IconComponent ? <IconComponent color={color} size={20} /> : <FallbackIcon size={20} />}
       />
     );
   };
@@ -62,7 +55,7 @@ export default function FindingsList({ filters }: Props) {
     <MapContainer
       center={(center as L.LatLngExpression) || [51, 13]}
       zoom={center ? 4 : 2}
-      scrollWheelZoom={true}
+      scrollWheelZoom={false}
       className="w-full h-full"
     >
       <TileLayer

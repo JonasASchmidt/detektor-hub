@@ -1,15 +1,12 @@
 import { useState } from "react";
-import {
-  FieldValues,
-  useController,
-  UseControllerProps,
-} from "react-hook-form";
-import TagModal from "./tag-modal";
-import TagComponent from "@/components/tags/Tag";
+import { FieldValues, useController, UseControllerProps } from "react-hook-form";
 import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
 import { Label } from "../../label";
 import { Button } from "../../button";
-import { TagIcon } from "lucide-react";
+import { Input } from "../../input";
+import { Popover, PopoverContent, PopoverTrigger } from "../../popover";
+import { Tag as TagIcon, X } from "lucide-react";
+import TagComponent from "@/components/tags/Tag";
 
 interface Props {
   disabled?: boolean;
@@ -22,46 +19,125 @@ export default function TagPicker<TFieldValues extends FieldValues>({
   rules,
   tagCategories,
 }: UseControllerProps<TFieldValues> & Props) {
-  const { field, fieldState: _fieldState } = useController({ name, control, rules });
+  const { field } = useController({ name, control, rules });
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const [showModal, setShowModal] = useState(false);
+  const selectedIds: string[] = field.value ?? [];
+  const allTags = tagCategories.flatMap((c) => c.tags);
+  const selectedTags = allTags.filter((t) => selectedIds.includes(t.id));
 
-  const handleSubmitModal = (value: string[] | undefined) => {
-    setShowModal(false);
-    field.onChange(value);
+  const toggle = (id: string) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((i) => i !== id)
+      : [...selectedIds, id];
+    field.onChange(next);
   };
 
-  const selectedTags = tagCategories
-    .flatMap((category) => category.tags)
-    .filter((tag) => field.value?.includes(tag.id));
+  const filteredCategories = tagCategories
+    .map((cat) => ({
+      ...cat,
+      tags: cat.tags.filter((t) =>
+        t.name.toLowerCase().includes(search.toLowerCase())
+      ),
+    }))
+    .filter((cat) => cat.tags.length > 0);
 
   return (
-    <div className="form-control w-full">
+    <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
       <Label>Tags</Label>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-1 flex-wrap items-center">
-          {selectedTags.map((tag) => {
-            return <TagComponent key={`tag_${tag.id}`} tag={tag} />;
-          })}
+      <div className="flex flex-row gap-1.5 flex-wrap items-center">
+        <div className="flex items-center">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
+                  ? "rounded-r-none border-r-0 text-foreground"
+                  : "text-muted-foreground"
+                  }`}
+              >
+                <TagIcon className="h-3.5 w-3.5" />
+                Tags{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-0" align="start" collisionPadding={8}>
+              <div className="p-2 border-b">
+                <Input
+                  className="h-7 text-xs"
+                  placeholder="Tags suchen…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="max-h-56 overflow-y-auto py-1">
+                {filteredCategories.map((cat) => (
+                  <div key={cat.id}>
+                    <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {cat.name}
+                    </div>
+                    {cat.tags.map((tag) => {
+                      const active = selectedIds.includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          onClick={() => toggle(tag.id)}
+                          className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""
+                            }`}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: tag.color ?? "#888" }}
+                          />
+                          <span className="flex-1 text-left">{tag.name}</span>
+                          {active && (
+                            <X className="h-3 w-3 text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+                {filteredCategories.length === 0 && (
+                  <p className="px-3 py-4 text-xs text-muted-foreground text-center">
+                    Keine Tags gefunden
+                  </p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          {selectedIds.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => field.onChange([])}
+              className="h-8 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
-        <Button
-          type="button"
-          onClick={() => setShowModal(true)}
-          className="w-auto"
-        >
-          <TagIcon size={24} />
-          Tags auswählen
-        </Button>
+        {selectedTags.map((tag) => (
+          <span
+            key={tag.id}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-sm font-medium text-white shadow-sm"
+            style={{ backgroundColor: tag.color ?? "#888" }}
+          >
+            {tag.name}
+            <button
+              type="button"
+              onClick={() => toggle(tag.id)}
+              className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground ml-0.5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ))}
       </div>
-      {showModal && (
-        <TagModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onSubmit={handleSubmitModal}
-          tagCategories={tagCategories}
-          value={field.value}
-        />
-      )}
     </div>
   );
 }

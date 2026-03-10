@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tag, TagCategory } from "@prisma/client";
+import type { Tag, TagCategory } from "@prisma/client";
 import IconPicker from "../../../components/ui/input/icon-picker";
 import ColorPicker from "../../../components/ui/input/color-picker";
 import {
@@ -37,7 +37,7 @@ export function TagForm({
 }: Props) {
   const [formData, setFormData] = useState({
     category: initialTag?.categoryId ?? "",
-    color: initialTag?.color ?? "",
+    color: initialTag?.color ?? `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
     name: initialTag?.name ?? "",
     icon: initialTag?.icon ?? "",
   });
@@ -47,7 +47,7 @@ export function TagForm({
   useEffect(() => {
     setFormData({
       category: initialTag?.categoryId ?? "",
-      color: initialTag?.color ?? "",
+      color: initialTag?.color ?? `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
       name: initialTag?.name ?? "",
       icon: initialTag?.icon ?? "",
     });
@@ -57,7 +57,7 @@ export function TagForm({
     resetTag();
     setFormData({
       category: "",
-      color: "#ffffff",
+      color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
       name: "",
       icon: "",
     });
@@ -143,73 +143,109 @@ export function TagForm({
       className="relative p-6 md:p-8"
       onSubmit={initialTag ? handleUpdate : handleSubmit}
     >
-      <div className="flex flex-col gap-6">
-        <div className="grid gap-2">
-          <Label htmlFor="email">
-            {initialTag ? "Tag Bearbeiten" : "Neuer Tag"}
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Bezeichnung des Tags"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="category">Kategorie</Label>
-          <Select
-            onValueChange={handleChangeCategory}
-            value={formData.category}
-          >
-            <SelectTrigger id="category" className="w-full">
-              <SelectValue placeholder="Kategorie" />
-            </SelectTrigger>
-            <SelectContent>
-              {tagCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <ColorPicker onChange={handleChangeColor} value={formData.color} />
-        <IconPicker onChange={handleChangeIcon} value={formData.icon} />{" "}
-        <div className="space-y-2">
-          <Label htmlFor="category">Vorschau</Label>
+      <div className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-2xl font-bold tracking-tight">
+            {initialTag ? "Tag bearbeiten" : "Neuen Tag erstellen"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Definiere Name, Farbe und Icon für eine einfache Kategorisierung deiner Funde.
+          </p>
+        </header>
 
-          <div className="w-full text-center">
-            <TagComponent tag={formData} />
+        <div className="flex flex-wrap items-end gap-2 md:gap-3">
+          <div className="flex-1 min-w-[100px] space-y-1.5 focus-within:z-10">
+            <Label htmlFor="name" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Tag Name</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="z.B. Münze..."
+              value={formData.name}
+              onChange={handleChange}
+              className="bg-muted/30 border-black/[0.05] focus-visible:ring-black/10"
+              required
+            />
           </div>
+
+          <div className="flex-1 min-w-[100px] space-y-1.5 focus-within:z-10">
+            <Label htmlFor="category" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Kategorie</Label>
+            <Select
+              onValueChange={handleChangeCategory}
+              value={formData.category}
+            >
+              <SelectTrigger id="category" className="bg-muted/30 border-black/[0.05]">
+                <SelectValue placeholder="Wählen..." />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-black/[0.05] shadow-xl">
+                {tagCategories.map((category) => (
+                  <SelectItem key={category.id} value={category.id} className="cursor-pointer">
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="shrink-0 space-y-1.5">
+            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Farbe</Label>
+            <div className="h-8 flex items-center">
+              <ColorPicker onChange={handleChangeColor} value={formData.color} />
+            </div>
+          </div>
+          
+          <div className="shrink-0 space-y-1.5">
+            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Icon</Label>
+            <div className="h-8 flex items-center">
+              <IconPicker onChange={handleChangeIcon} value={formData.icon} />
+            </div>
+          </div>
+
+          <div className="shrink-0 space-y-1.5 ml-2">
+            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Vorschau</Label>
+            <div className="h-8 flex items-center">
+              <TagComponent 
+                tag={{ ...formData, name: formData.name || "TAG NAME" } as any} 
+                className="!h-8 rounded-lg text-sm font-bold px-4 transition-all shadow-sm"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-black/[0.05]">
         </div>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-3 pt-2">
           {initialTag && (
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 border-2 hover:bg-muted font-bold transition-all"
               onClick={clearForm}
             >
               Abbrechen
             </Button>
           )}
-          <Button type="submit" className="flex-1" disabled={loading}>
+          <Button 
+            type="submit" 
+            className={`flex-1 font-bold transition-all shadow-sm ${
+              initialTag 
+                ? "bg-black text-white hover:bg-black/90" 
+                : "bg-primary text-primary-foreground hover:scale-[1.01]"
+            }`} 
+            disabled={loading}
+          >
             {loading ? (
               <>
-                <Loader2 className="animate-spin" />
-                Bitte warten
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                Speichere...
               </>
             ) : initialTag ? (
-              "Speichern"
+              "Änderungen speichern"
             ) : (
-              "Hinzufügen"
+              "Tag erstellen"
             )}
           </Button>
         </div>

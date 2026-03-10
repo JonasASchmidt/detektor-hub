@@ -15,5 +15,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(images);
+  return NextResponse.json(images, {
+    headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
+  });
 }

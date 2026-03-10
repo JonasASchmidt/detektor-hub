@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FilterBarProps {
   children: React.ReactNode;
@@ -22,14 +23,16 @@ export function FilterBar({
       <div className="flex flex-nowrap gap-3 p-4 items-center overflow-x-auto">
         {children}
         {hasActiveFilters && onClearAll && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             onClick={onClearAll}
             title={clearLabel}
-            className="shrink-0 ml-auto flex items-center justify-center h-8 w-8 rounded-md border border-input bg-white text-muted-foreground shadow-sm hover:bg-accent"
+            className="shrink-0 ml-auto bg-white"
           >
-            <X className="h-3 w-3" />
-          </button>
+            <X className="h-4 w-4" />
+          </Button>
         )}
       </div>
       {/* Grid trick: animates height 0↔auto without JS measurement */}

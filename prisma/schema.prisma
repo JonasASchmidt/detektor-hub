@@ -23,6 +23,8 @@ model User {
   findings      Finding[]
   images        Image[]
   sessions      Session[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
 }
 
 model Account {
@@ -101,6 +103,7 @@ model Finding {
 model Image {
   id               String   @id @default(uuid())
   findingId        String?
+  commentId        String?
   userId           String
   url              String?
   publicId         String
@@ -110,9 +113,11 @@ model Image {
   fileSize         Int?
   width            Int?
   height           Int?
+  folder           String   @default("All")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
   finding          Finding? @relation(fields: [findingId], references: [id])
+  comment          Comment? @relation(fields: [commentId], references: [id])
   user             User     @relation(fields: [userId], references: [id])
 }
 
@@ -125,12 +130,39 @@ model Detector {
 }
 
 model Comment {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   findingId String
+  parentId  String?
   text      String
-  finding   Finding @relation(fields: [findingId], references: [id])
-  user      User    @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  
+  finding   Finding   @relation(fields: [findingId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  children  Comment[] @relation("CommentReplies")
+  attachments Image[]
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  recipientId String
+  actorId     String?
+  findingId   String?
+  commentId   String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+}
+
+enum NotificationType {
+  MENTION
+  REPLY
+  FINDING_COMMENT
 }
 
 enum FindingStatus {

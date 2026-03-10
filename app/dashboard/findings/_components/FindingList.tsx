@@ -100,7 +100,7 @@ export default function FindingsList({ filters, onTotalChange }: Props) {
         )
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-5">
         {findings.map((finding) => (
           <FindingCard key={finding.id} finding={finding} />
         ))}

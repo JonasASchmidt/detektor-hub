@@ -32,21 +32,18 @@ export default function ColorPicker({ onChange, value }: Props) {
   };
 
   return (
-    <div className="space-y-1">
-      <Label>Farbe auswählen</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="flex items-center w-full">
-            <span
-              className="w-6 h-6 rounded-full border"
-              style={{ backgroundColor: color }}
-            ></span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="p-2 w-auto">
-          <HexColorPicker color={color} onChange={handleChangeColor} />
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05]">
+          <span
+            className="w-5 h-5 rounded-md border border-black/[0.05] shadow-sm"
+            style={{ backgroundColor: color }}
+          ></span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-2 w-auto border-black/[0.05] shadow-2xl rounded-xl">
+        <HexColorPicker color={color} onChange={handleChangeColor} />
+      </PopoverContent>
+    </Popover>
   );
 }

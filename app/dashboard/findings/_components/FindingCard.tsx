@@ -16,86 +16,96 @@ export default function FindingCard({ finding }: FindingCardProps) {
   const router = useRouter();
 
   const formattedDate = format(new Date(finding.createdAt), "d.M.yyyy", { locale: de });
-  const firstImage = finding.images?.[0];
+  const displayImage = finding.images?.find(img => img.id === finding.thumbnailId) || finding.images?.[0];
+
+  const handleCardClick = () => {
+    router.push(`findings/${finding.id}`);
+  };
 
   return (
-    <div className="flex gap-0 border rounded-xl bg-white overflow-hidden">
+    <div 
+      onClick={handleCardClick}
+      className="group relative flex gap-5 border-2 border-black/[0.05] rounded-lg bg-white p-4 h-[160px] items-center hover:border-[#333333] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all cursor-pointer"
+    >
       {/* Left: content */}
-      <div className="flex-1 p-5 min-w-0">
-        <Link
-          href={`findings/${finding.id}`}
-          className="text-xl font-bold underline underline-offset-2 hover:text-primary leading-tight"
-        >
-          {finding.name}
-        </Link>
+      <div className="flex-1 min-w-0 flex flex-col h-full justify-center">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-[19px] font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+            {finding.name}
+          </h3>
 
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className="text-sm text-muted-foreground">{formattedDate}</span>
-          <span className="text-muted-foreground">•</span>
-          <span className="text-sm text-muted-foreground underline underline-offset-2">
-            {finding.user?.name ?? "Anonym"}
-          </span>
-          {finding.tags?.map((tag) => (
-            <span
-              key={tag.id}
-              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wide uppercase text-white"
-              style={{ backgroundColor: tag.color }}
-            >
-              {tag.name}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-[12px] text-muted-foreground/70 font-normal">{formattedDate}</span>
+            <span className="text-muted-foreground/40 text-[10px]">●</span>
+            <span className="text-[12px] text-muted-foreground/80 underline underline-offset-2 decoration-muted-foreground/30 font-normal cursor-default">
+              {finding.user?.name ?? "Anonym"}
             </span>
-          ))}
-          {finding.status === "DRAFT" && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wide uppercase bg-amber-100 text-amber-800">
-              Entwurf
-            </span>
-          )}
+            {finding.tags?.map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[10px] font-bold tracking-tight uppercase text-white ml-0.5"
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
         </div>
 
         {finding.description && (
-          <p className="mt-3 text-sm leading-relaxed line-clamp-3 text-foreground">
+          <p className="mt-3 text-[14.5px] leading-[1.35] line-clamp-2 text-foreground/80 font-light tracking-tight pr-4">
             {finding.description}
           </p>
         )}
       </div>
 
-      {/* Right: image */}
-      {firstImage ? (
-        <div className="w-44 shrink-0 self-stretch relative">
+      {/* Right: image thumbnail */}
+      {displayImage && (
+        <div className="w-[230px] h-full shrink-0 bg-[#F8F8F8] rounded-lg overflow-hidden border border-black/[0.05] relative flex items-center justify-center">
           <CldImage
-            src={firstImage.publicId}
-            width={320}
-            height={240}
+            src={displayImage.publicId}
+            width={460}
+            height={256}
             crop="fill"
             gravity="auto"
-            alt={finding.name}
+            alt={finding.name || "Fundbild"}
             format="auto"
             quality="auto"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-lg m-0.5"
           />
         </div>
-      ) : (
-        <div className="w-44 shrink-0 self-stretch bg-muted/60" />
       )}
 
       {/* Far right: action buttons */}
-      <div className="flex flex-col gap-2 p-2 shrink-0 justify-start">
+      <div className="flex flex-col gap-2 shrink-0 h-full justify-center">
         <button
           type="button"
-          onClick={() => router.push(`findings/${finding.id}`)}
-          className="flex items-center justify-center h-9 w-9 rounded-lg border border-input bg-white text-muted-foreground shadow-sm hover:bg-accent"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`findings/${finding.id}`);
+          }}
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
           title="Kommentare"
         >
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
         </button>
         <button
           type="button"
-          onClick={() => router.push(`findings/${finding.id}/edit`)}
-          className="flex items-center justify-center h-9 w-9 rounded-lg border border-input bg-white text-muted-foreground shadow-sm hover:bg-accent"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`findings/${finding.id}/edit`);
+          }}
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
           title="Bearbeiten"
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
         </button>
       </div>
     </div>
+
+
   );
 }
+
+
+

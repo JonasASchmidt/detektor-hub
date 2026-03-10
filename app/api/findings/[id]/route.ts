@@ -13,6 +13,7 @@ export async function GET(
       include: {
         tags: true,
         user: true,
+        images: true,
       },
     });
 

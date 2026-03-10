@@ -121,35 +121,31 @@ export default function IconPicker({ onChange, value }: Props) {
   const SelectedIconComponent = selectedIcon ? icons[selectedIcon] : null;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col space-y-2">
-        <Label>Icon auswählen</Label>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button className="flex items-center w-full" variant="outline">
-              {SelectedIconComponent ? (
-                <SelectedIconComponent className="w-6 h-6" />
-              ) : (
-                "Icon auswählen"
-              )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05]" variant="outline">
+          {SelectedIconComponent ? (
+            <SelectedIconComponent className="w-5 h-5" />
+          ) : (
+            <LucideIcons.Plus className="w-4 h-4 text-muted-foreground/50" />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="grid grid-cols-6 gap-1 max-h-[300px] p-2 overflow-y-auto border-black/[0.05] shadow-2xl rounded-xl">
+        {iconNames.map((iconName) => {
+          return (
+            <Button
+              key={iconName}
+              onClick={() => handleSelectIcon(iconName)}
+              size="icon"
+              variant="ghost"
+              className="w-10 h-10 hover:bg-muted rounded-md"
+            >
+              <DynamicIcon icon={iconName} />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="grid grid-cols-6 gap-1 max-h-[300px] p-2 overflow-y-auto">
-            {iconNames.map((iconName) => {
-              return (
-                <Button
-                  key={iconName}
-                  onClick={() => handleSelectIcon(iconName)}
-                  size="icon"
-                  variant="outline"
-                >
-                  <DynamicIcon icon={iconName} />
-                </Button>
-              );
-            })}
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 }

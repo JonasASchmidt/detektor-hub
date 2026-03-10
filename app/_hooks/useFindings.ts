@@ -20,7 +20,7 @@ export interface UseFindingsParams {
   radius?: number;
 }
 
-export function useFindings(params: UseFindingsParams) {
+export function useFindings(params: UseFindingsParams, endpoint: string = "/api/findings") {
   const [data, setData] = useState<{
     findings: FindingWithRelations[];
     total: number;

@@ -120,6 +120,7 @@ export async function POST(req: Request) {
       dating_from: data.dating_from,
       dating_to: data.dating_to,
       references: data.references,
+      thumbnailId: data.thumbnailId,
       foundAt: data.foundAt,
       user: {
         connect: {

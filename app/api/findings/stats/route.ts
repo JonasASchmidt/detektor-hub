@@ -16,7 +16,7 @@ export async function GET() {
     const now = new Date();
     const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [totalFindings, findingsThisMonth, draftCount, mostUsedTagResult] =
+    const [totalFindings, findingsThisMonth, draftCount, commentsCount, mostUsedTagResult] =
       await Promise.all([
         prisma.finding.count({ where: { userId } }),
         prisma.finding.count({
@@ -24,6 +24,14 @@ export async function GET() {
         }),
         prisma.finding.count({
           where: { userId, status: "DRAFT" },
+        }),
+        prisma.comment.count({
+          where: {
+            OR: [
+              { userId },
+              { finding: { userId } }
+            ]
+          }
         }),
         prisma.tag.findMany({
           where: {
@@ -47,7 +55,7 @@ export async function GET() {
         : null;
 
     return NextResponse.json(
-      { totalFindings, findingsThisMonth, mostUsedTag, draftCount },
+      { totalFindings, findingsThisMonth, mostUsedTag, draftCount, commentsCount },
       { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } }
     );
   } catch (error) {

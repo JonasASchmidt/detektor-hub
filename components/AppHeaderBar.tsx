@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { useSidebar } from "./ui/sidebar";
+import { NotificationCenter } from "./NotificationCenter";
 
 export function AppHeaderBar() {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
@@ -24,6 +25,10 @@ export function AppHeaderBar() {
         <span className="text-lg md:text-2xl font-bold text-white">Sondlr</span>
         <span className="text-lg md:text-2xl font-normal" style={{ color: "#ffff00" }}>Finde alles ...</span>
       </Link>
+
+      <div className="ml-auto flex items-center gap-2">
+        <NotificationCenter />
+      </div>
     </div>
   );
 }

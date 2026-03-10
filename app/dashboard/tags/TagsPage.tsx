@@ -2,10 +2,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import { Tag, TagCategory } from "@prisma/client";
+import type { Tag, TagCategory } from "@prisma/client";
 import { TagForm } from "@/app/dashboard/tags/TagForm";
 import { Input } from "@/components/ui/input";
 import TagComponent from "@/components/tags/Tag";
+import { TagDeleteModal } from "@/components/modals/TagDeleteModal";
 
 interface Props {
   initialTags: Tag[];
@@ -16,6 +17,7 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
   const [selectedTag, setSelectedTag] = useState<Tag>();
   const [tags, setTags] = useState(initialTags);
   const [search, setSearch] = useState("");
+  const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
 
   const handleClickTag = (tag: Tag) => setSelectedTag(tag);
 
@@ -37,6 +39,11 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
 
   const resetTag = () => {
     setSelectedTag(undefined);
+  };
+
+  const handleDeleteTag = (id: string) => {
+    setTags((prev) => prev.filter((t) => t.id !== id));
+    setTagToDelete(null);
   };
 
   return (
@@ -63,9 +70,16 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
                   <TagComponent
                     key={tag.id}
                     onClick={() => handleClickTag(tag)}
+                    onClose={() => setTagToDelete(tag)}
                     tag={tag}
                   />
                 ))}
+            <TagDeleteModal
+              tag={tagToDelete}
+              allTags={tags}
+              onClose={() => setTagToDelete(null)}
+              onDeleted={handleDeleteTag}
+            />
         </CardContent>
       </Card>
       <Card className="bg-white dark:bg-gray-900">

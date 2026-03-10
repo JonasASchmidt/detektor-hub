@@ -77,7 +77,7 @@ Currently every federal state handles find documentation differently — analog 
 ```
 app/
   api/        → auth, findings, geo/admin-units, images, tags, user-images
-  dashboard/  → findings, image-gallery, tags
+  dashboard/  → findings, images, tags
   login/, signup/
 components/   → auth, map, image-gallery, modals, tags, ui, sidebar, nav
 prisma/       → DB schema & migrations

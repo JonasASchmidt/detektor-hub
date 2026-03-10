@@ -61,13 +61,13 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   };
 
   return (
-    <>
-      <div className="flex gap-1.5 flex-col">
-        <Label htmlFor="lat">Fundort</Label>
+    <div className="flex flex-col gap-1.5 flex-1 min-w-[280px]">
+      <Label htmlFor="lat">Fundort</Label>
+      <div className="flex flex-row flex-wrap gap-1.5 items-center w-full">
         <Input
           id="lat"
           type="number"
-          className="h-8 w-24 text-sm"
+          className="h-8 flex-1 min-w-[80px] text-sm shrink-0"
           placeholder="Latitude"
           onBlur={handleBlur}
           onChange={handleChange}
@@ -77,12 +77,10 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           step="any"
           disabled={disabled}
         />
-      </div>
-      <div className="flex gap-1.5 flex-col justify-end">
         <Input
           id="lng"
           type="number"
-          className="h-8 w-24 text-sm"
+          className="h-8 flex-1 min-w-[80px] text-sm shrink-0"
           placeholder="Longitude"
           onBlur={handleBlur}
           onChange={handleChange}
@@ -92,13 +90,11 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           step="any"
           disabled={disabled}
         />
-      </div>
-      <div className="flex gap-1.5 flex-col justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={() => setShowModal(true)}
-          className="h-8 px-3 whitespace-nowrap gap-2 shrink-0"
+          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0"
         >
           <MapPinCheckIcon size={16} />
           Dein Standort
@@ -112,6 +108,6 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           value={{ lat: lat || 0, lng: lng || 0 }}
         />
       )}
-    </>
+    </div>
   );
 }

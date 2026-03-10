@@ -44,7 +44,7 @@ app/
       map/             # Full map view
       new/             # Create new finding
     tags/              # Tag and category management
-    image-gallery/     # User image library
+    images/            # User image library
   api/
     findings/          # GET (filtered list + pagination), POST (create)
       stats/           # Aggregated KPI stats

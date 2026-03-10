@@ -12,7 +12,7 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { Image } from "@prisma/client";
+import type { Image } from "@prisma/client";
 import { format } from "date-fns";
 
 interface Props {

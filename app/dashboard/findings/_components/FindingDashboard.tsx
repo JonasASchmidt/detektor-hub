@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Calendar, Tag, FileEdit } from "lucide-react";
+import { MapPin, Calendar, Tag, FileEdit, MessageSquare } from "lucide-react";
 
 const FindingsMap = dynamic(() => import("./FindingMap"), {
   ssr: false,
@@ -18,6 +18,7 @@ interface Stats {
   findingsThisMonth: number;
   mostUsedTag: { name: string; id: string; count: number } | null;
   draftCount: number;
+  commentsCount: number;
 }
 
 export default function FindingDashboard({ filteredTotal }: { filteredTotal?: number }) {
@@ -50,23 +51,28 @@ export default function FindingDashboard({ filteredTotal }: { filteredTotal?: nu
       href: `/dashboard/findings?dateFrom=${monthStart}`,
     },
     {
-      label: "Häufigster Tag",
+      label: "Meistgenutzes Tag",
       value: stats?.mostUsedTag ? `${stats.mostUsedTag.name} (${stats.mostUsedTag.count})` : "–",
       icon: Tag,
       href: stats?.mostUsedTag ? `/dashboard/findings?tags=${stats.mostUsedTag.id}` : undefined,
     },
     {
-      label: "Offene Entwürfe",
+      label: "Entwürfe",
       value: stats?.draftCount ?? 0,
       icon: FileEdit,
       href: "/dashboard/findings?status=DRAFT",
     },
+    {
+      label: "Kommentare",
+      value: stats?.commentsCount ?? 0,
+      icon: MessageSquare,
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[120px]">
-      <Card className="min-h-[120px]">
-        <CardContent className="h-full flex flex-col justify-center px-[20px] py-[16px] gap-1.5">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[160px]">
+      <Card className="min-h-[160px]">
+        <CardContent className="h-full flex flex-col justify-center px-[20px] py-[16px] gap-2">
           {kpis.map((kpi) => (
             <div key={kpi.label} className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 min-w-0">

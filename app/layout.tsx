@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="overflow-hidden h-full gap-0">
       <head>
-        {process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID && (
+        {process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID && process.env.NODE_ENV === "production" && (
           <Script id="ms-clarity" strategy="afterInteractive">
             {`
               (function(c,l,a,r,i,t,y){

@@ -42,7 +42,7 @@ const navMain = [
       },
       {
         title: "Bilder",
-        url: "/dashboard/image-gallery",
+        url: "/dashboard/images",
       },
     ],
   },

@@ -1,97 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { format } from "date-fns";
 import { CldImage } from "next-cloudinary";
 import Tag from "@/components/tags/Tag";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FilterBar, SearchFilter } from "@/components/filters";
-import { Tag as TagType, Image as ImageType } from "@prisma/client";
+import type { Tag as TagType, Image as ImageType } from "@prisma/client";
+import CommunityFilters from "./_components/CommunityFilters";
+import { useFiltersFromURL } from "../findings/_components/FindingFilters";
+import { useFindings } from "@/app/_hooks/useFindings";
+import FindingCard from "../findings/_components/FindingCard";
+import { MessageSquare } from "lucide-react";
 
-interface CommunityFinding {
+interface CommunityActivity {
+  type: "finding" | "comment";
   id: string;
-  name: string;
-  description: string | null;
-  status: string;
   createdAt: string;
-  foundAt: string | null;
-  dating: string | null;
-  images: ImageType[];
-  tags: TagType[];
+  userName?: string;
+  userImage?: string;
+  // Finding fields
+  name?: string;
+  description?: string;
+  foundAt?: string;
+  dating?: string;
+  images?: ImageType[];
+  tags?: TagType[];
+  // Comment fields
+  text?: string;
+  findingId?: string;
+  findingName?: string;
 }
 
-function useCommunityFindings() {
-  const [findings, setFindings] = useState<CommunityFinding[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch("/api/community/findings?pageSize=20")
-      .then((res) => (res.ok ? res.json() : { findings: [] }))
-      .then((data) => setFindings(data.findings))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  return { findings, loading };
-}
-
-function CommunityCard({ finding }: { finding: CommunityFinding }) {
-  const formattedDate = finding.foundAt
-    ? format(new Date(finding.foundAt), "dd.MM.yyyy")
-    : format(new Date(finding.createdAt), "dd.MM.yyyy");
+function CommentActivityCard({ activity }: { activity: CommunityActivity }) {
+  const formattedDate = format(new Date(activity.createdAt), "dd.MM.yyyy HH:mm");
 
   return (
-    <div className="flex gap-4 p-4 border rounded-xl bg-white dark:bg-gray-900">
-      <div className="w-24 h-24 flex-shrink-0 relative">
-        {finding.images.length > 0 ? (
-          <CldImage
-            src={finding.images[0].publicId}
-            width={256}
-            height={256}
-            crop="fill"
-            gravity="auto"
-            alt="Fund"
-            quality="3"
-            format="auto"
-            className="rounded-md object-cover w-full h-full"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-300 flex items-center justify-center rounded-md">
-            <span className="text-gray-500 text-xs">Kein Bild</span>
-          </div>
-        )}
+    <div className="flex gap-4 p-4 border rounded-md bg-white dark:bg-zinc-900 shadow-sm border-black/[0.05]">
+      <div className="w-10 h-10 flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center border border-black/[0.05]">
+        <MessageSquare className="h-5 w-5 text-muted-foreground" />
       </div>
 
       <div className="flex flex-1 flex-col min-w-0">
-        <div className="flex items-center gap-3">
-          <h3 className="text-lg font-bold truncate">
-            {finding.name}
-          </h3>
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {formattedDate}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-bold truncate">
+            {activity.userName || "Anonym"}
+          </span>
+          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+            Kommentierte
+          </span>
+          <span className="text-sm font-bold hover:underline cursor-pointer truncate">
+            {activity.findingName}
           </span>
         </div>
 
-        {finding.description && (
-          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mt-1">
-            {finding.description}
-          </p>
-        )}
+        <p className="text-sm text-foreground/80 line-clamp-3 mb-2">
+          "{activity.text}"
+        </p>
 
-        {finding.dating && (
-          <span className="text-xs text-muted-foreground mt-2">
-            {finding.dating}
+        <div className="flex items-center gap-2">
+           <span className="text-[10px] text-muted-foreground">
+            {formattedDate}
           </span>
-        )}
-
-        {finding.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {finding.tags.map((tag) => (
-              <Tag key={tag.id} tag={tag} />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -101,51 +71,58 @@ function SectionSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
-        <Skeleton key={i} className="h-28 w-full rounded-xl" />
+        <Skeleton key={i} className="h-28 w-full rounded-md" />
       ))}
     </div>
   );
 }
 
 export default function CommunityPage() {
-  const { findings, loading } = useCommunityFindings();
-  const [search, setSearch] = useState("");
+  return (
+    <Suspense
+      fallback={
+        <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+          <Skeleton className="h-10 w-40" />
+          <Skeleton className="h-20 w-full rounded-md" />
+          <div className="space-y-4 pt-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 w-full rounded-md" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <CommunityPageContent />
+    </Suspense>
+  );
+}
 
-  const lowerSearch = search.toLowerCase();
-  const filtered = findings.filter((f) => {
-    if (!lowerSearch) return true;
-    return (
-      f.name.toLowerCase().includes(lowerSearch) ||
-      f.description?.toLowerCase().includes(lowerSearch) ||
-      f.dating?.toLowerCase().includes(lowerSearch) ||
-      f.tags.some((t) => t.name.toLowerCase().includes(lowerSearch))
-    );
-  });
+function CommunityPageContent() {
+  const filters = useFiltersFromURL();
+  const { findings, loading } = useFindings(filters, "/api/community/findings");
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <h1 className="text-4xl font-bold">Öffentlich</h1>
-      <FilterBar>
-        <SearchFilter
-          value={search}
-          onChange={(v) => setSearch(v ?? "")}
-          placeholder="Suche..."
-          className="flex-1 min-w-[80px]"
-        />
-      </FilterBar>
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Neueste Beiträge</h2>
+      <CommunityFilters />
+      
+      <section className="pt-4">
+        <h2 className="text-2xl font-bold mb-4">Alle Beiträge</h2>
         {loading ? (
           <SectionSkeleton />
-        ) : filtered.length === 0 ? (
+        ) : findings.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            Noch keine Funde vorhanden.
+            Keine Aktivitäten gefunden.
           </p>
         ) : (
           <div className="space-y-3">
-            {filtered.map((f) => (
-              <CommunityCard key={f.id} finding={f} />
-            ))}
+            {findings.map((item: any) => {
+              if (item.type === "finding") {
+                return <FindingCard key={item.id} finding={item} />;
+              } else {
+                return <CommentActivityCard key={item.id} activity={item} />;
+              }
+            })}
           </div>
         )}
       </section>

@@ -44,7 +44,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
     .filter((cat) => cat.tags.length > 0);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
       <Label>Tags</Label>
       <div className="flex flex-row gap-1.5 flex-wrap items-center">
         <div className="flex items-center">
@@ -55,8 +55,8 @@ export default function TagPicker<TFieldValues extends FieldValues>({
                 variant="outline"
                 size="sm"
                 className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
-                    ? "rounded-r-none border-r-0 text-foreground"
-                    : "text-muted-foreground"
+                  ? "rounded-r-none border-r-0 text-foreground"
+                  : "text-muted-foreground"
                   }`}
               >
                 <TagIcon className="h-3.5 w-3.5" />

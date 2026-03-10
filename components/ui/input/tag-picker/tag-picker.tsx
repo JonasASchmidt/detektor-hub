@@ -47,67 +47,95 @@ export default function TagPicker<TFieldValues extends FieldValues>({
     <div className="flex flex-col gap-1.5">
       <Label>Tags</Label>
       <div className="flex flex-row gap-1.5 flex-wrap items-center">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
+        <div className="flex items-center">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
+                    ? "rounded-r-none border-r-0 text-foreground"
+                    : "text-muted-foreground"
+                  }`}
+              >
+                <TagIcon className="h-3.5 w-3.5" />
+                Tags{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-0" align="start" collisionPadding={8}>
+              <div className="p-2 border-b">
+                <Input
+                  className="h-7 text-xs"
+                  placeholder="Tags suchen…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="max-h-56 overflow-y-auto py-1">
+                {filteredCategories.map((cat) => (
+                  <div key={cat.id}>
+                    <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {cat.name}
+                    </div>
+                    {cat.tags.map((tag) => {
+                      const active = selectedIds.includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          onClick={() => toggle(tag.id)}
+                          className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""
+                            }`}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: tag.color ?? "#888" }}
+                          />
+                          <span className="flex-1 text-left">{tag.name}</span>
+                          {active && (
+                            <X className="h-3 w-3 text-muted-foreground shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+                {filteredCategories.length === 0 && (
+                  <p className="px-3 py-4 text-xs text-muted-foreground text-center">
+                    Keine Tags gefunden
+                  </p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          {selectedIds.length > 0 && (
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0 ? "text-foreground" : "text-muted-foreground"}`}
+              onClick={() => field.onChange([])}
+              className="h-8 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
             >
-              <TagIcon className="h-3.5 w-3.5" />
-              Tags{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}
+              <X className="h-3.5 w-3.5" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-60 p-0" align="start" collisionPadding={8}>
-            <div className="p-2 border-b">
-              <Input
-                placeholder="Tags suchen…"
-                className="h-7 text-xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="max-h-56 overflow-y-auto py-1">
-              {filteredCategories.map((cat) => (
-                <div key={cat.id}>
-                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    {cat.name}
-                  </div>
-                  {cat.tags.map((tag) => {
-                    const active = selectedIds.includes(tag.id);
-                    return (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => toggle(tag.id)}
-                        className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${
-                          active ? "bg-accent font-medium" : ""
-                        }`}
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: tag.color ?? "#888" }}
-                        />
-                        <span className="flex-1 text-left">{tag.name}</span>
-                        {active && (
-                          <X className="h-3 w-3 text-muted-foreground shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-              {filteredCategories.length === 0 && (
-                <p className="px-3 py-4 text-xs text-muted-foreground text-center">
-                  Keine Tags gefunden
-                </p>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
+          )}
+        </div>
         {selectedTags.map((tag) => (
-          <TagComponent key={tag.id} tag={tag} />
+          <span
+            key={tag.id}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-sm font-medium text-white shadow-sm"
+            style={{ backgroundColor: tag.color ?? "#888" }}
+          >
+            {tag.name}
+            <button
+              type="button"
+              onClick={() => toggle(tag.id)}
+              className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground ml-0.5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
         ))}
       </div>
     </div>

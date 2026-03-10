@@ -89,7 +89,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />
-        <SidebarTrigger className="w-full justify-end group-data-[collapsible=icon]:justify-center px-2 mb-1 text-zinc-400 hover:text-foreground hover:bg-transparent" />
+        <SidebarTrigger className="w-full justify-end group-data-[collapsible=icon]:justify-center px-2 mb-1 text-zinc-400 hover:text-[#2d2d2d] active:text-[#2d2d2d] hover:!bg-transparent active:!bg-transparent transition-all duration-150 ease-in-out" />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

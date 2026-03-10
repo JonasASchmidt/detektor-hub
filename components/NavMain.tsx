@@ -115,7 +115,7 @@ export function NavMain({
                               isActive={isSubActive}
                               className={
                                 isNewFund
-                                  ? `font-medium border-2 hover:border-foreground ${isSubActive ? "border-foreground" : "border-transparent"}`
+                                  ? `font-medium border-2 transition-all duration-150 ease-in-out hover:!bg-transparent hover:border-[#2d2d2d] ${isSubActive ? "border-[#2d2d2d] !bg-[#2d2d2d] !text-white [&>svg]:!text-white data-[active=true]:!bg-[#2d2d2d] data-[active=true]:!text-white hover:!bg-[#2d2d2d] hover:!text-white active:!bg-[#2d2d2d]" : "border-transparent hover:!bg-transparent"}`
                                   : ""
                               }
                             >

@@ -27,8 +27,8 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   const [currentValue, setCurrentValue] = useState<string>();
   const [showModal, setShowModal] = useState(false);
 
-  const [lat, setLat] = useState<number>(field.value?.lat ?? 51);
-  const [lng, setLng] = useState<number>(field.value?.lng ?? 13);
+  const [lat, setLat] = useState<number | undefined>(field.value?.lat);
+  const [lng, setLng] = useState<number | undefined>(field.value?.lng);
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = () => {
     if (!currentInput || !currentValue) {
@@ -38,8 +38,8 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
     const newLat = currentInput === "lat" ? parseFloat(currentValue) : lat;
     const newLng = currentInput === "lng" ? parseFloat(currentValue) : lng;
 
-    setLat(newLat);
-    setLng(newLng);
+    setLat(newLat || undefined);
+    setLng(newLng || undefined);
     setCurrentInput(undefined);
     setCurrentValue(undefined);
 
@@ -63,48 +63,46 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   return (
     <>
       <div className="flex gap-1.5 flex-col">
-        <Label>Fundort</Label>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setShowModal(true)}
-          className="h-8 w-8 p-0"
-          title="Position auswählen"
-        >
-          <MapPinCheckIcon size={16} />
-        </Button>
-      </div>
-      <div className="flex gap-1.5 flex-col">
-        <Label htmlFor="lat">Lat.</Label>
+        <Label htmlFor="lat">Fundort</Label>
         <Input
           id="lat"
           type="number"
-          className="h-8 w-28 text-sm"
-          placeholder="51.0000"
+          className="h-8 w-24 text-sm"
+          placeholder="Latitude"
           onBlur={handleBlur}
           onChange={handleChange}
-          value={currentInput === "lat" ? currentValue : lat}
+          value={currentInput === "lat" ? currentValue : (lat ?? "")}
           min={-90}
           max={90}
           step="any"
           disabled={disabled}
         />
       </div>
-      <div className="flex gap-1.5 flex-col">
-        <Label htmlFor="lng">Lng.</Label>
+      <div className="flex gap-1.5 flex-col justify-end">
         <Input
           id="lng"
           type="number"
-          className="h-8 w-28 text-sm"
-          placeholder="13.0000"
+          className="h-8 w-24 text-sm"
+          placeholder="Longitude"
           onBlur={handleBlur}
           onChange={handleChange}
-          value={currentInput === "lng" ? currentValue : lng}
+          value={currentInput === "lng" ? currentValue : (lng ?? "")}
           min={-180}
           max={180}
           step="any"
           disabled={disabled}
         />
+      </div>
+      <div className="flex gap-1.5 flex-col justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowModal(true)}
+          className="h-8 px-3 whitespace-nowrap gap-2 shrink-0"
+        >
+          <MapPinCheckIcon size={16} />
+          Dein Standort
+        </Button>
       </div>
       {showModal && (
         <LocationModal

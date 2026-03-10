@@ -29,7 +29,7 @@ export default function FindingDashboard({ filteredTotal }: { filteredTotal?: nu
     fetch("/api/findings/stats")
       .then((res) => (res.ok ? res.json() : null))
       .then(setStats)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -64,9 +64,9 @@ export default function FindingDashboard({ filteredTotal }: { filteredTotal?: nu
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <Card className="aspect-[2/1]">
-        <CardContent className="h-full flex flex-col justify-center p-6 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[120px]">
+      <Card className="min-h-[120px]">
+        <CardContent className="h-full flex flex-col justify-center px-[20px] py-[16px] gap-1.5">
           {kpis.map((kpi) => (
             <div key={kpi.label} className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 min-w-0">
@@ -94,7 +94,7 @@ export default function FindingDashboard({ filteredTotal }: { filteredTotal?: nu
         </CardContent>
       </Card>
 
-      <Card className="aspect-[2/1] overflow-hidden">
+      <Card className="hidden md:block overflow-hidden min-h-[120px]">
         <FindingsMap filters={{ search: "", sort: "newest" }} />
       </Card>
     </div>

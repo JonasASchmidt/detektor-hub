@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, Plus, type LucideIcon } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -105,7 +105,7 @@ export function NavMain({
                   <CollapsibleContent>
                     <SidebarMenuSub className="mr-0">
                       {item.items.map((subItem) => {
-                        const isNewFund = subItem.title === "+ Neuer Fund";
+                        const isNewFund = subItem.title === "Neuer Fund";
                         const isSubActive = pathname === subItem.url;
 
                         return (
@@ -115,11 +115,12 @@ export function NavMain({
                               isActive={isSubActive}
                               className={
                                 isNewFund
-                                  ? "bg-[#2d2d2d] text-white font-medium hover:bg-zinc-700"
+                                  ? `font-medium border-2 hover:border-foreground ${isSubActive ? "border-foreground" : "border-transparent"}`
                                   : ""
                               }
                             >
                               <Link href={subItem.url} onClick={() => isMobile && setOpenMobile(false)}>
+                                {isNewFund && <Plus className="h-3.5 w-3.5 shrink-0" />}
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>

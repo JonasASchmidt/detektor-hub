@@ -25,7 +25,7 @@ export default async function DashboardLayout({
       <AppHeaderBar />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="overflow-auto overscroll-none min-h-0">
+        <SidebarInset className="overflow-y-scroll overflow-x-hidden overscroll-none min-h-0">
           {children}
           <Toaster position="top-right" richColors />
         </SidebarInset>

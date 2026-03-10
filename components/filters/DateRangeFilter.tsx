@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -28,44 +29,61 @@ export function DateRangeFilter({
   onClear,
   label = "Zeitraum",
 }: DateRangeFilterProps) {
+  const [open, setOpen] = useState(false);
   const hasValue = dateFrom || dateTo;
 
+  const handleDateFromChange = (date: Date | undefined) => {
+    onDateFromChange(date ? date.toISOString() : null);
+  };
+
+  const handleDateToChange = (date: Date | undefined) => {
+    onDateToChange(date ? date.toISOString() : null);
+    if (date) setOpen(false);
+  };
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1">
+        <Button variant="outline" size="sm" className="gap-1 shrink-0 h-8 whitespace-nowrap text-muted-foreground">
           <CalendarIcon className="h-3.5 w-3.5" />
-          {hasValue
-            ? `${dateFrom ? format(new Date(dateFrom), "dd.MM.yy", { locale: de }) : "..."} - ${dateTo ? format(new Date(dateTo), "dd.MM.yy", { locale: de }) : "..."}`
-            : label}
+          {label}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3 space-y-3">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Von</p>
-            <Calendar
-              mode="single"
-              selected={dateFrom ? new Date(dateFrom) : undefined}
-              onSelect={(date) =>
-                onDateFromChange(date ? date.toISOString() : null)
-              }
-              locale={de}
-            />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Bis</p>
-            <Calendar
-              mode="single"
-              selected={dateTo ? new Date(dateTo) : undefined}
-              onSelect={(date) =>
-                onDateToChange(date ? date.toISOString() : null)
-              }
-              locale={de}
-            />
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        collisionPadding={8}
+      >
+        <div className="p-2">
+          <div className="flex gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground px-1 mb-0.5">Von</p>
+              <Calendar
+                mode="single"
+                selected={dateFrom ? new Date(dateFrom) : undefined}
+                onSelect={handleDateFromChange}
+                locale={de}
+                className="p-1"
+              />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground px-1 mb-0.5">Bis</p>
+              <Calendar
+                mode="single"
+                selected={dateTo ? new Date(dateTo) : undefined}
+                onSelect={handleDateToChange}
+                locale={de}
+                className="p-1"
+              />
+            </div>
           </div>
           {hasValue && (
-            <Button variant="ghost" size="sm" onClick={onClear}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-7 mt-1 text-muted-foreground"
+              onClick={() => { onClear(); setOpen(false); }}
+            >
               Zeitraum zurücksetzen
             </Button>
           )}

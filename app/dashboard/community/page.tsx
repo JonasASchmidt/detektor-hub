@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { CldImage } from "next-cloudinary";
 import Tag from "@/components/tags/Tag";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
+import { FilterBar, SearchFilter } from "@/components/filters";
 import { Tag as TagType, Image as ImageType } from "@prisma/client";
 
 interface CommunityFinding {
@@ -123,14 +123,16 @@ export default function CommunityPage() {
   });
 
   return (
-    <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
+    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <h1 className="text-4xl font-bold">Öffentlich</h1>
-      <Input
-        placeholder="Suche..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full md:max-w-[200px]"
-      />
+      <FilterBar>
+        <SearchFilter
+          value={search}
+          onChange={(v) => setSearch(v ?? "")}
+          placeholder="Suche..."
+          className="flex-1 min-w-[80px]"
+        />
+      </FilterBar>
       <section>
         <h2 className="text-2xl font-bold mb-4">Neueste Beiträge</h2>
         {loading ? (

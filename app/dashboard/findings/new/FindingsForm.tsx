@@ -9,8 +9,9 @@ import DatePicker from "@/components/ui/input/date-picker";
 import LocationPicker from "@/components/ui/input/location-picker/location-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ImageIcon, Loader2, X } from "lucide-react";
+import { ChevronDown, ImageIcon, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { CldImage } from "next-cloudinary";
 import { Image as ImageType } from "@prisma/client";
@@ -40,6 +41,7 @@ export default function FindingsForm({ tagCategories }: Props) {
   const [loading, setLoading] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [allImages, setAllImages] = useState<ImageType[]>([]);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const selectedImageIds = watch("images") || [];
 
@@ -69,205 +71,230 @@ export default function FindingsForm({ tagCategories }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <Card className="bg-white dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto py-4 px-6 space-y-4">
-          <div className="grid gap-2">
+        <div className="py-6 px-6 space-y-5">
+          {/* Name */}
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
               type="text"
               placeholder="Titel des Fundes"
+              className="h-8"
               required
               {...register("name", { required: true })}
             />
           </div>
-          <div className="grid gap-2">
-            <Label>Funddatum</Label>
-            <DatePicker
-              control={control}
-              name="foundAt"
-              rules={{ required: true }}
-              placeholder="TEST"
-            />
-          </div>
-          <LocationPicker
-            control={control}
-            name="location"
-            rules={{ required: true }}
-          />
-          <TagPicker
-            control={control}
-            tagCategories={tagCategories}
-            name="tags"
-          />
-        </div>
-      </Card>
-      <Card className="bg-white dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto py-4 px-6 space-y-4">
-          <Label>Fotos</Label>
-          {selectedImageIds.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {selectedImageIds.map((id: string) => (
-                <div key={id} className="relative group w-20 h-20">
-                  <CldImage
-                    src={allImages.find((img) => img.id === id)?.publicId || id}
-                    width={80}
-                    height={80}
-                    crop="fill"
-                    gravity="auto"
-                    alt="Ausgewählt"
-                    className="rounded-md object-cover w-full h-full"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(id)}
-                    className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-            <DialogTrigger asChild>
-              <Button type="button" variant="outline">
-                <ImageIcon className="w-4 h-4 mr-2" />
-                Bilder auswählen ({selectedImageIds.length})
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Bilder aus Galerie wählen</DialogTitle>
-              </DialogHeader>
-              <ImageGallery
-                selected={selectedImageIds}
-                onSelect={(ids) => {
-                  handleChangeImages(ids);
-                  // Track images for thumbnails
-                  fetch("/api/user-images")
-                    .then((r) => r.json())
-                    .then(setAllImages)
-                    .catch(() => {});
-                }}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </Card>
-      <Card className="bg-white dark:bg-gray-900 relative p-6 md:p-8">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-row gap-6 flex-1">
-            <div className="grid gap-2 flex-1">
-              <Label htmlFor="depth">Fundtiefe [cm]</Label>
-              <Input
-                id="depth"
-                type="number"
-                placeholder="Tiefe in cm"
-                className="w-full"
-                {...register("depth")}
-              />
-            </div>
-            <div className="grid gap-2 flex-1">
-              <Label htmlFor="weight">Gewicht [g]</Label>
-              <Input
-                id="weight"
-                type="number"
-                placeholder="Gewicht in g"
-                className="w-full"
-                {...register("weight")}
-              />
-            </div>
-            <div className="grid gap-2 flex-1">
-              <Label htmlFor="diameter">Durchmesser [cm]</Label>
-              <Input
-                id="diameter"
-                type="number"
-                placeholder="Durchmesser in cm"
-                className="w-full"
-                {...register("diameter")}
-              />
-            </div>
-          </div>
-          <hr />
-          <div className="grid w-full gap-1.5">
+
+          {/* Beschreibung */}
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="description">Beschreibung</Label>
             <Textarea
-              placeholder="Allgemeine Beschreibung des Fundes."
               id="description"
+              placeholder="Allgemeine Beschreibung des Fundes (Vorder-/Rückseite, Besonderheiten …)"
+              rows={3}
               {...register("description")}
             />
           </div>
-          <div className="grid w-full gap-1.5">
-            <Label htmlFor="description_front">Beschreibung Vorderseite</Label>
-            <Textarea
-              placeholder="Beschreibung der Vorderseite."
-              id="description_front"
-              {...register("description_front")}
-            />
-          </div>
-          <div className="grid w-full gap-1.5">
-            <Label htmlFor="description_back">Beschreibung Rückseite</Label>
-            <Textarea
-              placeholder="Beschreibung der Rückseite."
-              id="description_back"
-              {...register("description_back")}
-            />
-          </div>
-          <hr />
-          <div className="grid gap-2">
-            <Label htmlFor="dating">Datierung (Freitext)</Label>
-            <Input
-              id="dating"
-              type="text"
-              placeholder="Datierung des Fundes"
-              {...register("dating")}
-            />
-          </div>
-          <div className="flex flex-row gap-6 flex-1">
-            <div className="grid gap-2 flex-1">
-              <Label htmlFor="dating_from">Datierung ab Jahr</Label>
-              <Input
-                id="dating_from"
-                type="number"
-                placeholder="Datierung ab Jahr"
-                className="w-full"
-                {...register("dating_from")}
+
+          {/* Row 1: Funddatum + Tags */}
+          <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end">
+            <div className="flex flex-col gap-1.5">
+              <Label>Funddatum</Label>
+              <DatePicker
+                control={control}
+                name="foundAt"
+                rules={{ required: true }}
+                placeholder="TT.MM.JJJJ"
               />
             </div>
-            <div className="grid gap-2 flex-1">
-              <Label htmlFor="dating_to">Datierung bis Jahr</Label>
-              <Input
-                id="dating_to"
-                type="number"
-                placeholder="Datierung bis Jahr"
-                className="w-full"
-                {...register("dating_to")}
-              />
-            </div>
-          </div>
-          <hr />
-          <div className="grid w-full gap-1.5">
-            <Label htmlFor="references">Referenzen</Label>
-            <Textarea
-              placeholder="Auflistung der Referenzen"
-              id="references"
-              {...register("references")}
+            <TagPicker
+              control={control}
+              tagCategories={tagCategories}
+              name="tags"
             />
           </div>
-          {loading ? (
-            <Button disabled>
-              <Loader2 className="animate-spin" />
-              Bitte Warten
-            </Button>
-          ) : (
-            <Button type="submit" className="w-full">
-              Speichern
-            </Button>
-          )}
+
+          {/* Row 2: Fundort icon + Lat + Lng */}
+          <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end">
+            <LocationPicker
+              control={control}
+              name="location"
+              rules={{ required: true }}
+            />
+          </div>
+
+          {/* Images */}
+          <div className="flex flex-col gap-2">
+            <Label>Fotos</Label>
+            {selectedImageIds.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedImageIds.map((id: string) => (
+                  <div key={id} className="relative group w-16 h-16">
+                    <CldImage
+                      src={allImages.find((img) => img.id === id)?.publicId || id}
+                      width={64}
+                      height={64}
+                      crop="fill"
+                      gravity="auto"
+                      alt="Ausgewählt"
+                      className="rounded-md object-cover w-full h-full"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(id)}
+                      className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline" size="sm" className="w-auto">
+                  <ImageIcon className="w-4 h-4" />
+                  Bilder auswählen ({selectedImageIds.length})
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Bilder aus Galerie wählen</DialogTitle>
+                </DialogHeader>
+                <ImageGallery
+                  selected={selectedImageIds}
+                  onSelect={(ids) => {
+                    handleChangeImages(ids);
+                    fetch("/api/user-images")
+                      .then((r) => r.json())
+                      .then(setAllImages)
+                      .catch(() => {});
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </Card>
+
+      {/* Advanced options */}
+      <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <Card className="bg-white dark:bg-gray-900">
+          <div className="py-4 px-6">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-xl font-bold hover:text-foreground/80 transition-colors w-full text-left"
+              >
+                <ChevronDown
+                  className={`h-5 w-5 transition-transform duration-200 ${advancedOpen ? "rotate-180" : ""}`}
+                />
+                Erweiterte Optionen
+              </button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <div className="pb-5 px-6 space-y-4">
+              {/* Measurements */}
+              <div className="flex flex-row gap-4 flex-wrap">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="depth">Fundtiefe [cm]</Label>
+                  <Input
+                    id="depth"
+                    type="number"
+                    placeholder="Tiefe"
+                    className="h-8 w-28"
+                    {...register("depth")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="weight">Gewicht [g]</Label>
+                  <Input
+                    id="weight"
+                    type="number"
+                    placeholder="Gewicht"
+                    className="h-8 w-28"
+                    {...register("weight")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="diameter">Durchmesser [cm]</Label>
+                  <Input
+                    id="diameter"
+                    type="number"
+                    placeholder="Durchmesser"
+                    className="h-8 w-28"
+                    {...register("diameter")}
+                  />
+                </div>
+              </div>
+
+              <hr />
+
+              {/* Dating */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="dating">Datierung (Freitext)</Label>
+                <Input
+                  id="dating"
+                  type="text"
+                  placeholder="z. B. Mittelalter, ca. 1200–1400"
+                  className="h-8"
+                  {...register("dating")}
+                />
+              </div>
+              <div className="flex flex-row gap-4 flex-wrap">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="dating_from">Datierung ab</Label>
+                  <Input
+                    id="dating_from"
+                    type="number"
+                    placeholder="Jahr von"
+                    className="h-8 w-28"
+                    {...register("dating_from")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="dating_to">Datierung bis</Label>
+                  <Input
+                    id="dating_to"
+                    type="number"
+                    placeholder="Jahr bis"
+                    className="h-8 w-28"
+                    {...register("dating_to")}
+                  />
+                </div>
+              </div>
+
+              <hr />
+
+              {/* References */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="references">Referenzen</Label>
+                <Textarea
+                  placeholder="Auflistung der Referenzen"
+                  id="references"
+                  rows={3}
+                  {...register("references")}
+                />
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Submit */}
+      {loading ? (
+        <Button disabled>
+          <Loader2 className="animate-spin" />
+          Bitte Warten
+        </Button>
+      ) : (
+        <Button type="submit" className="w-full">
+          Fund Speichern
+        </Button>
+      )}
     </form>
   );
 }

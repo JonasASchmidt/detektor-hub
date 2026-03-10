@@ -9,7 +9,7 @@ export function AppHeaderBar() {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
 
   return (
-    <div className="flex w-full shrink-0 items-center justify-start bg-[#2d2d2d] pl-3 pr-5 z-50 overscroll-none h-12">
+    <div className="flex w-full shrink-0 items-center justify-start bg-[#2d2d2d] pl-3 pr-5 z-50 overscroll-none h-[60px]">
       {isMobile && (
         <Button
           variant="ghost"

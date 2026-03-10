@@ -30,6 +30,7 @@ export async function GET() {
             findings: { some: { userId } },
           },
           select: {
+            id: true,
             name: true,
             _count: { select: { findings: true } },
           },
@@ -42,7 +43,7 @@ export async function GET() {
 
     const mostUsedTag =
       mostUsedTagResult.length > 0
-        ? { name: mostUsedTagResult[0].name, count: mostUsedTagResult[0]._count.findings }
+        ? { id: mostUsedTagResult[0].id, name: mostUsedTagResult[0].name, count: mostUsedTagResult[0]._count.findings }
         : null;
 
     return NextResponse.json(

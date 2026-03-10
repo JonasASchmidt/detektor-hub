@@ -43,7 +43,7 @@ export default function ImageDetailDialog({
       <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto p-0 gap-0 overflow-hidden">
         <div className="relative flex flex-col max-h-[95vh]">
           {/* Image area */}
-          <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black/5 dark:bg-black/20">
+          <div className="relative flex-1 min-h-0 flex items-center justify-center bg-foreground/5 dark:bg-foreground/20">
             {hasPrev && (
               <Button
                 variant="ghost"

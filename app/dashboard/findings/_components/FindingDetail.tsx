@@ -1,19 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import dynamic from "next/dynamic";
 import { CldImage } from "next-cloudinary";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
+import { de } from "date-fns/locale";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import TagComponent from "@/components/tags/Tag";
+import { Card } from "@/components/ui/card";
 
 const FindingDetailMap = dynamic(() => import("./FindingDetailMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-muted animate-pulse rounded-lg" />
+    <div className="w-full h-48 bg-muted animate-pulse rounded-xl" />
   ),
 });
 
@@ -22,55 +20,90 @@ interface Props {
 }
 
 export default function FindingDetail({ finding }: Props) {
-  const [commentText, setCommentText] = useState("");
+  if (!finding) return null;
 
-  const handleCommentSubmit = async () => {
-    // Logic to submit the comment to the backend.
-    // This could be a POST request to an API route.
-  };
-
-  if (!finding) {
-    return <div>Loading...</div>;
-  }
+  const [firstImage, ...restImages] = finding.images ?? [];
+  const hasDetails =
+    finding.depth || finding.weight || finding.diameter ||
+    finding.dating || finding.dating_from || finding.dating_to ||
+    finding.references || finding.description_front || finding.description_back;
 
   return (
-    <div className="max-w-full p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold">{finding.name}</h1>
-        <div className="text-sm text-gray-500">
-          <p>Found on: {format(new Date(finding.createdAt), "dd.MM.yyyy")}</p>
-          <p>By: {finding.user.name}</p>
-        </div>
-        <p className="text-gray-700">{finding.description}</p>
-        <div className="flex gap-1">
-          {finding.tags.map((tag) => (
-            <TagComponent key={`tag_${tag.id}`} tag={tag} />
-          ))}
-        </div>
+    <div className="max-w-[720px] mx-auto w-full px-6 pb-10 pt-12 md:px-10 md:pt-16 space-y-4">
 
-        {finding.images.length > 0 && (
-          <div className="mt-4 space-y-6">
-            {finding.images.map((image, index) => (
-              <div key={image.id} className="space-y-2">
-                <a
-                  href={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${image.publicId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block cursor-zoom-in"
-                >
-                  <CldImage
-                    src={image.publicId}
-                    width={1200}
-                    height={900}
-                    alt={image.title || `Bild ${index + 1}`}
-                    className="w-full max-h-[80vh] object-contain rounded-xl bg-muted"
-                  />
-                </a>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  {image.originalFilename && (
-                    <span>{image.originalFilename}</span>
-                  )}
-                  <span>{format(new Date(image.createdAt), "dd.MM.yyyy, HH:mm")} Uhr</span>
+      {/* Hero image */}
+      {firstImage && (
+        <a
+          href={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${firstImage.publicId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block cursor-zoom-in rounded-xl overflow-hidden bg-muted"
+        >
+          <CldImage
+            src={firstImage.publicId}
+            width={1440}
+            height={960}
+            crop="fill"
+            gravity="auto"
+            alt={finding.name ?? "Fund"}
+            format="auto"
+            quality="auto"
+            className="w-full max-h-[60vh] object-cover"
+          />
+        </a>
+      )}
+
+      {/* Title & meta */}
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold -mb-3">{finding.name}</h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span>{format(new Date(finding.foundAt ?? finding.createdAt), "d. MMMM yyyy", { locale: de })}</span>
+          {finding.user?.name && (
+            <>
+              <span>·</span>
+              <span>{finding.user.name}</span>
+            </>
+          )}
+        </div>
+        {finding.tags.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap pt-1">
+            {finding.tags.map((tag) => (
+              <TagComponent key={tag.id} tag={tag} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Description */}
+      {finding.description && (
+        <p className="text-base leading-relaxed">{finding.description}</p>
+      )}
+
+      {/* Additional images */}
+      {restImages.length > 0 && (
+        <div className="space-y-3">
+          {restImages.map((image, i) => (
+            <a
+              key={image.id}
+              href={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${image.publicId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block cursor-zoom-in rounded-xl overflow-hidden bg-muted"
+            >
+              <CldImage
+                src={image.publicId}
+                width={1440}
+                height={960}
+                crop="fill"
+                gravity="auto"
+                alt={image.title || `Bild ${i + 2}`}
+                format="auto"
+                quality="auto"
+                className="w-full max-h-[60vh] object-cover"
+              />
+              {(image.originalFilename || image.fileSize || image.width) && (
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground px-1 pt-1.5">
+                  {image.originalFilename && <span>{image.originalFilename}</span>}
                   {image.fileSize && (
                     <span>
                       {image.fileSize < 1024 * 1024
@@ -82,56 +115,66 @@ export default function FindingDetail({ finding }: Props) {
                     <span>{image.width} × {image.height} px</span>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )}
+            </a>
+          ))}
+        </div>
+      )}
 
+      {/* Map */}
+      <div className="rounded-xl overflow-hidden h-48">
         <FindingDetailMap
           latitude={finding.latitude}
           longitude={finding.longitude}
         />
       </div>
-      <div className="col-span-1 space-y-2">
-        <h2 className="text-xl font-semibold">Informationen zum Fund</h2>
-        <h3>Beschreibung Rückseite</h3>
-        <p>{finding.description_back}</p>
-        <h3>Beschreibung Vorderseite</h3>
-        <p>{finding.description_front}</p>
-        <p>Durchmesser: {finding.diameter}cm</p>
-        <p>Gewicht: {finding.weight}g</p>
-        <h2 className="text-xl font-semibold">Datierung</h2>
-        Geschätzte Datierung: {finding.dating_from} - {finding.dating_to}
-        <p>{finding.dating}</p>
-        <h2 className="text-xl font-semibold">Weitere Informationen</h2>
-        <p>{finding.references}</p>
-      </div>
-      <div className="col-span-1">
-        <h2 className="text-xl font-semibold">Comments</h2>
 
-        <div className="space-y-4 mt-2">
-          <p>No comments yet.</p>
-        </div>
+      {/* Details */}
+      {hasDetails && (
+        <Card className="bg-white p-6 space-y-4">
+          <h2 className="text-xl font-bold">Details</h2>
 
-        <div className="mt-2">
-          <Label htmlFor="comment">Add a comment</Label>
-          <Input
-            id="comment"
-            type="text"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Write your comment..."
-            className="w-full mt-2"
-          />
-          <Button
-            onClick={handleCommentSubmit}
-            disabled={!commentText}
-            className="mt-4"
-          >
-            Submit Comment
-          </Button>
-        </div>
-      </div>
+          {(finding.depth || finding.weight || finding.diameter) && (
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+              {finding.depth && <span><span className="text-muted-foreground">Tiefe</span> {finding.depth} cm</span>}
+              {finding.weight && <span><span className="text-muted-foreground">Gewicht</span> {finding.weight} g</span>}
+              {finding.diameter && <span><span className="text-muted-foreground">Durchmesser</span> {finding.diameter} cm</span>}
+            </div>
+          )}
+
+          {(finding.dating || finding.dating_from || finding.dating_to) && (
+            <div className="text-sm space-y-0.5">
+              {finding.dating && <p>{finding.dating}</p>}
+              {(finding.dating_from || finding.dating_to) && (
+                <p className="text-muted-foreground">
+                  {finding.dating_from ?? "?"} – {finding.dating_to ?? "?"}
+                </p>
+              )}
+            </div>
+          )}
+
+          {finding.description_front && (
+            <div className="text-sm space-y-0.5">
+              <p className="font-medium text-muted-foreground">Vorderseite</p>
+              <p>{finding.description_front}</p>
+            </div>
+          )}
+
+          {finding.description_back && (
+            <div className="text-sm space-y-0.5">
+              <p className="font-medium text-muted-foreground">Rückseite</p>
+              <p>{finding.description_back}</p>
+            </div>
+          )}
+
+          {finding.references && (
+            <div className="text-sm space-y-0.5">
+              <p className="font-medium text-muted-foreground">Referenzen</p>
+              <p className="whitespace-pre-line">{finding.references}</p>
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

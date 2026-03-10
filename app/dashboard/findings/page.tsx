@@ -1,15 +1,17 @@
 "use client";
 
 import { Suspense } from "react";
-import FindingDashboard from "./_components/FindingDashboard";
+import Link from "next/link";
 import FindingsClient from "./_components/FindingsClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function FindingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
+        <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
           <Skeleton className="h-10 w-32" />
           <div className="grid grid-cols-2 gap-4">
             <Skeleton className="aspect-[2/1] rounded-xl" />
@@ -26,9 +28,13 @@ export default function FindingsPage() {
 
 function FindingsPageContent() {
   return (
-    <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
-      <h1 className="text-4xl font-bold">Deine Funde</h1>
-      <FindingDashboard />
+    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Deine Funde</h1>
+        <Button asChild variant="ghost" className="h-8 border-2 border-foreground text-foreground hover:bg-transparent hover:text-foreground text-[14px] px-3">
+          <Link href="/dashboard/findings/new"><Plus className="h-4 w-4" />Neuer Fund</Link>
+        </Button>
+      </div>
       <FindingsClient />
     </div>
   );

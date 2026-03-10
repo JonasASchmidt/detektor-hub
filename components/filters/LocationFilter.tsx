@@ -59,16 +59,16 @@ export function LocationFilter({
   defaultRadius = "25",
   radiusOptions = defaultRadiusOptions,
 }: LocationFilterProps) {
+  const [open, setOpen] = useState(false);
   const [locLat, setLocLat] = useState(lat);
   const [locLng, setLocLng] = useState(lng);
   const [locRadius, setLocRadius] = useState(radius || defaultRadius);
   const [geoLoading, setGeoLoading] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
 
-  const handleApply = () => {
-    if (locLat && locLng) {
-      onApply(locLat, locLng, locRadius);
-    }
+  const applyAndClose = (newLat: string, newLng: string, newRadius: string) => {
+    onApply(newLat, newLng, newRadius);
+    setOpen(false);
   };
 
   const handleClear = () => {
@@ -76,6 +76,20 @@ export function LocationFilter({
     setLocLng("");
     setLocRadius(defaultRadius);
     onClear();
+    setOpen(false);
+  };
+
+  const handleRadiusChange = (value: string) => {
+    setLocRadius(value);
+    if (locLat && locLng) {
+      applyAndClose(locLat, locLng, value);
+    }
+  };
+
+  const handleCoordBlur = () => {
+    if (locLat && locLng) {
+      applyAndClose(locLat, locLng, locRadius);
+    }
   };
 
   const useCurrentPosition = () => {
@@ -88,7 +102,7 @@ export function LocationFilter({
         setLocLat(newLat);
         setLocLng(newLng);
         setGeoLoading(false);
-        onApply(newLat, newLng, locRadius);
+        applyAndClose(newLat, newLng, locRadius);
       },
       () => {
         setGeoLoading(false);
@@ -106,40 +120,55 @@ export function LocationFilter({
   const handleMapConfirm = () => {
     setMapOpen(false);
     if (locLat && locLng) {
-      onApply(locLat, locLng, locRadius);
+      applyAndClose(locLat, locLng, locRadius);
     }
   };
 
   return (
     <>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button variant="outline" size="sm" className="gap-1 shrink-0 h-8 whitespace-nowrap text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" />
-            {lat ? `Umkreis: ${radius || defaultRadius}km` : "Umkreis"}
+            Umkreis
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72">
-          <div className="space-y-3">
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full gap-2"
-              onClick={useCurrentPosition}
-              disabled={geoLoading}
-            >
-              {geoLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <LocateFixed className="h-3.5 w-3.5" />
-              )}
-              Mein Standort
-            </Button>
+        <PopoverContent
+          className="w-64"
+          align="start"
+          collisionPadding={8}
+        >
+          <div className="space-y-2 p-1">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 gap-1.5"
+                onClick={useCurrentPosition}
+                disabled={geoLoading}
+              >
+                {geoLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <LocateFixed className="h-3.5 w-3.5" />
+                )}
+                Standort
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 gap-1.5"
+                onClick={() => setMapOpen(true)}
+              >
+                <Map className="h-3.5 w-3.5" />
+                Karte
+              </Button>
+            </div>
 
-            <div className="space-y-2">
+            <div>
               <label className="text-xs text-muted-foreground">Umkreis</label>
-              <Select value={locRadius} onValueChange={setLocRadius}>
-                <SelectTrigger>
+              <Select value={locRadius} onValueChange={handleRadiusChange}>
+                <SelectTrigger className="mt-1 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,50 +181,38 @@ export function LocationFilter({
               </Select>
             </div>
 
-            <hr className="border-border" />
-
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Breitengrad</label>
-              <Input
-                type="number"
-                step="any"
-                placeholder="z.B. 51.0504"
-                value={locLat}
-                onChange={(e) => setLocLat(e.target.value)}
-              />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">Breite</label>
+                <Input
+                  className="mt-1 h-8"
+                  type="number"
+                  step="any"
+                  placeholder="51.0504"
+                  value={locLat}
+                  onChange={(e) => setLocLat(e.target.value)}
+                  onBlur={handleCoordBlur}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">Länge</label>
+                <Input
+                  className="mt-1 h-8"
+                  type="number"
+                  step="any"
+                  placeholder="13.7373"
+                  value={locLng}
+                  onChange={(e) => setLocLng(e.target.value)}
+                  onBlur={handleCoordBlur}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Längengrad</label>
-              <Input
-                type="number"
-                step="any"
-                placeholder="z.B. 13.7373"
-                value={locLng}
-                onChange={(e) => setLocLng(e.target.value)}
-              />
-            </div>
-
-            <Button size="sm" onClick={handleApply} className="w-full">
-              Anwenden
-            </Button>
-
-            <hr className="border-border" />
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full gap-2"
-              onClick={() => setMapOpen(true)}
-            >
-              <Map className="h-3.5 w-3.5" />
-              Standort auswählen
-            </Button>
 
             {lat && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full"
+                className="w-full h-7 text-muted-foreground"
                 onClick={handleClear}
               >
                 Umkreis entfernen
@@ -218,7 +235,11 @@ export function LocationFilter({
             }
             onClick={handleMapClick}
           />
-          <Button onClick={handleMapConfirm} className="w-full" disabled={!locLat || !locLng}>
+          <Button
+            onClick={handleMapConfirm}
+            className="w-full"
+            disabled={!locLat || !locLng}
+          >
             Bestätigen
           </Button>
         </DialogContent>

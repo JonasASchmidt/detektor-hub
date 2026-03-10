@@ -1,12 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import Tag from "@/components/tags/Tag";
+import { de } from "date-fns/locale";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import { CldImage } from "next-cloudinary";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { EyeIcon, PencilIcon } from "lucide-react";
+import { MessageSquare, Pencil } from "lucide-react";
+import Link from "next/link";
 
 interface FindingCardProps {
   finding: FindingWithRelations;
@@ -15,74 +15,86 @@ interface FindingCardProps {
 export default function FindingCard({ finding }: FindingCardProps) {
   const router = useRouter();
 
-  const formattedDate = format(new Date(finding.createdAt), "dd.MM.yyyy");
-
-  const handleClick = () => router.push(`findings/${finding.id}`);
-
-  const handleClickEdit = () => router.push(`findings/${finding.id}/edit`);
+  const formattedDate = format(new Date(finding.createdAt), "d.M.yyyy", { locale: de });
+  const firstImage = finding.images?.[0];
 
   return (
-    <div className="flex gap-4 p-4 border rounded-xl bg-white dark:bg-gray-900">
-      {/* Image */}
-      <div className="w-24 h-24 flex-shrink-0 relative">
-        {finding.images.length > 0 ? (
-          <CldImage
-            src={finding.images[0].publicId}
-            width={256}
-            height={256}
-            crop="fill"
-            gravity="auto"
-            alt="Image"
-            quality="3"
-            format="auto"
-            className="rounded-md object-cover w-full h-full"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-300 flex items-center justify-center rounded-md">
-            <span className="text-gray-500">No Image</span>
-          </div>
+    <div className="flex gap-0 border rounded-xl bg-white overflow-hidden">
+      {/* Left: content */}
+      <div className="flex-1 p-5 min-w-0">
+        <Link
+          href={`findings/${finding.id}`}
+          className="text-xl font-bold underline underline-offset-2 hover:text-primary leading-tight"
+        >
+          {finding.name}
+        </Link>
+
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span className="text-sm text-muted-foreground">{formattedDate}</span>
+          <span className="text-muted-foreground">•</span>
+          <span className="text-sm text-muted-foreground underline underline-offset-2">
+            {finding.user?.name ?? "Anonym"}
+          </span>
+          {finding.tags?.map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wide uppercase text-white"
+              style={{ backgroundColor: tag.color }}
+            >
+              {tag.name}
+            </span>
+          ))}
+          {finding.status === "DRAFT" && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wide uppercase bg-amber-100 text-amber-800">
+              Entwurf
+            </span>
+          )}
+        </div>
+
+        {finding.description && (
+          <p className="mt-3 text-sm leading-relaxed line-clamp-3 text-foreground">
+            {finding.description}
+          </p>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col">
-        <div className="flex justify-between">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-bold">
-                {finding.name}
-              </h2>
-              {finding.status === "DRAFT" && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                  Entwurf
-                </span>
-              )}
-              <div className="flex gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <p>{formattedDate}</p>
-                <span>•</span>
-                <p>{finding.user?.name ?? "Anonymous"}</p>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-              {finding.description}
-            </p>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {finding.tags?.map((tag) => (
-                <Tag key={tag.id} tag={tag} />
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 ml-4">
-            <Button onClick={handleClick} size="sm">
-              <EyeIcon className="w-4 h-4" />
-            </Button>
-            <Button onClick={handleClickEdit} size="sm" disabled>
-              <PencilIcon className="w-4 h-4" />
-            </Button>
-          </div>
+      {/* Right: image */}
+      {firstImage ? (
+        <div className="w-44 shrink-0 self-stretch relative">
+          <CldImage
+            src={firstImage.publicId}
+            width={320}
+            height={240}
+            crop="fill"
+            gravity="auto"
+            alt={finding.name}
+            format="auto"
+            quality="auto"
+            className="w-full h-full object-cover"
+          />
         </div>
+      ) : (
+        <div className="w-44 shrink-0 self-stretch bg-muted/60" />
+      )}
+
+      {/* Far right: action buttons */}
+      <div className="flex flex-col gap-2 p-2 shrink-0 justify-start">
+        <button
+          type="button"
+          onClick={() => router.push(`findings/${finding.id}`)}
+          className="flex items-center justify-center h-9 w-9 rounded-lg border border-input bg-white text-muted-foreground shadow-sm hover:bg-accent"
+          title="Kommentare"
+        >
+          <MessageSquare className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`findings/${finding.id}/edit`)}
+          className="flex items-center justify-center h-9 w-9 rounded-lg border border-input bg-white text-muted-foreground shadow-sm hover:bg-accent"
+          title="Bearbeiten"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );

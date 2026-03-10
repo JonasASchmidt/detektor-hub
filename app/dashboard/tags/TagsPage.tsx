@@ -40,7 +40,7 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
   };
 
   return (
-    <div className="p-6 md:pt-12 space-y-6 max-w-3xl mx-auto">
+    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <h1 className="text-4xl font-bold">Tags</h1>
       <p className="text-md text-muted-foreground">
         Verwalte hier deine Tags, um Funde zu kategorisieren und schneller zu finden. Klicke einen Tag an, um ihn zu bearbeiten.

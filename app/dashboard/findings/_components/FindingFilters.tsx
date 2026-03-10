@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { X } from "lucide-react";
 import { useURLFilters } from "@/app/_hooks/useURLFilters";
 import { UseFindingsParams } from "@/app/_hooks/useFindings";
 import {
@@ -29,7 +32,6 @@ const statusFilterOptions: MultiSelectOption[] = [
   { value: "reported:false", label: "Nicht gemeldet", group: "reported" },
 ];
 
-// Parse combined filter chips into status and reported URL params
 function chipsToParams(chips: string[]) {
   const statuses = chips
     .filter((c) => c.startsWith("status:"))
@@ -45,7 +47,6 @@ function chipsToParams(chips: string[]) {
   };
 }
 
-// Parse URL params back into chip values
 function paramsToChips(
   status: string | null,
   reported: string | null
@@ -60,6 +61,28 @@ function paramsToChips(
     chips.push(`reported:${reported}`);
   }
   return chips;
+}
+
+function formatDateRange(fromIso: string, toIso: string): string {
+  const from = fromIso ? new Date(fromIso) : null;
+  const to = toIso ? new Date(toIso) : null;
+
+  if (!from && !to) return "";
+  if (!from) return `bis ${format(to!, "dd.MM.yy", { locale: de })}`;
+  if (!to) return `ab ${format(from, "dd.MM.yy", { locale: de })}`;
+
+  const sameYear = from.getFullYear() === to.getFullYear();
+  const sameMonth = sameYear && from.getMonth() === to.getMonth();
+
+  const fromStr = sameMonth
+    ? format(from, "d.", { locale: de })
+    : sameYear
+    ? format(from, "d.MM.", { locale: de })
+    : format(from, "dd.MM.yy", { locale: de });
+
+  const toStr = format(to, "dd.MM.yy", { locale: de });
+
+  return `${fromStr} – ${toStr}`;
 }
 
 export function useFiltersFromURL(): UseFindingsParams {
@@ -128,12 +151,14 @@ export default function FindingsFilters() {
   const currentLng = searchParams.get("lng") || "";
   const currentRadius = searchParams.get("radius") || "";
 
+  const hasDateFilter = !!(currentDateFrom || currentDateTo);
+  const hasLocationFilter = !!currentLat;
+
   const hasActiveFilters =
     selectedChips.length > 0 ||
     currentTags.length > 0 ||
-    currentDateFrom ||
-    currentDateTo ||
-    currentLat;
+    hasDateFilter ||
+    hasLocationFilter;
 
   const handleChipsChange = (chips: string[]) => {
     const params = chipsToParams(chips);
@@ -144,54 +169,98 @@ export default function FindingsFilters() {
     handleChipsChange(selectedChips.filter((c) => c !== chip));
   };
 
+  const dateChipLabel = hasDateFilter
+    ? formatDateRange(currentDateFrom, currentDateTo)
+    : null;
+
+  const locationChipLabel = hasLocationFilter
+    ? `Umkreis: ${currentRadius || "25"} km`
+    : null;
+
+  const hasChips =
+    selectedChips.length > 0 ||
+    currentTags.length > 0 ||
+    dateChipLabel ||
+    locationChipLabel;
+
   return (
-    <FilterBar hasActiveFilters={!!hasActiveFilters} onClearAll={clearAll}>
-      <SearchFilter
-        value={searchParams.get("q") || ""}
-        onChange={(v) => setFilter("q", v)}
-        placeholder="Suche nach Name..."
-      />
+    <FilterBar
+      hasActiveFilters={!!hasActiveFilters}
+      onClearAll={clearAll}
+      chips={hasChips ? (
+        <>
+          <FilterChips selected={selectedChips} options={statusFilterOptions} onRemove={handleRemoveChip} />
+          {currentTags.map((id) => {
+            const tag = availableTags.find((t) => t.id === id);
+            return (
+              <span key={id} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: tag?.color ?? "#888" }}>
+                {tag?.name ?? id}
+                <button type="button" onClick={() => setFilter("tags", currentTags.filter((t) => t !== id).join(",") || null)} className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
+          {dateChipLabel && (
+            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
+              {dateChipLabel}
+              <button type="button" onClick={() => setMultipleFilters({ dateFrom: null, dateTo: null })} className="bg-transparent rounded-full p-0.5 hover:bg-primary/20">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {locationChipLabel && (
+            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
+              {locationChipLabel}
+              <button type="button" onClick={() => setMultipleFilters({ lat: null, lng: null, radius: null })} className="bg-transparent rounded-full p-0.5 hover:bg-primary/20">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+        </>
+      ) : undefined}
+    >
+        <SearchFilter
+          value={searchParams.get("q") || ""}
+          onChange={(v) => setFilter("q", v)}
+          placeholder="Suche..."
+          className="flex-1 min-w-[80px]"
+        />
 
-      <MultiSelectFilter
-        selected={selectedChips}
-        onChange={handleChipsChange}
-        options={statusFilterOptions}
-        placeholder="Status"
-      />
+        <MultiSelectFilter
+          selected={selectedChips}
+          onChange={handleChipsChange}
+          options={statusFilterOptions}
+          placeholder="Status"
+        />
 
-      <TagSelectFilter
-        selectedIds={currentTags}
-        options={availableTags}
-        onChange={(ids) =>
-          setFilter("tags", ids.length > 0 ? ids.join(",") : null)
-        }
-      />
+        <TagSelectFilter
+          selectedIds={currentTags}
+          options={availableTags}
+          onChange={(ids) =>
+            setFilter("tags", ids.length > 0 ? ids.join(",") : null)
+          }
+        />
 
-      <DateRangeFilter
-        dateFrom={currentDateFrom}
-        dateTo={currentDateTo}
-        onDateFromChange={(v) => setFilter("dateFrom", v)}
-        onDateToChange={(v) => setFilter("dateTo", v)}
-        onClear={() => setMultipleFilters({ dateFrom: null, dateTo: null })}
-      />
+        <DateRangeFilter
+          dateFrom={currentDateFrom}
+          dateTo={currentDateTo}
+          onDateFromChange={(v) => setFilter("dateFrom", v)}
+          onDateToChange={(v) => setFilter("dateTo", v)}
+          onClear={() => setMultipleFilters({ dateFrom: null, dateTo: null })}
+        />
 
-      <LocationFilter
-        lat={currentLat}
-        lng={currentLng}
-        radius={currentRadius}
-        onApply={(lat, lng, radius) =>
-          setMultipleFilters({ lat, lng, radius })
-        }
-        onClear={() =>
-          setMultipleFilters({ lat: null, lng: null, radius: null })
-        }
-      />
-
-      <FilterChips
-        selected={selectedChips}
-        options={statusFilterOptions}
-        onRemove={handleRemoveChip}
-      />
-    </FilterBar>
+        <LocationFilter
+          lat={currentLat}
+          lng={currentLng}
+          radius={currentRadius}
+          onApply={(lat, lng, radius) =>
+            setMultipleFilters({ lat, lng, radius })
+          }
+          onClear={() =>
+            setMultipleFilters({ lat: null, lng: null, radius: null })
+          }
+        />
+      </FilterBar>
   );
 }

@@ -28,6 +28,8 @@ Plan 3 of 3 in Phase
 
 ### Roadmap Evolution
 - Phase 1 added: Fix bugs and improve UI
+- Phase 1.1 added: Security Hardening (auth gaps, ownership checks, CRUD for findings)
+- Phase 1.2 added: Database & Error Resilience (indexes, error boundaries, Zod validation)
 
 ### Performance Metrics
 

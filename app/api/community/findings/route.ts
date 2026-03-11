@@ -58,10 +58,10 @@ export async function GET(req: Request) {
         createdAt: f.createdAt,
         foundAt: f.foundAt,
         dating: f.dating,
+        thumbnailId: f.thumbnailId,
         images: f.images,
         tags: f.tags,
-        userName: f.user?.name,
-        userImage: f.user?.image,
+        user: { name: f.user?.name ?? null, image: f.user?.image ?? null },
       })),
       ...comments.map((c) => ({
         type: "comment" as const,

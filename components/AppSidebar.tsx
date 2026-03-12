@@ -44,16 +44,9 @@ const navMain = [
         title: "Bilder",
         url: "/dashboard/images",
       },
-    ],
-  },
-  {
-    title: "Begehungen",
-    url: "/dashboard/sessions",
-    icon: MapIcon,
-    items: [
       {
-        title: "Neue Begehung",
-        url: "/dashboard/sessions/new",
+        title: "Begehungen",
+        url: "/dashboard/sessions",
       },
     ],
   },
@@ -72,11 +65,7 @@ function MobileHeader() {
   return (
     <SidebarHeader className="flex-row items-center justify-between px-4 py-3 border-b">
       <span className="text-lg font-bold">Sondlr</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setOpenMobile(false)}
-      >
+      <Button variant="ghost" size="icon" onClick={() => setOpenMobile(false)}>
         <X className="h-5 w-5" />
       </Button>
     </SidebarHeader>

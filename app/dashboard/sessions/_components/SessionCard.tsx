@@ -3,7 +3,13 @@
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { CalendarIcon, MapPinIcon, PencilIcon, ScanSearchIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  MapPinIcon,
+  Pencil,
+  ScanSearchIcon,
+  ScrollText,
+} from "lucide-react";
 import Link from "next/link";
 import type { Detector } from "@prisma/client";
 
@@ -40,7 +46,9 @@ export default function SessionCard({
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-base truncate">{name}</p>
         {description && (
-          <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
+            {description}
+          </p>
         )}
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
@@ -64,13 +72,22 @@ export default function SessionCard({
           )}
         </div>
       </div>
-      <Link
-        href={`/dashboard/sessions/${id}`}
-        className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-        title="Bearbeiten"
-      >
-        <PencilIcon className="w-4 h-4" />
-      </Link>
+      <div className="flex flex-col gap-2 shrink-0 h-full justify-center">
+        <Link
+          href={`/dashboard/sessions/${id}`}
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+          title="Bearbeiten"
+        >
+          <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
+        </Link>
+        <Link
+          href={`/dashboard/sessions/${id}/report`}
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+          title="Bericht"
+        >
+          <ScrollText className="h-[19px] w-[19px]" strokeWidth={1.2} />
+        </Link>
+      </div>
     </Card>
   );
 }

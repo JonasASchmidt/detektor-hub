@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, UsersIcon, X } from "lucide-react";
+import { LocateIcon, MapIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/NavMain";
@@ -43,6 +43,17 @@ const navMain = [
       {
         title: "Bilder",
         url: "/dashboard/images",
+      },
+    ],
+  },
+  {
+    title: "Begehungen",
+    url: "/dashboard/sessions",
+    icon: MapIcon,
+    items: [
+      {
+        title: "Neue Begehung",
+        url: "/dashboard/sessions/new",
       },
     ],
   },

@@ -43,3 +43,6 @@ next-env.d.ts
 # vscode
 .vscode
 .env*.local
+
+#claude
+.claude

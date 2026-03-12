@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, UsersIcon, X } from "lucide-react";
+import { LocateIcon, MapIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/NavMain";
@@ -44,6 +44,10 @@ const navMain = [
         title: "Bilder",
         url: "/dashboard/images",
       },
+      {
+        title: "Begehungen",
+        url: "/dashboard/sessions",
+      },
     ],
   },
   {
@@ -61,11 +65,7 @@ function MobileHeader() {
   return (
     <SidebarHeader className="flex-row items-center justify-between px-4 py-3 border-b">
       <span className="text-lg font-bold">Sondlr</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setOpenMobile(false)}
-      >
+      <Button variant="ghost" size="icon" onClick={() => setOpenMobile(false)}>
         <X className="h-5 w-5" />
       </Button>
     </SidebarHeader>

@@ -23,11 +23,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
 import TagPicker from "@/components/ui/input/tag-picker/tag-picker";
 
-interface Props {
-  tagCategories: TagCategoryWithTags[];
+interface SessionOption {
+  id: string;
+  name: string;
+  dateFrom: Date;
+  dateTo: Date | null;
 }
 
-export default function FindingsForm({ tagCategories }: Props) {
+interface Props {
+  tagCategories: TagCategoryWithTags[];
+  sessions: SessionOption[];
+}
+
+export default function FindingsForm({ tagCategories, sessions }: Props) {
   const LOCAL_STORAGE_KEY = "detektorhub_draft_finding";
 
   const {
@@ -139,6 +147,25 @@ export default function FindingsForm({ tagCategories }: Props) {
                 {...register("description")}
               />
             </div>
+
+            {/* Begehung */}
+            {sessions.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fieldSessionId">Begehung (optional)</Label>
+                <select
+                  id="fieldSessionId"
+                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  {...register("fieldSessionId")}
+                >
+                  <option value="">— keine Begehung —</option>
+                  {sessions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Small fields: Funddatum, Tags, Location */}
             <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full justify-between">

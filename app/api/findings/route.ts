@@ -122,6 +122,7 @@ export async function POST(req: Request) {
       references: data.references,
       thumbnailId: data.thumbnailId,
       foundAt: data.foundAt,
+      fieldSessionId: data.fieldSessionId ?? null,
       user: {
         connect: {
           id: session.user.id,

@@ -19,6 +19,7 @@ export interface FindingFormData {
   foundAt: Date;
   tags: string[];
   images: string[];
+  fieldSessionId?: string | null;
 }
 
 export const findingSchemaCompleted = z
@@ -43,6 +44,7 @@ export const findingSchemaCompleted = z
     foundAt: z.coerce.date(),
     tags: z.string().array(),
     images: z.string().array(),
+    fieldSessionId: z.string().optional().nullable(),
   })
   .refine(
     (data) => {

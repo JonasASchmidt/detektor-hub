@@ -16,43 +16,12 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { Detector } from "@prisma/client";
 import FindingsPicker from "./FindingsPicker";
+import { toGeoJSON, fromGeoJSON, pointInPolygon } from "@/lib/geo";
 
 const ZonePickerMap = dynamic(() => import("@/components/map/zone-picker-map"), {
   ssr: false,
   loading: () => <div className="h-[300px] bg-muted animate-pulse rounded-lg" />,
 });
-
-/** Convert Leaflet [lat,lng][] → GeoJSON Polygon string (GeoJSON uses [lng,lat]) */
-function toGeoJSON(coords: [number, number][]): string {
-  if (coords.length < 3) return "";
-  const ring = [...coords.map(([lat, lng]) => [lng, lat]), [coords[0][1], coords[0][0]]];
-  return JSON.stringify({ type: "Polygon", coordinates: [ring] });
-}
-
-/** Convert GeoJSON Polygon string → Leaflet [lat,lng][] */
-function fromGeoJSON(geoJson: string): [number, number][] {
-  try {
-    const parsed = JSON.parse(geoJson);
-    return (parsed.coordinates[0] as [number, number][])
-      .slice(0, -1)
-      .map(([lng, lat]) => [lat, lng]);
-  } catch {
-    return [];
-  }
-}
-
-/** Ray-casting point-in-polygon. Polygon vertices are [lat,lng]. */
-function pointInPolygon(lat: number, lng: number, polygon: [number, number][]): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [yi, xi] = polygon[i];
-    const [yj, xj] = polygon[j];
-    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
 
 export interface FindingOption {
   id: string;

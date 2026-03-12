@@ -52,7 +52,8 @@ export async function PUT(
 
   const { id } = await params;
   const body = await req.json();
-  const parseResult = fieldSessionSchema.safeParse(body);
+  const { findingIds, ...rest } = body;
+  const parseResult = fieldSessionSchema.safeParse(rest);
   if (!parseResult.success) {
     return NextResponse.json(
       { errors: parseResult.error.flatten().fieldErrors },
@@ -93,6 +94,20 @@ export async function PUT(
         SET zone = NULL
         WHERE id = ${id}
       `;
+    }
+  }
+
+  // Re-link findings: unlink all current, then link the new selection
+  if (Array.isArray(findingIds)) {
+    await prisma.finding.updateMany({
+      where: { fieldSessionId: id, userId: session.user.id },
+      data: { fieldSessionId: null },
+    });
+    if (findingIds.length > 0) {
+      await prisma.finding.updateMany({
+        where: { id: { in: findingIds }, userId: session.user.id },
+        data: { fieldSessionId: id },
+      });
     }
   }
 

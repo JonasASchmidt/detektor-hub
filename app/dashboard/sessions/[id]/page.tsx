@@ -14,28 +14,37 @@ export default async function EditSessionPage({
 
   const { id } = await params;
 
-  // Fetch session data including zone as GeoJSON
-  const rows = await prisma.$queryRaw<Array<Record<string, unknown>>>`
-    SELECT
-      id, name, description, "dateFrom", "dateTo",
-      "detectorId", "userId", "createdAt", "updatedAt",
-      ST_AsGeoJSON(zone) as zone
-    FROM "FieldSession"
-    WHERE id = ${id} AND "userId" = ${session.user.id}
-  `;
+  const [rows, detectors, allFindings] = await Promise.all([
+    prisma.$queryRaw<Array<Record<string, unknown>>>`
+      SELECT
+        id, name, description, "dateFrom", "dateTo",
+        "detectorId", "userId", "createdAt", "updatedAt",
+        ST_AsGeoJSON(zone) as zone
+      FROM "FieldSession"
+      WHERE id = ${id} AND "userId" = ${session.user.id}
+    `,
+    prisma.detector.findMany({ orderBy: [{ company: "asc" }, { name: "asc" }] }),
+    prisma.finding.findMany({
+      where: { userId: session.user.id },
+      select: { id: true, name: true, foundAt: true, latitude: true, longitude: true, fieldSessionId: true },
+      orderBy: { foundAt: "desc" },
+    }),
+  ]);
 
   if (!rows.length) notFound();
 
   const raw = rows[0];
 
-  const detectors = await prisma.detector.findMany({
-    orderBy: [{ company: "asc" }, { name: "asc" }],
-  });
+  // Pre-select findings already linked to this session
+  const linkedFindingIds = allFindings
+    .filter((f) => f.fieldSessionId === id)
+    .map((f) => f.id);
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 max-w-[720px] mx-auto w-full">
       <SessionForm
         detectors={detectors}
+        allFindings={allFindings}
         initialData={{
           id: raw.id as string,
           name: raw.name as string,
@@ -44,6 +53,7 @@ export default async function EditSessionPage({
           dateTo: raw.dateTo as string | null,
           zone: raw.zone as string | null,
           detectorId: raw.detectorId as string | null,
+          findingIds: linkedFindingIds,
         }}
       />
     </div>

@@ -8,13 +8,18 @@ export default async function NewSessionPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const detectors = await prisma.detector.findMany({
-    orderBy: [{ company: "asc" }, { name: "asc" }],
-  });
+  const [detectors, allFindings] = await Promise.all([
+    prisma.detector.findMany({ orderBy: [{ company: "asc" }, { name: "asc" }] }),
+    prisma.finding.findMany({
+      where: { userId: session.user.id },
+      select: { id: true, name: true, foundAt: true, latitude: true, longitude: true, fieldSessionId: true },
+      orderBy: { foundAt: "desc" },
+    }),
+  ]);
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 max-w-[720px] mx-auto w-full">
-      <SessionForm detectors={detectors} />
+      <SessionForm detectors={detectors} allFindings={allFindings} />
     </div>
   );
 }

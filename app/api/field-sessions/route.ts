@@ -29,7 +29,8 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const parseResult = fieldSessionSchema.safeParse(body);
+  const { findingIds, ...rest } = body;
+  const parseResult = fieldSessionSchema.safeParse(rest);
   if (!parseResult.success) {
     return NextResponse.json(
       { errors: parseResult.error.flatten().fieldErrors },
@@ -59,6 +60,14 @@ export async function POST(req: Request) {
       SET zone = ST_GeomFromGeoJSON(${zone})
       WHERE id = ${fieldSession.id}
     `;
+  }
+
+  // Link selected findings (only those belonging to this user)
+  if (Array.isArray(findingIds) && findingIds.length > 0) {
+    await prisma.finding.updateMany({
+      where: { id: { in: findingIds }, userId: session.user.id },
+      data: { fieldSessionId: fieldSession.id },
+    });
   }
 
   return NextResponse.json({ fieldSession }, { status: 201 });

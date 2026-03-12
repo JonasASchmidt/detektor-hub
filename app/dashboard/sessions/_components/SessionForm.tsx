@@ -7,62 +7,87 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import DatePicker from "@/components/ui/input/date-picker";
 import { Loader2, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { fieldSessionSchema, FieldSessionFormData } from "@/schemas/field-session";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { Detector } from "@prisma/client";
+import FindingsPicker from "./FindingsPicker";
 
 const ZonePickerMap = dynamic(() => import("@/components/map/zone-picker-map"), {
   ssr: false,
   loading: () => <div className="h-[300px] bg-muted animate-pulse rounded-lg" />,
 });
 
-/** Convert Leaflet [lat,lng][] to a GeoJSON Polygon string (lng,lat order for GeoJSON) */
+/** Convert Leaflet [lat,lng][] → GeoJSON Polygon string (GeoJSON uses [lng,lat]) */
 function toGeoJSON(coords: [number, number][]): string {
   if (coords.length < 3) return "";
   const ring = [...coords.map(([lat, lng]) => [lng, lat]), [coords[0][1], coords[0][0]]];
   return JSON.stringify({ type: "Polygon", coordinates: [ring] });
 }
 
-/** Convert a GeoJSON Polygon string back to Leaflet [lat,lng][] */
+/** Convert GeoJSON Polygon string → Leaflet [lat,lng][] */
 function fromGeoJSON(geoJson: string): [number, number][] {
   try {
     const parsed = JSON.parse(geoJson);
-    const ring: [number, number][] = parsed.coordinates[0];
-    // Drop the closing point (same as first)
-    return ring.slice(0, -1).map(([lng, lat]) => [lat, lng]);
+    return (parsed.coordinates[0] as [number, number][])
+      .slice(0, -1)
+      .map(([lng, lat]) => [lat, lng]);
   } catch {
     return [];
   }
 }
 
+/** Ray-casting point-in-polygon. Polygon vertices are [lat,lng]. */
+function pointInPolygon(lat: number, lng: number, polygon: [number, number][]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [yi, xi] = polygon[i];
+    const [yj, xj] = polygon[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+export interface FindingOption {
+  id: string;
+  name: string | null;
+  foundAt: Date | string;
+  latitude: number;
+  longitude: number;
+  fieldSessionId: string | null;
+}
+
 interface Props {
   detectors: Detector[];
-  /** When provided, the form is in edit mode */
+  allFindings: FindingOption[];
   initialData?: {
     id: string;
     name: string;
     description?: string | null;
     dateFrom: Date | string;
     dateTo?: Date | string | null;
-    zone?: string | null; // GeoJSON string
+    zone?: string | null;
     detectorId?: string | null;
+    findingIds?: string[];
   };
 }
 
-export default function SessionForm({ detectors, initialData }: Props) {
+export default function SessionForm({ detectors, allFindings, initialData }: Props) {
   const isEdit = !!initialData;
   const router = useRouter();
 
-  const [zoneCoords, setZoneCoords] = useState<[number, number][] | null>(() => {
-    if (initialData?.zone) return fromGeoJSON(initialData.zone);
-    return null;
-  });
-
+  const [zoneCoords, setZoneCoords] = useState<[number, number][] | null>(() =>
+    initialData?.zone ? fromGeoJSON(initialData.zone) : null
+  );
+  const [selectedFindingIds, setSelectedFindingIds] = useState<Set<string>>(
+    () => new Set(initialData?.findingIds ?? [])
+  );
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -79,14 +104,33 @@ export default function SessionForm({ detectors, initialData }: Props) {
     });
 
   const watchName = watch("name");
+  const dateFrom = useWatch({ control, name: "dateFrom" });
+  const dateTo = useWatch({ control, name: "dateTo" });
+
+  // Findings matching the active zone + date filters — passed down to the picker
+  const filteredFindings = useMemo(() => {
+    const hasZone = zoneCoords && zoneCoords.length >= 3;
+    const hasFilter = hasZone || !!dateFrom || !!dateTo;
+    if (!hasFilter) return allFindings;
+
+    return allFindings.filter((f) => {
+      const date = new Date(f.foundAt);
+      if (dateFrom && date < new Date(dateFrom)) return false;
+      if (dateTo && date > new Date(dateTo)) return false;
+      if (hasZone && !pointInPolygon(f.latitude, f.longitude, zoneCoords!)) return false;
+      return true;
+    });
+  }, [allFindings, zoneCoords, dateFrom, dateTo]);
 
   const onSubmit: SubmitHandler<FieldSessionFormData> = async (data) => {
     setLoading(true);
-
-    const zone =
-      zoneCoords && zoneCoords.length >= 3 ? toGeoJSON(zoneCoords) : null;
-
-    const payload = { ...data, zone, detectorId: data.detectorId || null };
+    const zone = zoneCoords && zoneCoords.length >= 3 ? toGeoJSON(zoneCoords) : null;
+    const payload = {
+      ...data,
+      zone,
+      detectorId: data.detectorId || null,
+      findingIds: Array.from(selectedFindingIds),
+    };
 
     const res = await fetch(
       isEdit ? `/api/field-sessions/${initialData!.id}` : "/api/field-sessions",
@@ -96,14 +140,9 @@ export default function SessionForm({ detectors, initialData }: Props) {
         body: JSON.stringify(payload),
       }
     );
-
     setLoading(false);
 
-    if (!res.ok) {
-      toast.error("Begehung konnte nicht gespeichert werden.");
-      return;
-    }
-
+    if (!res.ok) { toast.error("Begehung konnte nicht gespeichert werden."); return; }
     toast.success(isEdit ? "Begehung aktualisiert!" : "Neue Begehung angelegt!");
     router.push("/dashboard/sessions");
     router.refresh();
@@ -112,16 +151,10 @@ export default function SessionForm({ detectors, initialData }: Props) {
   const handleDelete = async () => {
     if (!initialData) return;
     if (!confirm("Begehung wirklich löschen? Die zugehörigen Funde bleiben erhalten.")) return;
-
     setDeleting(true);
     const res = await fetch(`/api/field-sessions/${initialData.id}`, { method: "DELETE" });
     setDeleting(false);
-
-    if (!res.ok) {
-      toast.error("Begehung konnte nicht gelöscht werden.");
-      return;
-    }
-
+    if (!res.ok) { toast.error("Begehung konnte nicht gelöscht werden."); return; }
     toast.success("Begehung gelöscht.");
     router.push("/dashboard/sessions");
     router.refresh();
@@ -129,27 +162,20 @@ export default function SessionForm({ detectors, initialData }: Props) {
 
   return (
     <>
-      <h1 className="text-4xl font-bold truncate mb-3" title={watchName || (isEdit ? "Begehung bearbeiten" : "Neue Begehung")}>
+      <h1 className="text-4xl font-bold truncate mb-3">
         {watchName || (isEdit ? "Begehung bearbeiten" : "Neue Begehung")}
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        {/* Basic info */}
         <Card className="bg-white dark:bg-gray-900 border border-border">
           <div className="py-6 px-6 space-y-5">
-            {/* Name */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="z. B. Äcker bei Mühlhausen"
-                {...register("name", { required: true })}
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
+              <Input id="name" placeholder="z. B. Äcker bei Mühlhausen" {...register("name", { required: true })} />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
 
-            {/* Beschreibung */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">Beschreibung</Label>
               <Textarea
@@ -160,34 +186,19 @@ export default function SessionForm({ detectors, initialData }: Props) {
               />
             </div>
 
-            {/* Dates */}
             <div className="flex flex-row flex-wrap gap-4 items-end">
               <div className="flex flex-col gap-1.5">
                 <Label>Datum (von)</Label>
-                <DatePicker
-                  control={control}
-                  name="dateFrom"
-                  rules={{ required: true }}
-                  placeholder="TT.MM.JJJJ"
-                />
-                {errors.dateFrom && (
-                  <p className="text-xs text-destructive">{errors.dateFrom.message as string}</p>
-                )}
+                <DatePicker control={control} name="dateFrom" rules={{ required: true }} placeholder="TT.MM.JJJJ" />
+                {errors.dateFrom && <p className="text-xs text-destructive">{errors.dateFrom.message as string}</p>}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label>Datum (bis, optional)</Label>
-                <DatePicker
-                  control={control}
-                  name="dateTo"
-                  placeholder="TT.MM.JJJJ"
-                />
-                {errors.dateTo && (
-                  <p className="text-xs text-destructive">{errors.dateTo.message as string}</p>
-                )}
+                <DatePicker control={control} name="dateTo" placeholder="TT.MM.JJJJ" />
+                {errors.dateTo && <p className="text-xs text-destructive">{errors.dateTo.message as string}</p>}
               </div>
             </div>
 
-            {/* Detector */}
             {detectors.length > 0 && (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="detectorId">Verwendetes Gerät (optional)</Label>
@@ -198,9 +209,7 @@ export default function SessionForm({ detectors, initialData }: Props) {
                 >
                   <option value="">— kein Gerät ausgewählt —</option>
                   {detectors.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.company} {d.name}
-                    </option>
+                    <option key={d.id} value={d.id}>{d.company} {d.name}</option>
                   ))}
                 </select>
               </div>
@@ -217,12 +226,19 @@ export default function SessionForm({ detectors, initialData }: Props) {
                 Klicke auf die Karte um das Suchgebiet als Polygon einzuzeichnen.
               </p>
             </div>
-            <ZonePickerMap
-              value={zoneCoords ?? undefined}
-              onChange={(coords) => setZoneCoords(coords)}
-            />
+            <ZonePickerMap value={zoneCoords ?? undefined} onChange={setZoneCoords} />
           </div>
         </Card>
+
+        {/* Findings picker */}
+        {allFindings.length > 0 && (
+          <FindingsPicker
+            allFindings={allFindings}
+            filteredFindings={filteredFindings}
+            initialSelectedIds={initialData?.findingIds}
+            onChange={setSelectedFindingIds}
+          />
+        )}
 
         {/* Actions */}
         <div className="flex gap-3">
@@ -235,11 +251,7 @@ export default function SessionForm({ detectors, initialData }: Props) {
           >
             {loading ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Bitte warten</>
-            ) : isEdit ? (
-              "Änderungen speichern"
-            ) : (
-              "Begehung speichern"
-            )}
+            ) : isEdit ? "Änderungen speichern" : "Begehung speichern"}
           </Button>
 
           {isEdit && (
@@ -251,11 +263,7 @@ export default function SessionForm({ detectors, initialData }: Props) {
               onClick={handleDelete}
               className="border-2 border-destructive text-destructive hover:bg-destructive hover:text-white font-bold px-3 transition-all duration-150 ease-in-out"
             >
-              {deleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             </Button>
           )}
         </div>

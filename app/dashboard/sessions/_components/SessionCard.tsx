@@ -81,7 +81,7 @@ export default function SessionCard({
           <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
         </Link>
         <Link
-          href={`/dashboard/sessions/${id}/report`}
+          href="#"
           className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
           title="Bericht"
         >

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import SessionCard from "./_components/SessionCard";
+import { cookies } from "next/headers";
+import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
 
 export default async function SessionsPage() {
   const session = await getServerSession(authOptions);
@@ -27,6 +29,9 @@ export default async function SessionsPage() {
     WHERE "userId" = ${session.user.id}
   `;
   const zoneMap = new Map(zoneRows.map((r) => [r.id, r.has_zone]));
+
+  const cookieStore = await cookies();
+  const activeSessionId = cookieStore.get(ACTIVE_SESSION_COOKIE)?.value ?? null;
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
@@ -61,6 +66,7 @@ export default async function SessionsPage() {
               hasZone={zoneMap.get(s.id) ?? false}
               findingCount={s.findings.length}
               detector={s.detector}
+              isActive={s.id === activeSessionId}
             />
           ))}
         </div>

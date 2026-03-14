@@ -48,6 +48,10 @@ const navMain = [
         title: "Begehungen",
         url: "/dashboard/sessions",
       },
+      {
+        title: "Zonen",
+        url: "/dashboard/zones",
+      },
     ],
   },
   {

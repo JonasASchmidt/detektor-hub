@@ -15,30 +15,20 @@ export async function GET(
 
   const { id } = await params;
 
-  // Raw query to include zone as GeoJSON string
-  const rows = await prisma.$queryRaw<Array<Record<string, unknown>>>`
-    SELECT
-      id, name, description, "dateFrom", "dateTo",
-      "detectorId", "userId", "createdAt", "updatedAt",
-      ST_AsGeoJSON(zone) as zone
-    FROM "FieldSession"
-    WHERE id = ${id} AND "userId" = ${session.user.id}
-  `;
-
-  if (!rows.length) {
-    return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
-  }
-
-  // Also fetch relations via Prisma
-  const details = await prisma.fieldSession.findUnique({
+  const fieldSession = await prisma.fieldSession.findUnique({
     where: { id },
     include: {
       detector: true,
+      zone: { select: { id: true, name: true } },
       findings: { select: { id: true, name: true } },
     },
   });
 
-  return NextResponse.json({ fieldSession: { ...rows[0], ...details } });
+  if (!fieldSession || fieldSession.userId !== session.user.id) {
+    return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
+  }
+
+  return NextResponse.json({ fieldSession });
 }
 
 export async function PUT(
@@ -66,8 +56,16 @@ export async function PUT(
     return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
   }
 
-  const { name, description, dateFrom, dateTo, zone, detectorId } =
+  const { name, description, dateFrom, dateTo, zoneId, detectorId } =
     parseResult.data;
+
+  // Verify the zone belongs to this user if provided
+  if (zoneId) {
+    const zone = await prisma.zone.findUnique({ where: { id: zoneId } });
+    if (!zone || zone.userId !== session.user.id) {
+      return NextResponse.json({ error: "Zone nicht gefunden." }, { status: 404 });
+    }
+  }
 
   const fieldSession = await prisma.fieldSession.update({
     where: { id },
@@ -76,28 +74,11 @@ export async function PUT(
       description,
       dateFrom,
       dateTo: dateTo ?? null,
+      zoneId: zoneId ?? null,
       detectorId: detectorId ?? null,
     },
   });
 
-  // Update zone via raw SQL
-  if (zone !== undefined) {
-    if (zone) {
-      await prisma.$executeRaw`
-        UPDATE "FieldSession"
-        SET zone = ST_GeomFromGeoJSON(${zone})
-        WHERE id = ${id}
-      `;
-    } else {
-      await prisma.$executeRaw`
-        UPDATE "FieldSession"
-        SET zone = NULL
-        WHERE id = ${id}
-      `;
-    }
-  }
-
-  // Re-link findings: unlink all current, then link the new selection
   if (Array.isArray(findingIds)) {
     await prisma.finding.updateMany({
       where: { fieldSessionId: id, userId: session.user.id },

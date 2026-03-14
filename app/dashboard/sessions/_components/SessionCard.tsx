@@ -23,7 +23,7 @@ interface SessionCardProps {
   description?: string | null;
   dateFrom: string | Date;
   dateTo?: string | Date | null;
-  hasZone: boolean;
+  zone?: { id: string; name: string } | null;
   findingCount: number;
   detector?: Detector | null;
   isActive: boolean;
@@ -35,7 +35,7 @@ export default function SessionCard({
   description,
   dateFrom,
   dateTo,
-  hasZone,
+  zone,
   findingCount,
   detector,
   isActive,
@@ -90,11 +90,14 @@ export default function SessionCard({
             <ScanSearchIcon className="w-3.5 h-3.5" />
             {findingCount} {findingCount === 1 ? "Fund" : "Funde"}
           </span>
-          {hasZone && (
-            <span className="flex items-center gap-1">
+          {zone && (
+            <Link
+              href={`/dashboard/zones/${zone.id}`}
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
+            >
               <MapPinIcon className="w-3.5 h-3.5" />
-              Zone gesetzt
-            </span>
+              {zone.name}
+            </Link>
           )}
           {detector && (
             <span className="flex items-center gap-1 truncate">

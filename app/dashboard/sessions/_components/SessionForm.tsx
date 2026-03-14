@@ -13,15 +13,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { fieldSessionSchema, FieldSessionFormData } from "@/schemas/field-session";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import type { Detector } from "@prisma/client";
 import FindingsPicker from "./FindingsPicker";
-import { toGeoJSON, fromGeoJSON, pointInPolygon } from "@/lib/geo";
-
-const ZonePickerMap = dynamic(() => import("@/components/map/zone-picker-map"), {
-  ssr: false,
-  loading: () => <div className="h-[300px] bg-muted animate-pulse rounded-lg" />,
-});
+import ZonePicker from "./ZonePicker";
+import { useZonePicker } from "./useZonePicker";
+import { pointInPolygon } from "@/lib/geo";
 
 export interface FindingOption {
   id: string;
@@ -41,7 +37,7 @@ interface Props {
     description?: string | null;
     dateFrom: Date | string;
     dateTo?: Date | string | null;
-    zone?: string | null;
+    zoneId?: string | null;
     detectorId?: string | null;
     findingIds?: string[];
   };
@@ -51,9 +47,8 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
   const isEdit = !!initialData;
   const router = useRouter();
 
-  const [zoneCoords, setZoneCoords] = useState<[number, number][] | null>(() =>
-    initialData?.zone ? fromGeoJSON(initialData.zone) : null
-  );
+  const zone = useZonePicker(initialData?.zoneId);
+
   const [selectedFindingIds, setSelectedFindingIds] = useState<Set<string>>(
     () => new Set(initialData?.findingIds ?? [])
   );
@@ -69,6 +64,7 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
         dateFrom: initialData?.dateFrom ? new Date(initialData.dateFrom) : undefined,
         dateTo: initialData?.dateTo ? new Date(initialData.dateTo) : null,
         detectorId: initialData?.detectorId ?? "",
+        zoneId: initialData?.zoneId ?? "",
       },
     });
 
@@ -76,9 +72,8 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
   const dateFrom = useWatch({ control, name: "dateFrom" });
   const dateTo = useWatch({ control, name: "dateTo" });
 
-  // Findings matching the active zone + date filters — passed down to the picker
   const filteredFindings = useMemo(() => {
-    const hasZone = zoneCoords && zoneCoords.length >= 3;
+    const hasZone = zone.activeZoneCoords && zone.activeZoneCoords.length >= 3;
     const hasFilter = hasZone || !!dateFrom || !!dateTo;
     if (!hasFilter) return allFindings;
 
@@ -86,17 +81,24 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
       const date = new Date(f.foundAt);
       if (dateFrom && date < new Date(dateFrom)) return false;
       if (dateTo && date > new Date(dateTo)) return false;
-      if (hasZone && !pointInPolygon(f.latitude, f.longitude, zoneCoords!)) return false;
+      if (hasZone && !pointInPolygon(f.latitude, f.longitude, zone.activeZoneCoords!)) return false;
       return true;
     });
-  }, [allFindings, zoneCoords, dateFrom, dateTo]);
+  }, [allFindings, zone.activeZoneCoords, dateFrom, dateTo]);
 
   const onSubmit: SubmitHandler<FieldSessionFormData> = async (data) => {
     setLoading(true);
-    const zone = zoneCoords && zoneCoords.length >= 3 ? toGeoJSON(zoneCoords) : null;
+    let resolvedZoneId: string | null;
+    try {
+      resolvedZoneId = await zone.resolveZoneId();
+    } catch {
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       ...data,
-      zone,
+      zoneId: resolvedZoneId,
       detectorId: data.detectorId || null,
       findingIds: Array.from(selectedFindingIds),
     };
@@ -136,12 +138,15 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        {/* Basic info */}
         <Card className="bg-white dark:bg-gray-900 border border-border">
           <div className="py-6 px-6 space-y-5">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="z. B. Äcker bei Mühlhausen" {...register("name", { required: true })} />
+              <Input
+                id="name"
+                placeholder="z. B. Äcker bei Mühlhausen"
+                {...register("name", { required: true })}
+              />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
 
@@ -186,20 +191,17 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
           </div>
         </Card>
 
-        {/* Zone picker */}
-        <Card className="bg-white dark:bg-gray-900 border border-border">
-          <div className="py-4 px-6 space-y-3">
-            <div>
-              <p className="text-xl font-bold">Suchzone</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Klicke auf die Karte um das Suchgebiet als Polygon einzuzeichnen.
-              </p>
-            </div>
-            <ZonePickerMap value={zoneCoords ?? undefined} onChange={setZoneCoords} />
-          </div>
-        </Card>
+        <ZonePicker
+          zones={zone.zones}
+          selectedZoneId={zone.selectedZoneId}
+          isDrawingNewZone={zone.isDrawingNewZone}
+          newZoneName={zone.newZoneName}
+          newZoneCoords={zone.newZoneCoords}
+          onSelectChange={zone.handleSelectChange}
+          onNewZoneNameChange={zone.setNewZoneName}
+          onNewZoneCoordsChange={zone.setNewZoneCoords}
+        />
 
-        {/* Findings picker */}
         {allFindings.length > 0 && (
           <FindingsPicker
             allFindings={allFindings}
@@ -209,7 +211,6 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
           />
         )}
 
-        {/* Actions */}
         <div className="flex gap-3">
           <Button
             type="submit"

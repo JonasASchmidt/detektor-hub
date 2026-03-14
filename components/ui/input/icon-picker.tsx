@@ -84,10 +84,16 @@ const iconNames: (keyof typeof LucideIcons)[] = [
 ];
 
 // Create a new object that maps only valid icon keys to their component
-const icons = iconNames.reduce((acc, key) => {
-  acc[key] = LucideIcons[key] as React.FC<React.SVGProps<SVGSVGElement>>;
-  return acc;
-}, {} as Record<keyof typeof LucideIcons, React.FC<React.SVGProps<SVGSVGElement>>>);
+const icons = iconNames.reduce(
+  (acc, key) => {
+    acc[key] = LucideIcons[key] as React.FC<React.SVGProps<SVGSVGElement>>;
+    return acc;
+  },
+  {} as Record<
+    keyof typeof LucideIcons,
+    React.FC<React.SVGProps<SVGSVGElement>>
+  >,
+);
 
 interface Props {
   onChange: (icon: keyof typeof LucideIcons) => void;
@@ -100,12 +106,13 @@ export default function IconPicker({ onChange, value }: Props) {
   >(
     value && iconNames.find((icon) => icon === value)
       ? (value as keyof typeof LucideIcons)
-      : null
+      : null,
   );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!value || !iconNames.find((icon) => icon === value)) {
+      setSelectedIcon(null);
       return;
     }
 
@@ -123,7 +130,10 @@ export default function IconPicker({ onChange, value }: Props) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05]" variant="outline">
+        <Button
+          className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05]"
+          variant="outline"
+        >
           {SelectedIconComponent ? (
             <SelectedIconComponent className="w-5 h-5" />
           ) : (
@@ -139,7 +149,7 @@ export default function IconPicker({ onChange, value }: Props) {
               onClick={() => handleSelectIcon(iconName)}
               size="icon"
               variant="ghost"
-              className="w-10 h-10 hover:bg-muted rounded-md"
+              className="w-10 h-10 hover:bg-muted hover:text-foreground [&_svg]:hover:text-foreground rounded-md"
             >
               <DynamicIcon icon={iconName} />
             </Button>

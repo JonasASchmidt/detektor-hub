@@ -26,14 +26,22 @@ import ImageDetailDialog from "@/components/images/ImageDetailDialog";
 
 type ImageWithTags = ImageType & { tags?: Tag[] };
 
+interface SessionOption {
+  id: string;
+  name: string;
+  dateFrom: Date;
+  dateTo: Date | null;
+}
+
 interface Props {
+  sessions: SessionOption[];
   tagCategories: TagCategoryWithTags[];
   findingId?: string;
   initialData?: Partial<FindingFormData>;
   initialImages?: ImageType[];
 }
 
-export default function FindingsForm({ tagCategories, findingId, initialData, initialImages }: Props) {
+export default function FindingsForm({ tagCategories, sessions, findingId, initialData, initialImages }: Props) {
   const LOCAL_STORAGE_KEY = "detektorhub_draft_finding";
   const isEditMode = !!findingId;
   const router = useRouter();
@@ -157,8 +165,27 @@ export default function FindingsForm({ tagCategories, findingId, initialData, in
               />
             </div>
 
-            {/* Row 1: Funddatum + Location */}
-            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full">
+            {/* Begehung */}
+            {sessions.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fieldSessionId">Begehung (optional)</Label>
+                <select
+                  id="fieldSessionId"
+                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  {...register("fieldSessionId")}
+                >
+                  <option value="">— keine Begehung —</option>
+                  {sessions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Small fields: Funddatum, Tags, Location */}
+            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full justify-between">
               <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
                 <Label>Funddatum</Label>
                 <DatePicker

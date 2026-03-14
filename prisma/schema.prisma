@@ -21,6 +21,8 @@ model User {
   accounts      Account[]
   comments      Comment[]
   findings      Finding[]
+  fieldSessions FieldSession[]
+  zones         Zone[]
   images        Image[]
   sessions      Session[]
   notificationsReceived Notification[] @relation("NotificationRecipient")
@@ -92,9 +94,11 @@ model Finding {
   detectorId        String?
   thumbnailId       String?
   userId            String
+  fieldSessionId    String?
   comments          Comment[]
   detector          Detector?     @relation(fields: [detectorId], references: [id])
   user              User          @relation(fields: [userId], references: [id])
+  fieldSession      FieldSession? @relation(fields: [fieldSessionId], references: [id])
   images            Image[]
   tags              Tag[]         @relation("FindingTags")
   Finding_A         Finding[]     @relation("RelatedFindings")
@@ -124,11 +128,41 @@ model Image {
 }
 
 model Detector {
-  id       String    @id @default(uuid())
-  name     String
-  company  String
-  url      String
-  findings Finding[]
+  id            String         @id @default(uuid())
+  name          String
+  company       String
+  url           String
+  findings      Finding[]
+  fieldSessions FieldSession[]
+}
+
+model Zone {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  geometry    Unsupported("geometry(Polygon,4326)")?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  sessions    FieldSession[]
+}
+
+model FieldSession {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  dateFrom    DateTime
+  dateTo      DateTime?
+  zoneId      String?
+  detectorId  String?
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  zone        Zone?     @relation(fields: [zoneId], references: [id])
+  detector    Detector? @relation(fields: [detectorId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  findings    Finding[]
 }
 
 model Comment {

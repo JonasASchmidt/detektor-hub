@@ -8,6 +8,9 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { AppHeaderBar } from "@/components/AppHeaderBar";
+import { cookies } from "next/headers";
+import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -20,9 +23,22 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  // Resolve active field session from cookie
+  const cookieStore = await cookies();
+  const activeSessionId = cookieStore.get(ACTIVE_SESSION_COOKIE)?.value;
+  let activeSession: { id: string; name: string } | null = null;
+
+  if (activeSessionId && session.user?.id) {
+    const found = await prisma.fieldSession.findFirst({
+      where: { id: activeSessionId, userId: session.user.id },
+      select: { id: true, name: true },
+    });
+    activeSession = found ?? null;
+  }
+
   return (
     <SidebarProvider className="flex flex-col h-screen overflow-hidden">
-      <AppHeaderBar />
+      <AppHeaderBar activeSession={activeSession} />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <AppSidebar />
         <SidebarInset className="overflow-y-scroll overflow-x-hidden overscroll-none min-h-0">

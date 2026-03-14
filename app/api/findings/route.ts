@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { FindingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -87,6 +89,23 @@ export async function GET(req: Request) {
   }
 }
 
+/** Use explicit fieldSessionId if provided, otherwise fall back to the active session cookie. */
+async function resolveFieldSessionId(
+  explicit: string | null | undefined,
+  userId: string
+): Promise<string | null> {
+  if (explicit) return explicit;
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get(ACTIVE_SESSION_COOKIE)?.value;
+  if (!activeId) return null;
+  // Verify the cookie references a session that still belongs to this user
+  const exists = await prisma.fieldSession.findFirst({
+    where: { id: activeId, userId },
+    select: { id: true },
+  });
+  return exists?.id ?? null;
+}
+
 export async function POST(req: Request) {
   const body = await req.json();
   const parseResult = findingSchemaCompleted.safeParse(body);
@@ -123,11 +142,8 @@ export async function POST(req: Request) {
       references: data.references,
       thumbnailId: data.thumbnailId,
       foundAt: data.foundAt,
-      user: {
-        connect: {
-          id: session.user.id,
-        },
-      },
+      fieldSessionId: await resolveFieldSessionId(data.fieldSessionId, session.user.id),
+      userId: session.user.id,
       images: {
         connect: data.images.map((imageId) => ({ id: imageId })),
       },

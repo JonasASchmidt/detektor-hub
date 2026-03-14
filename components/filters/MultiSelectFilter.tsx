@@ -64,7 +64,7 @@ export function MultiSelectFilter({
         <button
           type="button"
           className={cn(
-            "flex items-center gap-1 h-8 rounded-md border border-input bg-white px-3 text-sm shadow-sm hover:bg-accent shrink-0 whitespace-nowrap",
+            "flex items-center gap-1 h-8 rounded-md border border-input bg-white px-3 text-sm hover:bg-accent shrink-0 whitespace-nowrap",
             className
           )}
         >

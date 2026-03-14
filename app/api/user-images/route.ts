@@ -13,6 +13,7 @@ export async function GET() {
   const images = await prisma.image.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    include: { tags: true },
   });
 
   return NextResponse.json(images, {

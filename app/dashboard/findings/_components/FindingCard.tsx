@@ -1,111 +1,164 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import { CldImage } from "next-cloudinary";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Pencil } from "lucide-react";
-import Link from "next/link";
+import { MapPin, MessageSquare, Pencil } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FindingLocationDialog from "./FindingLocationDialog";
 
 interface FindingCardProps {
   finding: FindingWithRelations;
+  hideTags?: boolean;
 }
 
-export default function FindingCard({ finding }: FindingCardProps) {
+export default function FindingCard({ finding, hideTags = false }: FindingCardProps) {
   const router = useRouter();
+  const [showMap, setShowMap] = useState(false);
+  const [county, setCounty] = useState<string | null>(null);
 
   const formattedDate = format(new Date(finding.createdAt), "d.M.yyyy", { locale: de });
   const displayImage = finding.images?.find(img => img.id === finding.thumbnailId) || finding.images?.[0];
+  const hasLocation = finding.latitude != null && finding.longitude != null;
+
+  useEffect(() => {
+    if (!hasLocation) return;
+    fetch(`/api/geo/admin-units?lat=${finding.latitude}&lon=${finding.longitude}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.county) setCounty(data.county); })
+      .catch(() => {});
+  }, [finding.latitude, finding.longitude, hasLocation]);
 
   const handleCardClick = () => {
     router.push(`findings/${finding.id}`);
   };
 
   return (
-    <div 
-      onClick={handleCardClick}
-      className="group relative flex gap-5 border-2 border-black/[0.05] rounded-lg bg-white p-4 h-[160px] items-center hover:border-[#333333] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all cursor-pointer"
-    >
-      {/* Left: content */}
-      <div className="flex-1 min-w-0 flex flex-col h-full justify-center">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-[19px] font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-            {finding.name}
-          </h3>
+    <>
+      <div
+        onClick={handleCardClick}
+        className="group relative flex gap-5 border-2 border-black/[0.05] rounded-lg bg-white p-4 items-start hover:border-[#333333] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all cursor-pointer"
+      >
+        {/* Left: content */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-[128px] justify-start">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-[19px] font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 -mt-0.5">
+              {finding.name}
+            </h3>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="text-[12px] text-muted-foreground/70 font-normal">{formattedDate}</span>
-            <span className="text-muted-foreground/40 text-[10px]">●</span>
-            <span className="text-[12px] text-muted-foreground/80 underline underline-offset-2 decoration-muted-foreground/30 font-normal cursor-default">
-              {finding.user?.name ?? "Anonym"}
-            </span>
-            {finding.tags?.map((tag) => (
-              <span
-                key={tag.id}
-                className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[10px] font-bold tracking-tight uppercase text-white ml-0.5"
-                style={{ backgroundColor: tag.color }}
-              >
-                {tag.name}
+            <div className="flex items-center gap-2.5 flex-wrap -mt-2">
+              <span className="text-[12px] text-muted-foreground/70 font-normal">{formattedDate}</span>
+              {county && (
+                <>
+                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-muted-foreground/40 shrink-0" />
+                  <span className="text-[12px] text-muted-foreground/70 font-normal">{county}</span>
+                </>
+              )}
+              <span className="text-muted-foreground/40 text-[10px]">●</span>
+              <span className="flex items-center gap-1.5">
+                <Avatar className="h-5 w-5 rounded-full shrink-0">
+                  <AvatarImage src={finding.user?.image ?? undefined} alt={finding.user?.name ?? "Anonym"} />
+                  <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-[8px] font-bold">
+                    {(finding.user?.name ?? "A").charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-[12px] text-muted-foreground/80 underline underline-offset-2 decoration-muted-foreground/30 font-normal cursor-default">
+                  {finding.user?.name ?? "Anonym"}
+                </span>
               </span>
-            ))}
+            </div>
           </div>
+
+          {finding.description && (
+            <p className="mt-3 text-[14.5px] leading-[1.35] line-clamp-2 text-foreground/80 font-light tracking-tight pr-4">
+              {finding.description}
+            </p>
+          )}
+
+          {/* Tags at bottom */}
+          {!hideTags && finding.tags && finding.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-auto pt-3">
+              {finding.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/findings?tags=${tag.id}`); }}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-tight uppercase text-white hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{ backgroundColor: tag.color }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
-        {finding.description && (
-          <p className="mt-3 text-[14.5px] leading-[1.35] line-clamp-2 text-foreground/80 font-light tracking-tight pr-4">
-            {finding.description}
-          </p>
+        {/* Right: image thumbnail */}
+        {displayImage && (
+          <div className="w-[200px] self-stretch shrink-0 bg-[#F8F8F8] rounded-lg overflow-hidden border border-black/[0.05] relative flex items-center justify-center">
+            <CldImage
+              src={displayImage.publicId}
+              width={460}
+              height={256}
+              crop="fill"
+              gravity="auto"
+              alt={finding.name || "Fundbild"}
+              format="auto"
+              quality="auto"
+              className="w-full h-full object-cover"
+            />
+            {(displayImage.title || displayImage.description) && (
+              <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {displayImage.title && <p className="text-[11px] font-semibold leading-tight truncate">{displayImage.title}</p>}
+                {displayImage.description && <p className="text-[10px] text-white/75 leading-tight truncate mt-0.5">{displayImage.description}</p>}
+              </div>
+            )}
+          </div>
         )}
-      </div>
 
-      {/* Right: image thumbnail */}
-      {displayImage && (
-        <div className="w-[230px] h-full shrink-0 bg-[#F8F8F8] rounded-lg overflow-hidden border border-black/[0.05] relative flex items-center justify-center">
-          <CldImage
-            src={displayImage.publicId}
-            width={460}
-            height={256}
-            crop="fill"
-            gravity="auto"
-            alt={finding.name || "Fundbild"}
-            format="auto"
-            quality="auto"
-            className="w-full h-full object-cover rounded-lg m-0.5"
-          />
+        {/* Far right: action buttons */}
+        <div className="flex flex-col gap-2 shrink-0 justify-start">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}`); }}
+            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+            title="Kommentare"
+          >
+            <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}/edit`); }}
+            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+            title="Bearbeiten"
+          >
+            <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
+          </button>
+          {hasLocation && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setShowMap(true); }}
+              className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+              title="Fundort"
+            >
+              <MapPin className="h-[19px] w-[19px]" strokeWidth={1.2} />
+            </button>
+          )}
         </div>
-      )}
-
-      {/* Far right: action buttons */}
-      <div className="flex flex-col gap-2 shrink-0 h-full justify-center">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`findings/${finding.id}`);
-          }}
-          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
-          title="Kommentare"
-        >
-          <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`findings/${finding.id}/edit`);
-          }}
-          className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
-          title="Bearbeiten"
-        >
-          <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
-        </button>
       </div>
-    </div>
 
-
+      {hasLocation && (
+        <FindingLocationDialog
+          open={showMap}
+          onClose={() => setShowMap(false)}
+          latitude={finding.latitude}
+          longitude={finding.longitude}
+          county={county}
+          name={finding.name}
+        />
+      )}
+    </>
   );
 }
-
-
-

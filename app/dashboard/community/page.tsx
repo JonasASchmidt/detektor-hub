@@ -1,67 +1,54 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { Suspense } from "react";
 import { format } from "date-fns";
-import { CldImage } from "next-cloudinary";
-import Tag from "@/components/tags/Tag";
+import { de } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Tag as TagType, Image as ImageType } from "@prisma/client";
 import CommunityFilters from "./_components/CommunityFilters";
 import { useFiltersFromURL } from "../findings/_components/FindingFilters";
 import { useFindings } from "@/app/_hooks/useFindings";
 import FindingCard from "../findings/_components/FindingCard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface CommunityActivity {
-  type: "finding" | "comment";
+interface LatestComment {
   id: string;
+  text: string;
   createdAt: string;
-  userName?: string;
-  userImage?: string;
-  // Finding fields
-  name?: string;
-  description?: string;
-  foundAt?: string;
-  dating?: string;
-  images?: ImageType[];
-  tags?: TagType[];
-  // Comment fields
-  text?: string;
-  findingId?: string;
-  findingName?: string;
+  userName: string | null;
+  userImage: string | null;
 }
 
-function CommentActivityCard({ activity }: { activity: CommunityActivity }) {
-  const formattedDate = format(new Date(activity.createdAt), "dd.MM.yyyy HH:mm");
+interface CommunityFinding {
+  id: string;
+  latestComment?: LatestComment | null;
+  [key: string]: unknown;
+}
+
+function CommentStrip({ findingId, comment }: { findingId: string; comment: LatestComment }) {
+  const router = useRouter();
+  const formattedDate = format(new Date(comment.createdAt), "d. MMM yyyy", { locale: de });
 
   return (
-    <div className="flex gap-4 p-4 border rounded-md bg-white dark:bg-zinc-900 shadow-sm border-black/[0.05]">
-      <div className="w-10 h-10 flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center border border-black/[0.05]">
-        <MessageSquare className="h-5 w-5 text-muted-foreground" />
-      </div>
-
-      <div className="flex flex-1 flex-col min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-bold truncate">
-            {activity.userName || "Anonym"}
-          </span>
-          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
-            Kommentierte
-          </span>
-          <span className="text-sm font-bold hover:underline cursor-pointer truncate">
-            {activity.findingName}
-          </span>
-        </div>
-
-        <p className="text-sm text-foreground/80 line-clamp-3 mb-2">
-          "{activity.text}"
-        </p>
-
-        <div className="flex items-center gap-2">
-           <span className="text-[10px] text-muted-foreground">
-            {formattedDate}
-          </span>
-        </div>
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        router.push(`/dashboard/findings/${findingId}#comments`);
+      }}
+      className="flex items-start gap-3 px-4 py-3 ml-4 bg-muted border-2 border-t-0 border-black/[0.05] rounded-b-lg cursor-pointer hover:brightness-95 transition-all"
+    >
+      <MessageSquare className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" strokeWidth={1.5} />
+      <Avatar className="h-5 w-5 rounded-full shrink-0">
+        <AvatarImage src={comment.userImage ?? undefined} alt={comment.userName ?? "Anonym"} />
+        <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-[8px] font-bold">
+          {(comment.userName ?? "A").charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0 flex items-baseline gap-2">
+        <span className="text-[12px] font-semibold text-foreground/80 shrink-0">{comment.userName ?? "Anonym"}</span>
+        <p className="text-[12px] text-muted-foreground truncate">„{comment.text}"</p>
+        <span className="text-[11px] text-muted-foreground/60 shrink-0">{formattedDate}</span>
       </div>
     </div>
   );
@@ -71,7 +58,7 @@ function SectionSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
-        <Skeleton key={i} className="h-28 w-full rounded-md" />
+        <Skeleton key={i} className="h-[160px] w-full rounded-lg" />
       ))}
     </div>
   );
@@ -83,10 +70,10 @@ export default function CommunityPage() {
       fallback={
         <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
           <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-20 w-full rounded-md" />
+          <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-4 pt-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-md" />
+              <Skeleton key={i} className="h-[160px] w-full rounded-lg" />
             ))}
           </div>
         </div>
@@ -105,24 +92,23 @@ function CommunityPageContent() {
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <h1 className="text-4xl font-bold">Öffentlich</h1>
       <CommunityFilters />
-      
+
       <section className="pt-4">
         <h2 className="text-2xl font-bold mb-4">Alle Beiträge</h2>
         {loading ? (
           <SectionSkeleton />
         ) : findings.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Keine Aktivitäten gefunden.
-          </p>
+          <p className="text-muted-foreground text-sm">Keine Beiträge gefunden.</p>
         ) : (
           <div className="space-y-3">
-            {findings.map((item: any) => {
-              if (item.type === "finding") {
-                return <FindingCard key={item.id} finding={item} />;
-              } else {
-                return <CommentActivityCard key={item.id} activity={item} />;
-              }
-            })}
+            {findings.map((item: CommunityFinding) => (
+              <div key={item.id} className="flex flex-col">
+                <FindingCard finding={item as any} hideTags />
+                {item.latestComment && (
+                  <CommentStrip findingId={item.id} comment={item.latestComment} />
+                )}
+              </div>
+            ))}
           </div>
         )}
       </section>

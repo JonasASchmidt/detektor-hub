@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { FindingStatus } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -136,5 +137,7 @@ export async function POST(req: Request) {
     },
   });
 
+  revalidatePath("/dashboard/findings");
+  revalidatePath("/dashboard/community");
   return NextResponse.json({ finding }, { status: 201 });
 }

@@ -14,7 +14,7 @@ export default async function FindingDetailPage({ params }: Props) {
   const finding: FindingWithRelations | null = await prisma.finding.findUnique({
     where: { id },
     include: {
-      comments: true,
+      comments: { include: { user: true }, orderBy: { createdAt: "desc" } },
       images: true,
       tags: true,
       user: true,

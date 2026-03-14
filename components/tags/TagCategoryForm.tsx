@@ -49,17 +49,24 @@ export function TagCategoryForm({ category, onAddCategory }: Props) {
   };
 
   return (
-    <form className="p-6 md:p-8" onSubmit={handleSubmit}>
-      <div className="flex flex-col gap-6">
+    <form className="relative p-6 md:p-8" onSubmit={handleSubmit}>
+      <div className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-2xl font-bold tracking-tight">Neue Kategorie erstellen</h2>
+          <p className="text-sm text-muted-foreground">
+            Erstelle Kategorien, um Tags zu gruppieren und Funde systematisch zu organisieren.
+          </p>
+        </header>
+
         <div className="grid gap-2">
-          <Label htmlFor="name" className="text-sm font-semibold ml-1">Neue Kategorie</Label>
+          <Label htmlFor="name" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Kategorie Name</Label>
           <Input
             id="name"
             type="text"
             placeholder="z.B. Epoche, Material, Erhaltung..."
             value={formData.name}
             onChange={handleChange}
-            className="h-10 rounded-xl bg-muted/30 border-black/[0.05] focus-visible:ring-black/10"
+            className="bg-white hover:bg-white border-black/[0.05] focus-visible:ring-black/10"
             required
           />
         </div>
@@ -69,21 +76,19 @@ export function TagCategoryForm({ category, onAddCategory }: Props) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <Button 
-          type="submit" 
-          disabled={loading}
-          variant="ghost"
-          className="w-full h-11 border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] text-[14px] font-bold px-3 transition-all duration-150 ease-in-out rounded-xl"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Bitte warten
-            </>
-          ) : (
-            "Kategorie hinzufügen"
-          )}
-        </Button>
+
+        <div className="flex gap-3 pt-2">
+          <Button type="submit" className="flex-1 font-bold transition-all shadow-sm" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                Speichere...
+              </>
+            ) : (
+              "Kategorie erstellen"
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

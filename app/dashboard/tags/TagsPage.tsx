@@ -58,7 +58,7 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
         onChange={(e) => setSearch(e.target.value)}
         className="w-full md:max-w-[200px]"
       />
-      <Card className="bg-white dark:bg-gray-900">
+      <Card className="bg-muted dark:bg-gray-900">
         <CardContent className="p-6 flex flex-wrap gap-2">
           {tags.length === 0
             ? "Bisher wurden keine Tags erstellt"
@@ -82,7 +82,7 @@ export default function Dashboard({ initialTags, tagCategories }: Props) {
             />
         </CardContent>
       </Card>
-      <Card className="bg-white dark:bg-gray-900">
+      <Card className="bg-muted dark:bg-gray-900">
         <TagForm
           onAddTag={handleNewTag}
           onUpdateTag={handleUpdateTag}

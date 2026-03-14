@@ -1,0 +1,69 @@
+[   10299ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/auth/callback/credentials:0
+[   26608ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/auth/callback/credentials:0
+[   50454ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:3000/api/auth/callback/credentials:0
+[   65178ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.59098698718296&lon=9.856160310026356:0
+[   65179ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.4106761687791&lon=12.1910123895988:0
+[   65180ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41201460941635&lon=12.19387754307263:0
+[   65181ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41087063250737&lon=12.19195173504519:0
+[   65181ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41267423871896&lon=12.19637622020659:0
+[   65182ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41201645776101&lon=12.19107314402169:0
+[   65389ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.2&lon=11.6:0
+[   65391ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.3&lon=11.5:0
+[   65392ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.1&lon=11.7:0
+[   65393ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.3705&lon=10.8978:0
+[   65394ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=51.9607&lon=7.6261:0
+[   65396ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=52.2689&lon=10.5268:0
+[   65653ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=54.3233&lon=10.1228:0
+[   65655ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=49.0069&lon=8.4037:0
+[   65656ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.1109&lon=8.6821:0
+[   65657ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=52.3759&lon=9.732:0
+[   65659ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=51.4556&lon=7.0116:0
+[   65659ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.0793&lon=8.8017:0
+[   65844ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.5&lon=9.2167:0
+[   65845ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.5753&lon=10.0153:0
+[   65855ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.4106761687791&lon=12.1910123895988:0
+[   65856ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41201460941635&lon=12.19387754307263:0
+[   65858ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41087063250737&lon=12.19195173504519:0
+[   65860ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.59098698718296&lon=9.856160310026356:0
+[   66024ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41267423871896&lon=12.19637622020659:0
+[   66026ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.41201645776101&lon=12.19107314402169:0
+[   66044ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.2&lon=11.6:0
+[   66134ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.3&lon=11.5:0
+[   66135ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.1&lon=11.7:0
+[   66137ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.3705&lon=10.8978:0
+[   66271ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=52.2689&lon=10.5268:0
+[   66273ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=51.9607&lon=7.6261:0
+[   66319ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=49.0069&lon=8.4037:0
+[   66320ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=50.1109&lon=8.6821:0
+[   66321ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=52.3759&lon=9.732:0
+[   66323ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=54.3233&lon=10.1228:0
+[   66464ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.0793&lon=8.8017:0
+[   66465ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=51.4556&lon=7.0116:0
+[   66507ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=53.5753&lon=10.0153:0
+[   66508ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/geo/admin-units?lat=48.5&lon=9.2167:0
+[  116801ms] [ERROR] ./components/image-gallery/ImageCard.tsx:74:23
+Parsing ecmascript source code failed
+  72 |             </Button>
+  73 |           </div>
+> 74 |         </CardContent>
+     |                       ^
+> 75 |       </Card>
+     | ^^^^^^^
+  76 |
+  77 |       <ImageDeleteDialog
+  78 |         image={image}
+
+Expected '</', got 'jsx text'
+
+Import traces:
+  Client Component Browser:
+    ./components/image-gallery/ImageCard.tsx [Client Component Browser]
+    ./components/image-gallery/ImageGallery.tsx [Client Component Browser]
+    ./app/dashboard/image-gallery/page.tsx [Client Component Browser]
+    ./app/dashboard/image-gallery/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/image-gallery/ImageCard.tsx [Client Component SSR]
+    ./components/image-gallery/ImageGallery.tsx [Client Component SSR]
+    ./app/dashboard/image-gallery/page.tsx [Client Component SSR]
+    ./app/dashboard/image-gallery/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:3127

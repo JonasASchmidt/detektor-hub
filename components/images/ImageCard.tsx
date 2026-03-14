@@ -1,11 +1,10 @@
 "use client";
 
 import type { Image } from "@prisma/client";
-import { Card, CardContent } from "../ui/card";
 import { CldImage } from "next-cloudinary";
 import { Button } from "../ui/button";
 import { Trash2, CheckCircle2, Circle } from "lucide-react";
-import { MouseEventHandler, useRef } from "react";
+import { MouseEventHandler, useRef, useState } from "react";
 import { ConfirmModal } from "../modals/ConfirmModal";
 import { toast } from "sonner";
 import ImageEditor from "./ImageEditor";
@@ -27,6 +26,7 @@ export default function ImageCard({
   image,
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [loaded, setLoaded] = useState(false);
 
   const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
@@ -53,33 +53,39 @@ export default function ImageCard({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Card
+          <div
             ref={cardRef}
             onClick={() => onClick(image.id)}
-            className={`relative group cursor-pointer transition border-2 ${
-              isSelected ? "border-zinc-800" : "border-transparent"
+            className={`relative group cursor-pointer transition rounded-lg overflow-hidden ${
+              isSelected ? "ring-2 ring-inset ring-zinc-800" : ""
             }`}
             tabIndex={0}
           >
-            <CardContent className="p-2 relative aspect-[1/1]">
+            <div className="relative aspect-square">
+              {!loaded && (
+                <div className="absolute inset-0 bg-muted animate-pulse" />
+              )}
               <CldImage
                 src={image.publicId}
-                width={200}
-                height={200}
+                fill
                 crop="fill"
                 gravity="auto"
-                alt="Image"
+                alt={image.title || "Bild"}
                 quality="auto"
                 format="auto"
-                className="rounded-lg object-cover w-full h-full"
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover"
+                onLoad={() => setLoaded(true)}
               />
-
-              <div 
+              {(image.title || image.description) && (
+                <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {image.title && <p className="text-[11px] font-semibold leading-tight truncate">{image.title}</p>}
+                  {image.description && <p className="text-[10px] text-white/75 leading-tight truncate">{image.description}</p>}
+                </div>
+              )}
+              <div
                 className="absolute top-1 right-1 p-2 z-10 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectToggle(image.id);
-                }}
+                onClick={(e) => { e.stopPropagation(); onSelectToggle(image.id); }}
               >
                 {isSelected ? (
                   <CheckCircle2 className="w-6 h-6 text-zinc-900 fill-white drop-shadow-sm" />
@@ -87,22 +93,8 @@ export default function ImageCard({
                   <Circle className="w-6 h-6 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
               </div>
-
-              <div className="absolute bottom-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                <ImageEditor image={image} onChange={handleChangeImage} />
-                <ConfirmModal
-                  onConfirm={handleConfirm}
-                  title="Foto löschen"
-                  description="Sind Sie sicher, dass Sie dieses Foto löschen wollen?"
-                  trigger={
-                    <Button size="icon" variant="destructive" onClick={handleDelete}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-zinc-900 border-zinc-800 text-white">
           <div className="flex flex-col gap-0.5">

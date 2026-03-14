@@ -29,6 +29,7 @@ interface Notification {
 }
 
 export function NotificationCenter() {
+  const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -89,10 +90,10 @@ export function NotificationCenter() {
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="relative p-2 text-white hover:bg-white/10 rounded-full transition-colors group">
-          <Bell className="h-[22px] w-[22px]" />
+        <button className={`relative p-2 text-white rounded-full transition-colors group ${open ? "bg-white/20" : "hover:bg-white/10"}`}>
+          <Bell className={`h-[22px] w-[22px] transition-transform ${open ? "scale-110" : ""}`} />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-[#2d2d2d]">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -100,31 +101,34 @@ export function NotificationCenter() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-0 mr-4 mt-2 shadow-2xl border-black/[0.1] rounded-2xl overflow-hidden" align="end">
+      <PopoverContent className="w-[380px] p-0 mt-2 ml-1 shadow-2xl border-black/[0.1] rounded-2xl overflow-hidden" align="start">
         <div className="bg-[#fcfcfc] border-b border-black/[0.05] p-4 flex items-center justify-between">
           <h3 className="font-bold text-lg">Mitteilungen</h3>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs text-muted-foreground hover:text-foreground h-7 gap-1.5"
-            onClick={markAllAsRead}
-          >
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Alle als gelesen markieren
-          </Button>
+          {notifications.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground h-7"
+              onClick={markAllAsRead}
+            >
+              Alle als gelesen markieren
+            </Button>
+          )}
         </div>
 
-        <div className="p-3 border-b border-black/[0.05] bg-white">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Suchen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-sm bg-muted/50 border-none rounded-lg focus-visible:ring-1 focus-visible:ring-black/10"
-            />
+        {notifications.length > 0 && (
+          <div className="p-3 border-b border-black/[0.05] bg-white">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Suchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm bg-muted/50 border-none rounded-lg focus-visible:ring-1 focus-visible:ring-black/10"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="h-[400px] overflow-y-auto">
           {loading ? (

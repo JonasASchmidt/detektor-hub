@@ -162,7 +162,7 @@ export function TagForm({
               placeholder="z.B. Münze..."
               value={formData.name}
               onChange={handleChange}
-              className="bg-muted/30 border-black/[0.05] focus-visible:ring-black/10"
+              className="bg-white hover:bg-white border-black/[0.05] focus-visible:ring-black/10"
               required
             />
           </div>
@@ -173,7 +173,7 @@ export function TagForm({
               onValueChange={handleChangeCategory}
               value={formData.category}
             >
-              <SelectTrigger id="category" className="bg-muted/30 border-black/[0.05]">
+              <SelectTrigger id="category" className="bg-white hover:bg-white border-black/[0.05]">
                 <SelectValue placeholder="Wählen..." />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-black/[0.05] shadow-xl">
@@ -205,12 +205,10 @@ export function TagForm({
             <div className="h-8 flex items-center">
               <TagComponent 
                 tag={{ ...formData, name: formData.name || "TAG NAME" } as any} 
-                className="!h-8 rounded-lg text-sm font-bold px-4 transition-all shadow-sm"
+                className="!h-8 rounded text-sm font-bold px-4 transition-all shadow-sm"
               />
             </div>
           </div>
-        </div>
-        <div className="pt-2 border-t border-black/[0.05]">
         </div>
         {error && (
           <Alert variant="destructive">

@@ -59,7 +59,7 @@ export function useFindings(params: UseFindingsParams, endpoint: string = "/api/
       });
 
       try {
-        const res = await fetch(`/api/findings?${query}`);
+        const res = await fetch(`${endpoint}?${query}`, { cache: "no-store" });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json.error || "Something went wrong");

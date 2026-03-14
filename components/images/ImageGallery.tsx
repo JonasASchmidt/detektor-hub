@@ -1,16 +1,26 @@
 "use client";
 
-import type { Image } from "@prisma/client";
+import type { Image, Tag } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
-import { ClockArrowDown, ClockArrowUp, Loader2, UploadCloud, FolderTree, Trash2, X, Check } from "lucide-react";
+import { Loader2, UploadCloud, FolderTree, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import ImageDetailDialog from "./ImageDetailDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Skeleton } from "../ui/skeleton";
-import { FilterBar, SearchFilter, DateRangeFilter } from "../filters";
+import { FilterBar, SearchFilter, DateRangeFilter, SelectFilter } from "../filters";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Tag as TagIcon } from "lucide-react";
+
+type ImageWithTags = Image & { tags?: Tag[] };
+
+interface TagCategory {
+  id: string;
+  name: string;
+  tags: Tag[];
+}
 
 interface Props {
   onSelect?: (ids: string[]) => void;
@@ -18,7 +28,7 @@ interface Props {
 }
 
 export default function ImageGallery({ onSelect, selected }: Props) {
-  const [images, setImages] = useState<Image[]>([]);
+  const [images, setImages] = useState<ImageWithTags[]>([]);
   const [sort, setSort] = useState<"desc" | "asc" | "az" | "za" | "last_used">("desc");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -27,6 +37,8 @@ export default function ImageGallery({ onSelect, selected }: Props) {
   const [fileType, setFileType] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
   const [internalSelected, setInternalSelected] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +54,10 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       .then((res) => res.json())
       .then(setImages)
       .finally(() => setLoading(false));
+    fetch("/api/tag-categories")
+      .then((res) => res.json())
+      .then(setTagCategories)
+      .catch(() => {});
   }, []);
 
   const lowerSearch = search.toLowerCase();
@@ -72,6 +88,11 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         if (new Date(img.createdAt) > toDate) match = false;
       }
 
+      if (match && selectedTagIds.length > 0) {
+        const imgTagIds = img.tags?.map((t) => t.id) ?? [];
+        match = selectedTagIds.every((tid) => imgTagIds.includes(tid));
+      }
+
       return match;
     })
     .sort((a, b) => {
@@ -94,7 +115,10 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     });
 
   const handleDelete = (id: string) =>
-    setImages(images.filter((image) => image.id !== id));
+    setImages((prev) => prev.filter((image) => image.id !== id));
+
+  const handleUpdate = (updated: ImageWithTags) =>
+    setImages((prev) => prev.map((img) => img.id === updated.id ? updated : img));
 
   const handleSelectToggle = (id: string) => {
     const isSelected = effectiveSelected.includes(id);
@@ -223,15 +247,16 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       </div>
 
       <FilterBar
-        hasActiveFilters={!!(search || fileType !== "all" || dateFrom || dateTo)}
+        hasActiveFilters={!!(search || fileType !== "all" || dateFrom || dateTo || selectedTagIds.length > 0)}
         onClearAll={() => {
           setSearch("");
           setFileType("all");
           setDateFrom("");
           setDateTo("");
+          setSelectedTagIds([]);
         }}
         chips={
-          (search || fileType !== "all" || dateFrom || dateTo) ? (
+          (search || fileType !== "all" || dateFrom || dateTo || selectedTagIds.length > 0) ? (
             <>
               {search && (
                 <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
@@ -257,6 +282,18 @@ export default function ImageGallery({ onSelect, selected }: Props) {
                   </button>
                 </span>
               )}
+              {selectedTagIds.map((tid) => {
+                const tag = tagCategories.flatMap((c) => c.tags).find((t) => t.id === tid);
+                if (!tag) return null;
+                return (
+                  <span key={tid} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-sm font-medium text-white" style={{ backgroundColor: tag.color }}>
+                    {tag.name}
+                    <button onClick={() => setSelectedTagIds((prev) => prev.filter((i) => i !== tid))}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
             </>
           ) : null
         }
@@ -271,10 +308,10 @@ export default function ImageGallery({ onSelect, selected }: Props) {
 
           <Select value={fileType} onValueChange={setFileType}>
             <SelectTrigger className="w-[70px] h-8 bg-white border-2 px-2 text-[13px]">
-              <SelectValue placeholder="Typ" />
+              <SelectValue placeholder="Alle" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Typ</SelectItem>
+              <SelectItem value="all">Alle</SelectItem>
               <SelectItem value="jpg">JPG</SelectItem>
               <SelectItem value="png">PNG</SelectItem>
               <SelectItem value="webp">WEBP</SelectItem>
@@ -289,26 +326,65 @@ export default function ImageGallery({ onSelect, selected }: Props) {
             onClear={() => { setDateFrom(""); setDateTo(""); }}
             label="Datum"
           />
+
+          {tagCategories.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 h-8 px-2.5 text-[13px] font-medium rounded-lg border-2 bg-white transition-colors ${selectedTagIds.length > 0 ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-foreground"}`}
+                >
+                  <TagIcon className="h-3.5 w-3.5" />
+                  Tags{selectedTagIds.length > 0 ? ` (${selectedTagIds.length})` : ""}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-0" align="start">
+                <div className="max-h-56 overflow-y-auto py-1">
+                  {tagCategories.map((cat) => (
+                    <div key={cat.id}>
+                      <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        {cat.name}
+                      </div>
+                      {cat.tags.map((tag) => {
+                        const active = selectedTagIds.includes(tag.id);
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => setSelectedTagIds((prev) => active ? prev.filter((i) => i !== tag.id) : [...prev, tag.id])}
+                            className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""}`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                            <span className="flex-1 text-left">{tag.name}</span>
+                            {active && <X className="h-3 w-3 text-muted-foreground" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </FilterBar>
 
-      <div className="flex flex-col gap-2 pt-2 px-1">
-        <div className="flex items-center justify-between mb-1">
+      <div className="!mt-12 flex flex-col gap-0">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-bold">
             {sortedImages.length} {sortedImages.length === 1 ? "Bild" : "Bilder"}
           </h2>
-          <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-            <SelectTrigger className="w-[110px] h-8 bg-white border-2 px-2 text-[12px] font-bold rounded-lg shadow-sm">
-              <SelectValue placeholder="Sortieren" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">Neu zuerst</SelectItem>
-              <SelectItem value="asc">Alt zuerst</SelectItem>
-              <SelectItem value="az">Name A-Z</SelectItem>
-              <SelectItem value="za">Name Z-A</SelectItem>
-              <SelectItem value="last_used">Zuletzt</SelectItem>
-            </SelectContent>
-          </Select>
+          <SelectFilter
+            value={sort}
+            onChange={(v) => setSort(v as any)}
+            options={[
+              { value: "desc", label: "Neueste zuerst" },
+              { value: "asc", label: "Älteste zuerst" },
+              { value: "az", label: "A-Z" },
+              { value: "za", label: "Z-A" },
+            ]}
+            placeholder="Sortieren"
+          />
         </div>
 
         {effectiveSelected.length > 0 ? (
@@ -362,7 +438,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="!mt-[6px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {loading ? (
           Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="aspect-square rounded-xl" />
@@ -401,6 +477,8 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         }
         hasPrev={detailIndex !== null && detailIndex > 0}
         hasNext={detailIndex !== null && detailIndex < sortedImages.length - 1}
+        onDelete={(id) => { handleDelete(id); setDetailIndex(null); }}
+        onUpdate={handleUpdate}
       />
     </>
   );

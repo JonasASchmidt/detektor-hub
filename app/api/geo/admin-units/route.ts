@@ -44,7 +44,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const result: AdministrativeUnit[] = await prisma.$queryRaw`
+  let result: AdministrativeUnit[];
+  try {
+    result = await prisma.$queryRaw`
     WITH
         country AS (
             SELECT
@@ -123,6 +125,12 @@ export async function GET(request: Request) {
         FROM
             municipality
     `;
+  } catch {
+    return NextResponse.json(
+      { error: "Geodaten nicht verfügbar." },
+      { status: 404 }
+    );
+  }
   if (result.length == 0) {
     return NextResponse.json(
       { error: "Keine passende administrative Einheit gefunden." },

@@ -17,18 +17,11 @@ export default async function SessionsPage() {
     where: { userId: session.user.id },
     include: {
       detector: true,
+      zone: { select: { id: true, name: true } },
       findings: { select: { id: true } },
     },
     orderBy: { dateFrom: "desc" },
   });
-
-  // Fetch zone presence via raw query
-  const zoneRows = await prisma.$queryRaw<Array<{ id: string; has_zone: boolean }>>`
-    SELECT id, zone IS NOT NULL as has_zone
-    FROM "FieldSession"
-    WHERE "userId" = ${session.user.id}
-  `;
-  const zoneMap = new Map(zoneRows.map((r) => [r.id, r.has_zone]));
 
   const cookieStore = await cookies();
   const activeSessionId = cookieStore.get(ACTIVE_SESSION_COOKIE)?.value ?? null;
@@ -63,7 +56,7 @@ export default async function SessionsPage() {
               description={s.description}
               dateFrom={s.dateFrom}
               dateTo={s.dateTo}
-              hasZone={zoneMap.get(s.id) ?? false}
+              zone={s.zone ?? null}
               findingCount={s.findings.length}
               detector={s.detector}
               isActive={s.id === activeSessionId}

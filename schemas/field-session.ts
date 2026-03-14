@@ -6,7 +6,7 @@ export const fieldSessionSchema = z
     description: z.string().optional(),
     dateFrom: z.coerce.date({ required_error: "Startdatum wird benötigt." }),
     dateTo: z.coerce.date().optional().nullable(),
-    zone: z.string().optional().nullable(), // GeoJSON Polygon string
+    zoneId: z.string().optional().nullable(),
     detectorId: z.string().optional().nullable(),
   })
   .refine(

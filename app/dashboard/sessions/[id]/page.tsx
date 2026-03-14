@@ -14,15 +14,11 @@ export default async function EditSessionPage({
 
   const { id } = await params;
 
-  const [rows, detectors, allFindings] = await Promise.all([
-    prisma.$queryRaw<Array<Record<string, unknown>>>`
-      SELECT
-        id, name, description, "dateFrom", "dateTo",
-        "detectorId", "userId", "createdAt", "updatedAt",
-        ST_AsGeoJSON(zone) as zone
-      FROM "FieldSession"
-      WHERE id = ${id} AND "userId" = ${session.user.id}
-    `,
+  const [fieldSession, detectors, allFindings] = await Promise.all([
+    prisma.fieldSession.findUnique({
+      where: { id },
+      include: { findings: { select: { id: true } } },
+    }),
     prisma.detector.findMany({ orderBy: [{ company: "asc" }, { name: "asc" }] }),
     prisma.finding.findMany({
       where: { userId: session.user.id },
@@ -31,14 +27,9 @@ export default async function EditSessionPage({
     }),
   ]);
 
-  if (!rows.length) notFound();
+  if (!fieldSession || fieldSession.userId !== session.user.id) notFound();
 
-  const raw = rows[0];
-
-  // Pre-select findings already linked to this session
-  const linkedFindingIds = allFindings
-    .filter((f) => f.fieldSessionId === id)
-    .map((f) => f.id);
+  const linkedFindingIds = fieldSession.findings.map((f) => f.id);
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 max-w-[720px] mx-auto w-full">
@@ -46,13 +37,13 @@ export default async function EditSessionPage({
         detectors={detectors}
         allFindings={allFindings}
         initialData={{
-          id: raw.id as string,
-          name: raw.name as string,
-          description: raw.description as string | null,
-          dateFrom: raw.dateFrom as string,
-          dateTo: raw.dateTo as string | null,
-          zone: raw.zone as string | null,
-          detectorId: raw.detectorId as string | null,
+          id: fieldSession.id,
+          name: fieldSession.name,
+          description: fieldSession.description,
+          dateFrom: fieldSession.dateFrom,
+          dateTo: fieldSession.dateTo,
+          zoneId: fieldSession.zoneId,
+          detectorId: fieldSession.detectorId,
           findingIds: linkedFindingIds,
         }}
       />

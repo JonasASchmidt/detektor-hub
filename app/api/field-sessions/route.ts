@@ -14,6 +14,7 @@ export async function GET() {
     where: { userId: session.user.id },
     include: {
       detector: true,
+      zone: { select: { id: true, name: true } },
       findings: { select: { id: true } },
     },
     orderBy: { dateFrom: "desc" },
@@ -38,31 +39,29 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, description, dateFrom, dateTo, zone, detectorId } =
+  const { name, description, dateFrom, dateTo, zoneId, detectorId } =
     parseResult.data;
 
-  // Create without zone first (Prisma doesn't support Unsupported geometry types)
+  // Verify the zone belongs to this user if provided
+  if (zoneId) {
+    const zone = await prisma.zone.findUnique({ where: { id: zoneId } });
+    if (!zone || zone.userId !== session.user.id) {
+      return NextResponse.json({ error: "Zone nicht gefunden." }, { status: 404 });
+    }
+  }
+
   const fieldSession = await prisma.fieldSession.create({
     data: {
       name,
       description,
       dateFrom,
       dateTo: dateTo ?? null,
+      zoneId: zoneId ?? null,
       userId: session.user.id,
       ...(detectorId ? { detectorId } : {}),
     },
   });
 
-  // Set zone via raw SQL if provided
-  if (zone) {
-    await prisma.$executeRaw`
-      UPDATE "FieldSession"
-      SET zone = ST_GeomFromGeoJSON(${zone})
-      WHERE id = ${fieldSession.id}
-    `;
-  }
-
-  // Link selected findings (only those belonging to this user)
   if (Array.isArray(findingIds) && findingIds.length > 0) {
     await prisma.finding.updateMany({
       where: { id: { in: findingIds }, userId: session.user.id },

@@ -11,7 +11,7 @@ interface Props {
 export default async function EditFindingPage({ params }: Props) {
   const { id } = await params;
 
-  const [finding, tagCategories] = await Promise.all([
+  const [finding, tagCategories, sessions] = await Promise.all([
     prisma.finding.findUnique({
       where: { id },
       include: { tags: true, images: true },
@@ -19,12 +19,16 @@ export default async function EditFindingPage({ params }: Props) {
     prisma.tagCategory.findMany({
       include: { tags: true },
     }) as Promise<TagCategoryWithTags[]>,
+    prisma.fieldSession.findMany({
+      select: { id: true, name: true, dateFrom: true, dateTo: true },
+      orderBy: { dateFrom: "desc" },
+    }),
   ]);
 
   if (!finding) notFound();
 
   const initialData: FindingFormData = {
-    name: finding.name,
+    name: finding.name ?? "",
     location: { lat: finding.latitude ?? 51.0504, lng: finding.longitude ?? 13.7373 },
     description: finding.description ?? undefined,
     foundAt: finding.foundAt,
@@ -44,6 +48,7 @@ export default async function EditFindingPage({ params }: Props) {
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full min-w-0">
       <FindingsForm
         tagCategories={tagCategories}
+        sessions={sessions}
         findingId={id}
         initialData={initialData}
         initialImages={finding.images}

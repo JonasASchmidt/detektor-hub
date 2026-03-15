@@ -25,7 +25,7 @@ export default function TagComponent({ onClick, onClose, tag, className, compact
       style={{ backgroundColor: tag.color }}
       onClick={onClick}
     >
-      <DynamicIcon icon={tag.icon} className="h-3 w-3 shrink-0" />
+      <DynamicIcon icon={tag.icon} size={12} />
       <span>{tag.name}</span>
       {onClose && id && (
         <button

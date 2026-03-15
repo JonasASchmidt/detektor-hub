@@ -43,18 +43,8 @@ export async function DELETE(
       );
     }
 
-    const tags = existingCategory?.tags ?? [];
-    if (tags.length > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Kategorie kann nicht gelöscht werden, da ihr Tags zugeordnet sind.",
-        },
-        { status: 404 }
-      );
-    }
-
-    // Delete the category
+    // Delete all tags in the category first, then the category
+    await prisma.tag.deleteMany({ where: { categoryId: id } });
     await prisma.tagCategory.delete({ where: { id } });
 
     return NextResponse.json(

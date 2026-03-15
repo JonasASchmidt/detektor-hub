@@ -131,7 +131,7 @@ export default function IconPicker({ onChange, value }: Props) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05]"
+          className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05] hover:border-zinc-400 transition-colors"
           variant="outline"
         >
           {SelectedIconComponent ? (

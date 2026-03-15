@@ -219,13 +219,12 @@ export default function TagCategoriesPage({ initialCategories }: Props) {
                         </button>
                         <ConfirmModal
                           title="Tag-Kategorie löschen?"
-                          description="Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher?"
+                          description={category.tags.length > 0 ? `Kategorie und alle ${category.tags.length} enthaltenen Tags werden dauerhaft gelöscht. Bist du sicher?` : "Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher?"}
                           onConfirm={() => handleDeleteCategory(category.id)}
                           trigger={
                             <button
                               type="button"
-                              disabled={category.tags?.length > 0}
-                              className="text-destructive hover:text-destructive/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors p-1"
+                              className="text-destructive hover:text-destructive/70 transition-colors p-1"
                               title="Löschen"
                             >
                               <Trash2 className="h-4 w-4" />

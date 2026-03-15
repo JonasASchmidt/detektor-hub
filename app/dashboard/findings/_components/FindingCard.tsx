@@ -96,7 +96,7 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
                 <span
                   key={tag.id}
                   onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/findings?tags=${tag.id}`); }}
-                  className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold tracking-tight uppercase text-white hover:opacity-80 transition-opacity cursor-pointer"
+                  className="inline-flex items-center gap-1 pl-2 pr-2 py-0.5 rounded uppercase text-[11px] font-semibold tracking-wide text-white cursor-pointer hover:opacity-80 transition-opacity"
                   style={{ backgroundColor: tag.color }}
                 >
                   {tag.name}

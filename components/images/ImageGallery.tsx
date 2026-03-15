@@ -44,6 +44,8 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
   const [internalSelected, setInternalSelected] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(ref, () => ({
@@ -228,6 +230,8 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
   };
 
   const hasAnyImages = images.length > 0;
+  const totalPages = Math.ceil(sortedImages.length / PAGE_SIZE);
+  const pagedImages = sortedImages.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <>
@@ -260,6 +264,7 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
           setDateFrom("");
           setDateTo("");
           setSelectedTagIds([]);
+          setPage(1);
         }}
         chips={
           (search || fileType !== "all" || dateFrom || dateTo || selectedTagIds.length > 0) ? (
@@ -459,7 +464,7 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
             </Button>
           </div>
         ) : (
-          sortedImages.map((image) => (
+          pagedImages.map((image) => (
             <ImageCard
               key={image.id}
               isSelected={effectiveSelected.includes(image.id)}
@@ -471,6 +476,16 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          {page > 1 ? (
+            <Button variant="ghost" onClick={() => setPage(p => p - 1)}>Zurück</Button>
+          ) : <span />}
+          <span className="text-sm text-muted-foreground">Seite {page} von {totalPages}</span>
+          <Button variant="ghost" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages}>Weiter</Button>
+        </div>
+      )}
 
       </>
       )}

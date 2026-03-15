@@ -58,7 +58,7 @@ function MiniCard({ finding }: { finding: FindingWithRelations }) {
             {finding.tags.slice(0, 4).map((tag) => (
               <span
                 key={tag.id}
-                className="text-[9px] font-bold uppercase tracking-tight text-white px-1.5 py-0.5 rounded"
+                className="inline-flex items-center gap-1 pl-2 pr-2 py-px rounded uppercase text-[11px] font-semibold tracking-wide text-white"
                 style={{ backgroundColor: tag.color }}
               >
                 {tag.name}

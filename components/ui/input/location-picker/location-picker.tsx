@@ -96,7 +96,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           type="button"
           variant="outline"
           onClick={() => setShowModal(true)}
-          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0"
+          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0 hover:border-zinc-400 transition-colors"
         >
           <MapPinCheckIcon size={16} />
           Dein Standort

@@ -1,12 +1,12 @@
 import { X } from "lucide-react";
-import { Badge } from "../ui/badge";
 import DynamicIcon from "../ui/input/dynamic-icon";
-import { Button } from "../ui/button";
 
 interface Props {
   onClick?: () => void;
   onClose?: (tagId: string) => void;
   className?: string;
+  /** Reduce vertical padding by 2px for inline meta rows */
+  compact?: boolean;
   tag: {
     name: string;
     id?: string;
@@ -16,35 +16,27 @@ interface Props {
   };
 }
 
-export default function TagComponent({ onClick, onClose, tag, className }: Props) {
+export default function TagComponent({ onClick, onClose, tag, className, compact }: Props) {
   const { id } = tag;
 
   return (
-    <Badge
-      className={`flex items-center justify-between gap-2 px-3 h-6 w-fit cursor-pointer ${className}`}
-      onClick={onClick}
+    <span
+      className={`inline-flex items-center gap-1 pl-2 ${onClose ? "pr-1" : "pr-2"} ${compact ? "py-px" : "py-0.5"} rounded uppercase text-[11px] font-semibold tracking-wide text-white ${onClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""} ${className ?? ""}`}
       style={{ backgroundColor: tag.color }}
+      onClick={onClick}
     >
-      <DynamicIcon icon={tag.icon} />
+      <DynamicIcon icon={tag.icon} size={12} />
       <span>{tag.name}</span>
       {onClose && id && (
-        <Button
+        <button
           type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose(id);
-          }}
-          className="h-4 w-4 p-0 ml-1.5 rounded-full bg-white/20 hover:bg-white/40 border-none transition-colors group flex items-center justify-center"
-          variant="ghost"
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClose(id); }}
+          className="flex items-center justify-center ml-0.5"
         >
-          <X className="h-3 w-3 text-white" />
-        </Button>
+          <X className="h-3 w-3 text-white/60 hover:text-white transition-colors" />
+        </button>
       )}
-    </Badge>
+    </span>
   );
 }

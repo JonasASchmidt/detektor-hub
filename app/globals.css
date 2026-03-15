@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+.bg-parchment { background-color: #F6F6F2; }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Keep Leaflet map below app UI overlays */
 .leaflet-pane,
 .leaflet-control {
@@ -57,7 +69,7 @@
 
     --muted: 0 0% 96.1%;
 
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 0 0% 58%;
 
     --accent: 0 0% 96.1%;
 
@@ -83,7 +95,7 @@
 
     --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
 
     --sidebar-background: 0 0% 98%;
 

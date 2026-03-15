@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export async function GET() {
+  const categories = await prisma.tagCategory.findMany({
+    include: { tags: true },
+    orderBy: { name: "asc" },
+  });
+  return NextResponse.json(categories);
+}
+
 export async function POST(req: Request) {
   try {
     const { name } = await req.json();

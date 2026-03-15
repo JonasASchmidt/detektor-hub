@@ -10,12 +10,22 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const images = await prisma.image.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(images, {
-    headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
-  });
+  try {
+    const images = await prisma.image.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      include: { tags: true },
+    });
+    return NextResponse.json(images, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
+    });
+  } catch {
+    const images = await prisma.image.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(images, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
+    });
+  }
 }

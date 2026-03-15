@@ -154,26 +154,26 @@ export function TagForm({
         </header>
 
         <div className="flex flex-wrap items-end gap-2 md:gap-3">
-          <div className="flex-1 min-w-[100px] space-y-1.5 focus-within:z-10">
-            <Label htmlFor="name" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Tag Name</Label>
+          <div className="flex-1 min-w-[100px] flex flex-col gap-1.5 focus-within:z-10">
+            <Label htmlFor="name">Tag Name</Label>
             <Input
               id="name"
               type="text"
               placeholder="z.B. Münze..."
               value={formData.name}
               onChange={handleChange}
-              className="bg-muted/30 border-black/[0.05] focus-visible:ring-black/10"
+              className="h-8 bg-white hover:bg-white border-black/[0.05] focus-visible:ring-black/10"
               required
             />
           </div>
 
-          <div className="flex-1 min-w-[100px] space-y-1.5 focus-within:z-10">
-            <Label htmlFor="category" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Kategorie</Label>
+          <div className="flex-1 min-w-[100px] flex flex-col gap-1.5 focus-within:z-10">
+            <Label htmlFor="category">Kategorie</Label>
             <Select
               onValueChange={handleChangeCategory}
               value={formData.category}
             >
-              <SelectTrigger id="category" className="bg-muted/30 border-black/[0.05]">
+              <SelectTrigger id="category" className="h-8 bg-white hover:bg-white border-black/[0.05]">
                 <SelectValue placeholder="Wählen..." />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-black/[0.05] shadow-xl">
@@ -186,31 +186,29 @@ export function TagForm({
             </Select>
           </div>
 
-          <div className="shrink-0 space-y-1.5">
-            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Farbe</Label>
-            <div className="h-8 flex items-center">
+          <div className="shrink-0 flex flex-col gap-1.5">
+            <Label>Farbe</Label>
+            <div className="h-8 flex items-center border border-transparent">
               <ColorPicker onChange={handleChangeColor} value={formData.color} />
             </div>
           </div>
-          
-          <div className="shrink-0 space-y-1.5">
-            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Icon</Label>
-            <div className="h-8 flex items-center">
+
+          <div className="shrink-0 flex flex-col gap-1.5">
+            <Label>Icon</Label>
+            <div className="h-8 flex items-center border border-transparent">
               <IconPicker onChange={handleChangeIcon} value={formData.icon} />
             </div>
           </div>
 
           <div className="shrink-0 space-y-1.5 ml-2">
-            <Label className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Vorschau</Label>
-            <div className="h-8 flex items-center">
-              <TagComponent 
-                tag={{ ...formData, name: formData.name || "TAG NAME" } as any} 
-                className="!h-8 rounded-lg text-sm font-bold px-4 transition-all shadow-sm"
+            <Label>Vorschau</Label>
+            <div className="h-8 flex items-center border border-transparent">
+              <TagComponent
+                tag={{ ...formData, name: formData.name || "Vorschau" } as any}
+                className="!h-full"
               />
             </div>
           </div>
-        </div>
-        <div className="pt-2 border-t border-black/[0.05]">
         </div>
         {error && (
           <Alert variant="destructive">

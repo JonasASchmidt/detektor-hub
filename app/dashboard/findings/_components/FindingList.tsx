@@ -63,23 +63,27 @@ export default function FindingsList({ filters, onTotalChange }: Props) {
     filters.lat
   );
 
-  return (
-    <div className="grid py-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">{total} Funde</h2>
-        <SelectFilter
-          value={currentSort}
-          onChange={(v) => setFilter("sort", v)}
-          options={sortOptions}
-          placeholder="Sortieren"
-        />
-      </div>
+  const isEmpty = !loading && total === 0;
 
-      {!loading && total === 0 && (
+  return (
+    <div className={isEmpty ? "" : "pt-3"}>
+      {!isEmpty && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">{total} Funde</h2>
+          <SelectFilter
+            value={currentSort}
+            onChange={(v) => setFilter("sort", v)}
+            options={sortOptions}
+            placeholder="Sortieren"
+          />
+        </div>
+      )}
+
+      {isEmpty && (
         hasActiveFilters ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
             <ScanSearch className="h-10 w-10 text-muted-foreground/50" />
-            <p className="text-lg font-medium">Keine Funde gefunden</p>
+            <h2 className="text-2xl font-bold">Keine Funde gefunden</h2>
             <p className="text-sm text-muted-foreground">Deine Filter ergeben keine Treffer.</p>
             <div className="flex gap-2 mt-2">
               <Button variant="outline" onClick={clearAll}>Filter zurücksetzen</Button>
@@ -91,16 +95,16 @@ export default function FindingsList({ filters, onTotalChange }: Props) {
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
             <Shovel className="h-10 w-10 text-muted-foreground/50" />
-            <p className="text-lg font-medium">Noch keine Funde</p>
+            <h2 className="text-2xl font-bold">Noch keine Funde</h2>
             <p className="text-sm text-muted-foreground">Erfasse deinen ersten Fund und dokumentiere ihn hier.</p>
             <Button asChild className="mt-2">
-              <Link href="/dashboard/findings/new">+ Neuer Fund erfassen</Link>
+              <Link href="/dashboard/findings/new">+ Neuer Fund</Link>
             </Button>
           </div>
         )
       )}
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-3">
         {findings.map((finding) => (
           <FindingCard key={finding.id} finding={finding} />
         ))}
@@ -108,9 +112,13 @@ export default function FindingsList({ filters, onTotalChange }: Props) {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
-            Zurück
-          </Button>
+          {page > 1 ? (
+            <Button variant="ghost" onClick={handlePrevious} disabled={loading}>
+              Zurück
+            </Button>
+          ) : (
+            <span />
+          )}
 
           <span className="text-sm text-muted-foreground">
             Seite {page} von {totalPages}

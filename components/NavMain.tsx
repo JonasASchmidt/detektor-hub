@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Plus, type LucideIcon } from "lucide-react";
 import {
@@ -38,44 +38,31 @@ export function NavMain({
   const pathname = usePathname();
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
+
   const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     for (const item of items) {
-      const hasActiveChild =
-        item.items?.some((sub) => pathname === sub.url) ?? false;
-      const isParentActive = pathname.startsWith(item.url);
-      if (hasActiveChild || isParentActive) {
-        initial[item.title] = true;
-      }
+      if (item.isActive) initial[item.title] = true;
     }
     return initial;
   });
-
-  // Automatically open active parent items, but never automatically close them.
-  useEffect(() => {
-    const activeItems: Record<string, boolean> = {};
-    let shouldUpdate = false;
-    for (const item of items) {
-      const hasActiveChild =
-        item.items?.some((sub) => pathname === sub.url) ?? false;
-      const isParentActive = pathname.startsWith(item.url);
-      if ((hasActiveChild || isParentActive) && !openState[item.title]) {
-        activeItems[item.title] = true;
-        shouldUpdate = true;
-      }
-    }
-    if (shouldUpdate) {
-      setOpenState(prev => ({ ...prev, ...activeItems }));
-    }
-  }, [pathname, items, openState]);
 
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => {
-          const isParentActive = pathname.startsWith(item.url);
+          const isParentExact = pathname === item.url;
           const hasActiveChild =
-            item.items?.some((sub) => pathname === sub.url) ?? false;
+            item.items?.some((sub) => pathname === sub.url || pathname.startsWith(sub.url + "/")) ?? false;
+
+          // Expanded: highlight parent only on its own URL (children have their own highlight)
+          // Collapsed: highlight parent if it or any child is active (children are hidden)
+          const isParentActive =
+            item.items && item.items.length > 0
+              ? sidebarState === "collapsed"
+                ? isParentExact || hasActiveChild
+                : isParentExact
+              : pathname.startsWith(item.url);
 
           return (
             <SidebarMenuItem key={item.title}>
@@ -92,7 +79,7 @@ export function NavMain({
                     tooltip={item.title}
                     isActive={isParentActive}
                     className={cn(
-                      isParentActive || hasActiveChild ? "font-bold" : "",
+                      isParentExact || hasActiveChild ? "font-bold" : "",
                       item.items && item.items.length > 0 ? "pr-8" : ""
                     )}
                   >
@@ -104,17 +91,13 @@ export function NavMain({
                   {item.items && item.items.length > 0 && sidebarState === "expanded" && (
                     <CollapsibleTrigger asChild>
                       <button
-                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg hover:bg-sidebar-accent"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-[#2d2d2d] hover:text-white transition-colors duration-150"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <ChevronRight
                           className="h-4 w-4 transition-transform duration-200"
                           style={{
-                            transform: openState[item.title]
-                              ? "rotate(90deg)"
-                              : "rotate(180deg)",
+                            transform: openState[item.title] ? "rotate(90deg)" : "rotate(0deg)",
                           }}
                         />
                       </button>

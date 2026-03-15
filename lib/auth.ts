@@ -42,19 +42,22 @@ export const authOptions: AuthOptions = {
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }) {
-      // Attach user details to token on first sign-in
+    async jwt({ token, user, trigger, session: updateData }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.name = user.name;
+      }
+      if (trigger === "update" && updateData?.name) {
+        token.name = updateData.name;
       }
       return token;
     },
     async session({ session, token }) {
-      // Attach token data to session
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        if (token.name) session.user.name = token.name as string;
       }
       return session;
     },

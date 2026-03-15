@@ -44,7 +44,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const result: AdministrativeUnit[] = await prisma.$queryRaw`
+  let result: AdministrativeUnit[];
+  try {
+    result = await prisma.$queryRaw`
     WITH
         country AS (
             SELECT
@@ -123,11 +125,11 @@ export async function GET(request: Request) {
         FROM
             municipality
     `;
+  } catch {
+    return NextResponse.json({});
+  }
   if (result.length == 0) {
-    return NextResponse.json(
-      { error: "Keine passende administrative Einheit gefunden." },
-      { status: 404 }
-    );
+    return NextResponse.json({});
   }
   // assuming there's only one matching administrative unit, we'll just return the first entry as response
   return NextResponse.json(result[0]);

@@ -30,6 +30,7 @@ const statusFilterOptions: MultiSelectOption[] = [
   { value: "status:DRAFT", label: "Entwurf", group: "status" },
   { value: "reported:true", label: "Gemeldet", group: "reported" },
   { value: "reported:false", label: "Nicht gemeldet", group: "reported" },
+  { value: "hasComments:true", label: "Mit Kommentaren", group: "comments" },
 ];
 
 function chipsToParams(chips: string[]) {
@@ -37,6 +38,7 @@ function chipsToParams(chips: string[]) {
     .filter((c) => c.startsWith("status:"))
     .map((c) => c.replace("status:", ""));
   const reportedChips = chips.filter((c) => c.startsWith("reported:"));
+  const hasComments = chips.includes("hasComments:true");
 
   return {
     status: statuses.length > 0 ? statuses.join(",") : null,
@@ -44,12 +46,14 @@ function chipsToParams(chips: string[]) {
       reportedChips.length === 1
         ? reportedChips[0].replace("reported:", "")
         : null,
+    hasComments: hasComments ? "true" : null,
   };
 }
 
 function paramsToChips(
   status: string | null,
-  reported: string | null
+  reported: string | null,
+  hasComments: string | null
 ): string[] {
   const chips: string[] = [];
   if (status) {
@@ -59,6 +63,9 @@ function paramsToChips(
   }
   if (reported && reported !== "all") {
     chips.push(`reported:${reported}`);
+  }
+  if (hasComments === "true") {
+    chips.push("hasComments:true");
   }
   return chips;
 }
@@ -107,6 +114,8 @@ export function useFiltersFromURL(): UseFindingsParams {
     ? parseFloat(searchParams.get("radius")!)
     : undefined;
 
+  const hasComments = searchParams.get("hasComments") === "true" ? true : undefined;
+
   const orderBy = sort === "az" ? "name" : "createdAt";
   const order: "asc" | "desc" =
     sort === "oldest" || sort === "az" ? "asc" : "desc";
@@ -123,6 +132,7 @@ export function useFiltersFromURL(): UseFindingsParams {
     lat,
     lng,
     radius,
+    hasComments,
   };
 }
 
@@ -140,7 +150,8 @@ export default function FindingsFilters() {
 
   const currentStatus = searchParams.get("status") || null;
   const currentReported = searchParams.get("reported") || null;
-  const selectedChips = paramsToChips(currentStatus, currentReported);
+  const currentHasComments = searchParams.get("hasComments") || null;
+  const selectedChips = paramsToChips(currentStatus, currentReported, currentHasComments);
 
   const currentTags = searchParams.get("tags")
     ? searchParams.get("tags")!.split(",").filter(Boolean)
@@ -193,27 +204,27 @@ export default function FindingsFilters() {
           {currentTags.map((id) => {
             const tag = availableTags.find((t) => t.id === id);
             return (
-              <span key={id} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: tag?.color ?? "#888" }}>
-                {tag?.name ?? id}
-                <button type="button" onClick={() => setFilter("tags", currentTags.filter((t) => t !== id).join(",") || null)} className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground">
-                  <X className="h-3 w-3" />
+              <span key={id} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-sm font-medium text-white" style={{ backgroundColor: tag?.color ?? "#888" }}>
+                {tag?.name ?? "…"}
+                <button type="button" onClick={() => setFilter("tags", currentTags.filter((t) => t !== id).join(",") || null)} className="group !bg-transparent rounded-full p-0.5">
+                  <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
                 </button>
               </span>
             );
           })}
           {dateChipLabel && (
-            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
+            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-sm font-medium text-foreground bg-zinc-200">
               {dateChipLabel}
-              <button type="button" onClick={() => setMultipleFilters({ dateFrom: null, dateTo: null })} className="bg-transparent rounded-full p-0.5 hover:bg-primary/20">
-                <X className="h-3 w-3" />
+              <button type="button" onClick={() => setMultipleFilters({ dateFrom: null, dateTo: null })} className="group !bg-transparent rounded-full p-0.5">
+                <X className="h-3 w-3 text-black/40 group-hover:text-black transition-colors" />
               </button>
             </span>
           )}
           {locationChipLabel && (
-            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
+            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-sm font-medium text-foreground bg-zinc-200">
               {locationChipLabel}
-              <button type="button" onClick={() => setMultipleFilters({ lat: null, lng: null, radius: null })} className="bg-transparent rounded-full p-0.5 hover:bg-primary/20">
-                <X className="h-3 w-3" />
+              <button type="button" onClick={() => setMultipleFilters({ lat: null, lng: null, radius: null })} className="group !bg-transparent rounded-full p-0.5">
+                <X className="h-3 w-3 text-black/40 group-hover:text-black transition-colors" />
               </button>
             </span>
           )}

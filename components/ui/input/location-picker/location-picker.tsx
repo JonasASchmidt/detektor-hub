@@ -13,6 +13,7 @@ import {
 
 interface Props {
   disabled?: boolean;
+  hideLabel?: boolean;
 }
 
 export default function LocationPicker<TFieldValues extends FieldValues>({
@@ -20,6 +21,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   disabled,
   name,
   rules,
+  hideLabel,
 }: UseControllerProps<TFieldValues> & Props) {
   const { field, fieldState: _fieldState } = useController({ name, control, rules });
 
@@ -62,7 +64,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
 
   return (
     <div className="flex flex-col gap-1.5 flex-1 min-w-[280px]">
-      <Label htmlFor="lat">Fundort</Label>
+      {!hideLabel && <Label htmlFor="lat">Fundort</Label>}
       <div className="flex flex-row flex-wrap gap-1.5 items-center w-full">
         <Input
           id="lat"
@@ -94,7 +96,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           type="button"
           variant="outline"
           onClick={() => setShowModal(true)}
-          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0"
+          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0 hover:border-zinc-400 transition-colors"
         >
           <MapPinCheckIcon size={16} />
           Dein Standort

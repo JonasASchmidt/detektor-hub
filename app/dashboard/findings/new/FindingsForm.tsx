@@ -11,17 +11,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronDown, ImageIcon, Loader2, Star, X } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChevronDown, ImageIcon, Loader2, MapPin, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CldImage } from "next-cloudinary";
-import type { Image as ImageType } from "@prisma/client";
+import type { Image as ImageType, Tag } from "@prisma/client";
 import { toast } from "sonner";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
 import TagPicker from "@/components/ui/input/tag-picker/tag-picker";
+import ImageDetailDialog from "@/components/images/ImageDetailDialog";
+
+type ImageWithTags = ImageType & { tags?: Tag[] };
 
 interface SessionOption {
   id: string;
@@ -31,12 +34,17 @@ interface SessionOption {
 }
 
 interface Props {
-  tagCategories: TagCategoryWithTags[];
   sessions: SessionOption[];
+  tagCategories: TagCategoryWithTags[];
+  findingId?: string;
+  initialData?: Partial<FindingFormData>;
+  initialImages?: ImageType[];
 }
 
-export default function FindingsForm({ tagCategories, sessions }: Props) {
+export default function FindingsForm({ tagCategories, sessions, findingId, initialData, initialImages }: Props) {
   const LOCAL_STORAGE_KEY = "detektorhub_draft_finding";
+  const isEditMode = !!findingId;
+  const router = useRouter();
 
   const {
     control,
@@ -48,40 +56,34 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
     formState: { errors: _errors, isSubmitting: _isSubmitting },
   } = useForm<FindingFormData>({
     resolver: zodResolver(findingSchemaCompleted),
-    defaultValues: { location: { lat: 51.0504, lng: 13.7373 }, tags: [], images: [] },
+    defaultValues: initialData ?? { location: { lat: 51.0504, lng: 13.7373 }, tags: [], images: [] },
   });
   const [loading, setLoading] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
-  const [allImages, setAllImages] = useState<ImageType[]>([]);
+  const [allImages, setAllImages] = useState<ImageWithTags[]>(initialImages ?? []);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [previewImage, setPreviewImage] = useState<{ publicId: string; url: string } | null>(null);
+  const [detailImageId, setDetailImageId] = useState<string | null>(null);
 
   const selectedImageIds = watch("images") || [];
   const thumbnailId = watch("thumbnailId");
   const watchName = watch("name");
 
   useEffect(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && Object.keys(parsed).length > 0) {
-          reset(parsed);
-        }
-      } catch (e) { }
-    }
+    if (isEditMode) return;
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
     setIsLoaded(true);
-  }, [reset]);
+  }, [isEditMode]);
 
   useEffect(() => {
+    if (isEditMode) return;
     const subscription = watch((value) => {
       if (isLoaded) {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(value));
       }
     });
     return () => subscription.unsubscribe();
-  }, [watch, isLoaded]);
+  }, [watch, isLoaded, isEditMode]);
 
   const handleChangeImages = (ids: string[]) => setValue("images", ids);
 
@@ -96,34 +98,49 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
     setValue("thumbnailId", thumbnailId === id ? undefined : id);
   };
 
+  const detailImageIndex = detailImageId ? selectedImageIds.indexOf(detailImageId) : -1;
+  const detailImage = detailImageId ? (allImages.find((i) => i.id === detailImageId) ?? null) : null;
+
   const onSubmit: SubmitHandler<FindingFormData> = async (data) => {
     setLoading(true);
 
-    const res = await fetch("/api/findings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    const res = isEditMode
+      ? await fetch(`/api/findings/${findingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+      : await fetch("/api/findings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
 
     setLoading(false);
 
     if (!res.ok) {
-      toast.error("Fund konnte nicht gespeichert werden.");
+      toast.error(isEditMode ? "Änderungen konnten nicht gespeichert werden." : "Fund konnte nicht gespeichert werden.");
       return;
     }
 
-    toast.success("Neuer Fund wurde angelegt!");
-    reset();
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    if (isEditMode) {
+      toast.success("Änderungen gespeichert!");
+    } else {
+      toast.success("Neuer Fund wurde angelegt!");
+      reset();
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      router.refresh();
+      router.push("/dashboard/findings");
+    }
   };
 
   return (
-    <TooltipProvider>
-      <h1 className="text-4xl font-bold truncate mb-3" title={watchName || "Neuer Fund"}>
-        {watchName || "Neuer Fund"}
+    <>
+      <h1 className="text-4xl font-bold truncate mb-3" title={watchName || (isEditMode ? "Fund bearbeiten" : "Neuer Fund")}>
+        {watchName || (isEditMode ? "Fund bearbeiten" : "Neuer Fund")}
       </h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 min-w-0">
-        <Card className="bg-white dark:bg-gray-900 overflow-hidden border border-border">
+        <Card className="rounded-xl bg-parchment overflow-hidden border border-border">
           <div className="py-6 px-6 space-y-5">
             {/* Name */}
             <div className="flex flex-col gap-1.5">
@@ -167,9 +184,9 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
               </div>
             )}
 
-            {/* Small fields: Funddatum, Tags, Location */}
-            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full justify-between">
-              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+            {/* Funddatum + Fundort in one row */}
+            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full">
+              <div className="flex flex-col gap-1.5 shrink-0">
                 <Label>Funddatum</Label>
                 <DatePicker
                   control={control}
@@ -178,61 +195,81 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
                   placeholder="TT.MM.JJJJ"
                 />
               </div>
-              <TagPicker
-                control={control}
-                tagCategories={tagCategories}
-                name="tags"
-              />
               <LocationPicker
                 control={control}
                 name="location"
                 rules={{ required: true }}
+                hideLabel
               />
             </div>
+
+            {/* Location visibility */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-input accent-foreground cursor-pointer"
+                {...register("locationPublic")}
+              />
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                Position für andere Nutzer sichtbar
+              </span>
+            </label>
+
+            {/* Row 2: Tags (full width) */}
+            <TagPicker
+              control={control}
+              tagCategories={tagCategories}
+              name="tags"
+            />
 
             {/* Images */}
             <div className="flex flex-col gap-2">
               <Label>Fotos</Label>
               {selectedImageIds.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="flex flex-col gap-4">
                   {selectedImageIds.map((id: string) => {
                     const img = allImages.find((i) => i.id === id);
                     const publicId = img?.publicId || id;
-                    const url = img?.url || "";
                     return (
-                      <div key={id} className="relative group aspect-square">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div
-                              className="w-full h-full cursor-zoom-in overflow-hidden rounded-xl border border-border"
-                              onClick={() => setPreviewImage({ publicId, url })}
-                            >
-                              <CldImage
-                                src={publicId}
-                                width={300}
-                                height={300}
-                                crop="fill"
-                                gravity="auto"
-                                alt="Ausgewählt"
-                                className="object-cover w-full h-full transition-transform group-hover:scale-105"
-                              />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="bg-zinc-900 border-zinc-800 text-white shadow-xl">
-                            <div className="flex flex-col gap-0.5">
-                              <p className="font-medium truncate max-w-[200px]">{img?.originalFilename || "Unbekannt"}</p>
-                              <p className="text-[10px] text-zinc-400">
-                                {img?.width && img?.height ? `${img.width} × ${img.height} px` : "Keine Auflösung"}
-                              </p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        <div className="absolute top-1 left-1 flex gap-1 transition-opacity opacity-0 group-hover:opacity-100 z-10">
+                      <div key={id} className="relative group rounded-xl border border-border overflow-hidden">
+                        {/* Image */}
+                        <div
+                          className="cursor-zoom-in w-full"
+                          onClick={() => setDetailImageId(id)}
+                        >
+                          <CldImage
+                            src={publicId}
+                            width={800}
+                            height={500}
+                            crop="fill"
+                            gravity="auto"
+                            alt="Ausgewählt"
+                            className="w-full object-cover"
+                          />
+                        </div>
+
+                        {/* Title/description */}
+                        {(img?.title || img?.description) && (
+                          <div className="px-4 pt-3 pb-2">
+                            {img?.title && <p className="font-semibold text-sm">{img.title}</p>}
+                            {img?.description && <p className="text-sm text-muted-foreground mt-0.5">{img.description}</p>}
+                          </div>
+                        )}
+
+                        {/* Titelbild bar */}
+                        {thumbnailId === id && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-[10px] text-white py-0.5 px-1 font-bold text-center rounded-b-xl">
+                            Titelbild
+                          </div>
+                        )}
+
+                        {/* Controls */}
+                        <div className="absolute top-2 left-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                           <button
                             type="button"
                             onClick={() => handleSetCover(id)}
-                            className={`p-1 rounded-full shadow-md transition-colors ${thumbnailId === id ? "bg-amber-500 text-white opacity-100" : "bg-black/50 text-white hover:bg-black/70"
-                              }`}
+                            className={`p-1.5 rounded-full shadow-md transition-colors ${thumbnailId === id ? "bg-black/70 text-white opacity-100" : "bg-black/50 text-white hover:bg-black/70"}`}
                             title={thumbnailId === id ? "Titelbild (aktiv)" : "Als Titelbild festlegen"}
                           >
                             <Star className={`w-3.5 h-3.5 ${thumbnailId === id ? "fill-current" : ""}`} />
@@ -241,15 +278,10 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(id)}
-                          className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          className="absolute top-2 right-2 bg-destructive text-white rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
-                        {thumbnailId === id && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-amber-500 text-[10px] text-white py-0.5 px-1 font-bold text-center">
-                            Titelbild
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -278,21 +310,24 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
                         fetch("/api/user-images")
                           .then((r) => r.json())
                           .then(setAllImages)
-                          .catch(() => { });
+                          .catch(() => {});
                       }}
+                      onUpload={(image) => setAllImages((prev) => [...prev, image])}
                     />
                   </div>
-                    <div className="pt-4 border-t border-border mt-auto">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="lg"
-                        className="w-full border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] font-bold px-3 transition-all duration-150 ease-in-out"
-                        onClick={() => setGalleryOpen(false)}
-                      >
-                        {selectedImageIds.length} Fotos übernehmen
-                      </Button>
-                    </div>
+                  {selectedImageIds.length > 0 && (
+                  <div className="pt-4 border-t border-border mt-auto">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="lg"
+                      className="w-full border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] font-bold px-3 transition-all duration-150 ease-in-out"
+                      onClick={() => setGalleryOpen(false)}
+                    >
+                      {selectedImageIds.length} Fotos übernehmen
+                    </Button>
+                  </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>
@@ -301,7 +336,7 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
 
         {/* Advanced options */}
         <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-          <Card className="bg-white dark:bg-gray-900">
+          <Card className="rounded-xl bg-parchment">
             <div className="py-4 px-6">
               <CollapsibleTrigger asChild>
                 <button
@@ -351,8 +386,6 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
                   </div>
                 </div>
 
-                <hr />
-
                 {/* Dating */}
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="dating">Datierung (Freitext)</Label>
@@ -386,8 +419,6 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
                   </div>
                 </div>
 
-                <hr />
-
                 {/* References */}
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="references">Referenzen</Label>
@@ -404,47 +435,38 @@ export default function FindingsForm({ tagCategories, sessions }: Props) {
         </Collapsible>
 
         {/* Submit */}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={loading}
-          variant="ghost"
-          size="lg"
-          className="w-full border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] font-bold px-3 transition-all duration-150 ease-in-out"
+          className="w-full font-bold transition-all"
         >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Bitte warten
+              Bitte Warten
             </>
           ) : (
-            "Fund Speichern"
+            isEditMode ? "Änderungen speichern" : "Fund Speichern"
           )}
         </Button>
       </form>
 
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full p-0 flex items-center justify-center bg-black/90 border-none">
-          {previewImage && (
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              <CldImage
-                src={previewImage.publicId}
-                width={1920}
-                height={1080}
-                alt="Preview"
-                className="max-w-full max-h-full object-contain"
-                priority
-              />
-              <button
-                onClick={() => setPreviewImage(null)}
-                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
-                title="Schließen"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </TooltipProvider>
+      {/* Image detail dialog */}
+      <ImageDetailDialog
+        image={detailImage}
+        onClose={() => setDetailImageId(null)}
+        onPrev={() => {
+          if (detailImageIndex > 0) setDetailImageId(selectedImageIds[detailImageIndex - 1]);
+        }}
+        onNext={() => {
+          if (detailImageIndex < selectedImageIds.length - 1) setDetailImageId(selectedImageIds[detailImageIndex + 1]);
+        }}
+        hasPrev={detailImageIndex > 0}
+        hasNext={detailImageIndex < selectedImageIds.length - 1}
+        onUpdate={(updated) => {
+          setAllImages((prev) => prev.map((img) => img.id === updated.id ? updated : img));
+        }}
+      />
+    </>
   );
 }

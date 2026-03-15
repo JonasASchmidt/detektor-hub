@@ -27,6 +27,7 @@ model User {
   sessions      Session[]
   notificationsReceived Notification[] @relation("NotificationRecipient")
   notificationsSent     Notification[] @relation("NotificationActor")
+  activityLogs  ActivityLog[]
 }
 
 model Account {
@@ -67,12 +68,14 @@ model Tag {
   updatedAt  DateTime    @default(now()) @updatedAt
   category   TagCategory @relation(fields: [categoryId], references: [id])
   findings   Finding[]   @relation("FindingTags")
+  images     Image[]     @relation("ImageTags")
 }
 
 model Finding {
   id                String        @id @default(uuid())
   status            FindingStatus @default(DRAFT)
   reported          Boolean       @default(false)
+  locationPublic    Boolean       @default(false)
   name              String?
   latitude          Float
   longitude         Float
@@ -123,6 +126,7 @@ model Image {
   finding          Finding? @relation(fields: [findingId], references: [id])
   comment          Comment? @relation(fields: [commentId], references: [id])
   user             User     @relation(fields: [userId], references: [id])
+  tags             Tag[]    @relation("ImageTags")
 }
 
 model Detector {
@@ -191,6 +195,20 @@ model Notification {
   
   recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
   actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+}
+
+// Run: npx prisma migrate dev --name add_activity_log
+model ActivityLog {
+  id            String   @id @default(uuid())
+  userId        String
+  action        String
+  entityType    String
+  entityId      String
+  entityOwnerId String?
+  changes       Json?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 enum NotificationType {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { UI, DayFlag, SelectionState } from "react-day-picker";
 import {
   Popover,
   PopoverContent,
@@ -44,7 +45,7 @@ export function DateRangeFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 shrink-0 h-8 whitespace-nowrap text-muted-foreground">
+        <Button variant="outline" size="sm" className={`gap-1 shrink-0 h-8 whitespace-nowrap ${hasValue ? "text-foreground" : "text-muted-foreground"}`}>
           <CalendarIcon className="h-3.5 w-3.5" />
           {label}
         </Button>
@@ -54,8 +55,8 @@ export function DateRangeFilter({
         align="start"
         collisionPadding={8}
       >
-        <div className="p-2">
-          <div className="flex gap-2">
+        <div className="p-1.5">
+          <div className="flex gap-1">
             <div>
               <p className="text-xs text-muted-foreground px-1 mb-0.5">Von</p>
               <Calendar
@@ -63,7 +64,19 @@ export function DateRangeFilter({
                 selected={dateFrom ? new Date(dateFrom) : undefined}
                 onSelect={handleDateFromChange}
                 locale={de}
-                className="p-1"
+                className="p-0.5"
+                classNames={{
+                  [UI.Month]: "space-y-3 ml-0",
+                  [UI.MonthCaption]: "flex justify-center items-center h-6",
+                  [UI.Week]: "flex w-full mt-1",
+                  [UI.Weekday]: "text-muted-foreground rounded-md w-8 font-normal text-[0.75rem]",
+                  [UI.Day]: "h-8 w-8 text-center rounded-md text-sm p-0 relative focus-within:relative focus-within:z-20",
+                  [UI.DayButton]: "h-8 w-8 p-0 font-normal rounded-md hover:bg-primary hover:text-primary-foreground",
+                  [SelectionState.selected]: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  [DayFlag.today]: "bg-accent text-accent-foreground",
+                  [DayFlag.outside]: "text-muted-foreground opacity-50",
+                  [DayFlag.disabled]: "text-muted-foreground opacity-50",
+                }}
               />
             </div>
             <div>
@@ -73,7 +86,19 @@ export function DateRangeFilter({
                 selected={dateTo ? new Date(dateTo) : undefined}
                 onSelect={handleDateToChange}
                 locale={de}
-                className="p-1"
+                className="p-0.5"
+                classNames={{
+                  [UI.Month]: "space-y-3 ml-0",
+                  [UI.MonthCaption]: "flex justify-center items-center h-6",
+                  [UI.Week]: "flex w-full mt-1",
+                  [UI.Weekday]: "text-muted-foreground rounded-md w-8 font-normal text-[0.75rem]",
+                  [UI.Day]: "h-8 w-8 text-center rounded-md text-sm p-0 relative focus-within:relative focus-within:z-20",
+                  [UI.DayButton]: "h-8 w-8 p-0 font-normal rounded-md hover:bg-primary hover:text-primary-foreground",
+                  [SelectionState.selected]: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                  [DayFlag.today]: "bg-accent text-accent-foreground",
+                  [DayFlag.outside]: "text-muted-foreground opacity-50",
+                  [DayFlag.disabled]: "text-muted-foreground opacity-50",
+                }}
               />
             </div>
           </div>
@@ -81,7 +106,7 @@ export function DateRangeFilter({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full h-7 mt-1 text-muted-foreground"
+              className="w-full h-7 mt-0.5 text-muted-foreground"
               onClick={() => { onClear(); setOpen(false); }}
             >
               Zeitraum zurücksetzen

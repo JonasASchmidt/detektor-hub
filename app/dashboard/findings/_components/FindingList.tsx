@@ -112,9 +112,13 @@ export default function FindingsList({ filters, onTotalChange }: Props) {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
-          <Button variant="ghost" onClick={handlePrevious} disabled={page === 1 || loading}>
-            Zurück
-          </Button>
+          {page > 1 ? (
+            <Button variant="ghost" onClick={handlePrevious} disabled={loading}>
+              Zurück
+            </Button>
+          ) : (
+            <span />
+          )}
 
           <span className="text-sm text-muted-foreground">
             Seite {page} von {totalPages}

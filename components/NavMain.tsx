@@ -51,9 +51,18 @@ export function NavMain({
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => {
-          const isParentActive = pathname.startsWith(item.url);
+          const isParentExact = pathname === item.url;
           const hasActiveChild =
-            item.items?.some((sub) => pathname === sub.url) ?? false;
+            item.items?.some((sub) => pathname === sub.url || pathname.startsWith(sub.url + "/")) ?? false;
+
+          // Expanded: highlight parent only on its own URL (children have their own highlight)
+          // Collapsed: highlight parent if it or any child is active (children are hidden)
+          const isParentActive =
+            item.items && item.items.length > 0
+              ? sidebarState === "collapsed"
+                ? isParentExact || hasActiveChild
+                : isParentExact
+              : pathname.startsWith(item.url);
 
           return (
             <SidebarMenuItem key={item.title}>
@@ -70,7 +79,7 @@ export function NavMain({
                     tooltip={item.title}
                     isActive={isParentActive}
                     className={cn(
-                      isParentActive || hasActiveChild ? "font-bold" : "",
+                      isParentExact || hasActiveChild ? "font-bold" : "",
                       item.items && item.items.length > 0 ? "pr-8" : ""
                     )}
                   >
@@ -82,7 +91,7 @@ export function NavMain({
                   {item.items && item.items.length > 0 && sidebarState === "expanded" && (
                     <CollapsibleTrigger asChild>
                       <button
-                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-[#2d2d2d] hover:text-white transition-colors duration-150"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <ChevronRight

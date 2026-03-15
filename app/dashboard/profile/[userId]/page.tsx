@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/initials";
 import FindingCard from "@/app/dashboard/findings/_components/FindingCard";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 
@@ -30,7 +31,7 @@ export default async function ProfilePage({ params }: Props) {
         <Avatar className="h-16 w-16 rounded-full">
           <AvatarImage src={user.image ?? undefined} alt={user.name ?? "Profil"} />
           <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-xl font-bold">
-            {(user.name ?? "?").charAt(0).toUpperCase()}
+            {getInitials(user.name)}
           </AvatarFallback>
         </Avatar>
         <div>

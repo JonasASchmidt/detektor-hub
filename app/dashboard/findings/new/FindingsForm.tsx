@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronDown, ImageIcon, Loader2, Star, X } from "lucide-react";
+import { ChevronDown, ImageIcon, Loader2, MapPin, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CldImage } from "next-cloudinary";
@@ -140,7 +140,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
         {watchName || (isEditMode ? "Fund bearbeiten" : "Neuer Fund")}
       </h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 min-w-0">
-        <Card className="bg-muted dark:bg-gray-900 overflow-hidden border border-border">
+        <Card className="rounded-xl bg-parchment overflow-hidden border border-border">
           <div className="py-6 px-6 space-y-5">
             {/* Name */}
             <div className="flex flex-col gap-1.5">
@@ -184,9 +184,9 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
               </div>
             )}
 
-            {/* Small fields: Funddatum, Tags, Location */}
-            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full justify-between">
-              <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+            {/* Funddatum + Fundort in one row */}
+            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full">
+              <div className="flex flex-col gap-1.5 shrink-0">
                 <Label>Funddatum</Label>
                 <DatePicker
                   control={control}
@@ -199,8 +199,22 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                 control={control}
                 name="location"
                 rules={{ required: true }}
+                hideLabel
               />
             </div>
+
+            {/* Location visibility */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-input accent-foreground cursor-pointer"
+                {...register("locationPublic")}
+              />
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                Position für andere Nutzer sichtbar
+              </span>
+            </label>
 
             {/* Row 2: Tags (full width) */}
             <TagPicker
@@ -298,8 +312,10 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                           .then(setAllImages)
                           .catch(() => {});
                       }}
+                      onUpload={(image) => setAllImages((prev) => [...prev, image])}
                     />
                   </div>
+                  {selectedImageIds.length > 0 && (
                   <div className="pt-4 border-t border-border mt-auto">
                     <Button
                       type="button"
@@ -311,6 +327,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                       {selectedImageIds.length} Fotos übernehmen
                     </Button>
                   </div>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>
@@ -319,7 +336,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
 
         {/* Advanced options */}
         <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-          <Card className="bg-muted dark:bg-gray-900">
+          <Card className="rounded-xl bg-parchment">
             <div className="py-4 px-6">
               <CollapsibleTrigger asChild>
                 <button

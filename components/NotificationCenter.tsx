@@ -92,8 +92,10 @@ export function NotificationCenter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className={`relative p-2 text-white rounded-full transition-colors group ${open ? "bg-white/20" : "hover:bg-white/10"}`}>
-          <Bell className={`h-[22px] w-[22px] transition-transform ${open ? "scale-110" : ""}`} />
+        <button className={`relative p-2 text-white rounded-full group`}>
+          <Bell
+            className={`h-[22px] w-[22px] transition-all group-hover:[fill:currentColor] group-hover:[stroke-width:0] ${open ? "[fill:currentColor] [stroke-width:0]" : ""}`}
+          />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-[#2d2d2d]">
               {unreadCount > 9 ? "9+" : unreadCount}

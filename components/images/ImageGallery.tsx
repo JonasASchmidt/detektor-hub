@@ -1,18 +1,21 @@
 "use client";
 
 import type { Image, Tag } from "@prisma/client";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import ImageCard from "./ImageCard";
-import { Loader2, UploadCloud, FolderTree, Trash2, X } from "lucide-react";
+import { Loader2, UploadCloud, FolderTree, Trash2, X, Images } from "lucide-react";
 import { toast } from "sonner";
-import { Input } from "../ui/input";
 import ImageDetailDialog from "./ImageDetailDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Skeleton } from "../ui/skeleton";
 import { FilterBar, SearchFilter, DateRangeFilter, SelectFilter } from "../filters";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Tag as TagIcon } from "lucide-react";
+
+export interface ImageGalleryHandle {
+  triggerUpload: () => void;
+}
 
 type ImageWithTags = Image & { tags?: Tag[] };
 
@@ -25,9 +28,10 @@ interface TagCategory {
 interface Props {
   onSelect?: (ids: string[]) => void;
   selected?: string[];
+  onUpload?: (image: ImageWithTags) => void;
 }
 
-export default function ImageGallery({ onSelect, selected }: Props) {
+const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery({ onSelect, selected, onUpload }: Props, ref) {
   const [images, setImages] = useState<ImageWithTags[]>([]);
   const [sort, setSort] = useState<"desc" | "asc" | "az" | "za" | "last_used">("desc");
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,10 @@ export default function ImageGallery({ onSelect, selected }: Props) {
   const [internalSelected, setInternalSelected] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useImperativeHandle(ref, () => ({
+    triggerUpload: () => fileInputRef.current?.click(),
+  }));
+
   const effectiveSelected = onSelect ? (selected || []) : internalSelected;
   const setEffectiveSelected = (ids: string[]) => {
     if (onSelect) onSelect(ids);
@@ -51,8 +59,9 @@ export default function ImageGallery({ onSelect, selected }: Props) {
   useEffect(() => {
     setLoading(true);
     fetch("/api/user-images")
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : [])
       .then(setImages)
+      .catch(() => {})
       .finally(() => setLoading(false));
     fetch("/api/tag-categories")
       .then((res) => res.json())
@@ -208,6 +217,7 @@ export default function ImageGallery({ onSelect, selected }: Props) {
 
         const newImage = await res.json();
         setImages((prev) => [...prev, newImage]);
+        onUpload?.(newImage);
       } catch {
         toast.error(`Upload fehlgeschlagen: ${file.name}`);
       }
@@ -217,35 +227,31 @@ export default function ImageGallery({ onSelect, selected }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const hasAnyImages = images.length > 0;
+
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
-
-      <div className="w-full mb-4">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleFileChange}
-        />
-        <Button
-          className="w-full h-8 border-2 border-foreground text-foreground hover:bg-zinc-800 hover:text-white hover:border-zinc-800 text-[13px] font-bold px-3 transition-all rounded-lg"
-          onClick={() => fileInputRef.current?.click()}
-          variant="ghost"
-          type="button"
-          disabled={uploading}
-        >
-          {uploading ? (
-            <Loader2 className="animate-spin h-4 w-4 mr-2" />
-          ) : (
-            <UploadCloud className="h-4 w-4 mr-2" />
-          )}
-          {uploading ? "Wird hochgeladen..." : "Fotos hochladen"}
-        </Button>
-      </div>
-
+      {!loading && !hasAnyImages ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <Images className="h-10 w-10 text-muted-foreground/50" />
+          <h2 className="text-2xl font-bold">Noch keine Bilder</h2>
+          <p className="text-sm text-muted-foreground">Lade dein erstes Foto hoch, um deine Funde zu dokumentieren.</p>
+          <Button className="mt-2" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <UploadCloud className="h-4 w-4 mr-2" />}
+            {uploading ? "Wird hochgeladen..." : "Fotos hochladen"}
+          </Button>
+        </div>
+      ) : !loading && (
+      <>
       <FilterBar
         hasActiveFilters={!!(search || fileType !== "all" || dateFrom || dateTo || selectedTagIds.length > 0)}
         onClearAll={() => {
@@ -261,24 +267,24 @@ export default function ImageGallery({ onSelect, selected }: Props) {
               {search && (
                 <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
                   Suche: {search}
-                  <button onClick={() => setSearch("")} className="hover:text-primary">
-                    <X className="h-3 w-3" />
+                  <button onClick={() => setSearch("")} className="group !bg-transparent rounded-full p-0.5">
+                    <X className="h-3 w-3 text-black/50 group-hover:text-black transition-colors" />
                   </button>
                 </span>
               )}
               {fileType !== "all" && (
                 <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
                   Typ: {fileType.toUpperCase()}
-                  <button onClick={() => setFileType("all")} className="hover:text-primary">
-                    <X className="h-3 w-3" />
+                  <button onClick={() => setFileType("all")} className="group !bg-transparent rounded-full p-0.5">
+                    <X className="h-3 w-3 text-black/50 group-hover:text-black transition-colors" />
                   </button>
                 </span>
               )}
               {(dateFrom || dateTo) && (
                 <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
                   {dateFrom && `ab ${dateFrom}`} {dateTo && `bis ${dateTo}`}
-                  <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="hover:text-primary">
-                    <X className="h-3 w-3" />
+                  <button onClick={() => { setDateFrom(""); setDateTo(""); }} className="group !bg-transparent rounded-full p-0.5">
+                    <X className="h-3 w-3 text-black/50 group-hover:text-black transition-colors" />
                   </button>
                 </span>
               )}
@@ -288,8 +294,8 @@ export default function ImageGallery({ onSelect, selected }: Props) {
                 return (
                   <span key={tid} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-sm font-medium text-white" style={{ backgroundColor: tag.color }}>
                     {tag.name}
-                    <button onClick={() => setSelectedTagIds((prev) => prev.filter((i) => i !== tid))}>
-                      <X className="h-3 w-3" />
+                    <button onClick={() => setSelectedTagIds((prev) => prev.filter((i) => i !== tid))} className="group !bg-transparent rounded-full p-0.5">
+                      <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
                     </button>
                   </span>
                 );
@@ -444,13 +450,13 @@ export default function ImageGallery({ onSelect, selected }: Props) {
             <Skeleton key={i} className="aspect-square rounded-xl" />
           ))
         ) : sortedImages.length === 0 ? (
-          <div className="col-span-full py-20 text-center border-2 border-dashed border-muted rounded-2xl bg-muted/20">
-            <p className="text-muted-foreground font-medium">Du hast noch keine Bilder hochgeladen.</p>
-            {(search || fileType !== "all" || dateFrom || dateTo) && (
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                Passen Sie Ihre Filter an, um andere Ergebnisse zu sehen.
-              </p>
-            )}
+          <div className="col-span-full flex flex-col items-center justify-center py-16 text-center gap-3">
+            <Images className="h-10 w-10 text-muted-foreground/50" />
+            <h2 className="text-2xl font-bold">Keine Bilder gefunden</h2>
+            <p className="text-sm text-muted-foreground">Deine Filter ergeben keine Treffer.</p>
+            <Button variant="outline" className="mt-2" onClick={() => { setSearch(""); setFileType("all"); setDateFrom(""); setDateTo(""); setSelectedTagIds([]); }}>
+              Filter zurücksetzen
+            </Button>
           </div>
         ) : (
           sortedImages.map((image) => (
@@ -466,6 +472,8 @@ export default function ImageGallery({ onSelect, selected }: Props) {
         )}
       </div>
 
+      </>
+      )}
       <ImageDetailDialog
         image={detailIndex !== null ? sortedImages[detailIndex] : null}
         onClose={() => setDetailIndex(null)}
@@ -482,4 +490,6 @@ export default function ImageGallery({ onSelect, selected }: Props) {
       />
     </>
   );
-}
+});
+
+export default ImageGallery;

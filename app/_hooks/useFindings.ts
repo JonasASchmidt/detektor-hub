@@ -18,6 +18,7 @@ export interface UseFindingsParams {
   lat?: number;
   lng?: number;
   radius?: number;
+  hasComments?: boolean;
 }
 
 export function useFindings(params: UseFindingsParams, endpoint: string = "/api/findings") {
@@ -56,6 +57,7 @@ export function useFindings(params: UseFindingsParams, endpoint: string = "/api/
         ...(p.lat !== undefined ? { lat: p.lat.toString() } : {}),
         ...(p.lng !== undefined ? { lng: p.lng.toString() } : {}),
         ...(p.radius !== undefined ? { radius: p.radius.toString() } : {}),
+        ...(p.hasComments ? { hasComments: "true" } : {}),
       });
 
       try {

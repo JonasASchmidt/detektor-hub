@@ -54,7 +54,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
                 type="button"
                 variant="outline"
                 size="sm"
-                className={`h-9 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
+                className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
                   ? "rounded-r-none border-r-0 text-foreground"
                   : "text-muted-foreground"
                   }`}
@@ -115,7 +115,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
               variant="outline"
               size="sm"
               onClick={() => field.onChange([])}
-              className="h-9 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
+              className="h-8 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -124,16 +124,16 @@ export default function TagPicker<TFieldValues extends FieldValues>({
         {selectedTags.map((tag) => (
           <span
             key={tag.id}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded text-sm font-medium text-white"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded uppercase tracking-wide text-[11px] font-semibold text-white"
             style={{ backgroundColor: tag.color ?? "#888" }}
           >
             {tag.name}
             <button
               type="button"
               onClick={() => toggle(tag.id)}
-              className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground ml-0.5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
+              className="!bg-transparent rounded-full p-0.5 ml-0.5 focus:outline-none group transition-colors"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5 text-white/50 group-hover:text-white transition-colors" />
             </button>
           </span>
         ))}

@@ -13,6 +13,7 @@ export interface MultiSelectOption {
   value: string;
   label: string;
   group?: string;
+  color?: string;
 }
 
 interface MultiSelectFilterProps {
@@ -126,26 +127,28 @@ export function FilterChips({
 }) {
   if (selected.length === 0) return null;
 
-  const getLabel = (value: string) =>
-    options.find((o) => o.value === value)?.label ?? value;
-
   return (
     <>
-      {selected.map((value) => (
-        <span
-          key={value}
-          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium"
-        >
-          {getLabel(value)}
-          <button
-            type="button"
-            onClick={() => onRemove(value)}
-            className="!bg-transparent !text-foreground hover:bg-primary/20 rounded-full p-0.5"
+      {selected.map((value) => {
+        const opt = options.find((o) => o.value === value);
+        const color = opt?.color;
+        return (
+          <span
+            key={value}
+            className={`inline-flex items-center gap-1 h-7 px-2.5 rounded-md text-sm font-medium ${color ? "text-white" : "text-foreground bg-zinc-200"}`}
+            style={color ? { backgroundColor: color } : undefined}
           >
-            <X className="h-3 w-3" />
-          </button>
-        </span>
-      ))}
+            {opt?.label ?? value}
+            <button
+              type="button"
+              onClick={() => onRemove(value)}
+              className="group !bg-transparent rounded-full p-0.5"
+            >
+              <X className={`h-3 w-3 transition-colors ${color ? "text-white/50 group-hover:text-white" : "text-black/50 group-hover:text-black"}`} />
+            </button>
+          </span>
+        );
+      })}
     </>
   );
 }

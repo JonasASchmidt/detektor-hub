@@ -21,12 +21,12 @@ export default function TagComponent({ onClick, onClose, tag, className }: Props
 
   return (
     <Badge
-      className={`flex items-center justify-between gap-2 px-3 h-6 w-fit cursor-pointer ${className}`}
+      className={`flex items-center justify-between gap-2 px-2 h-6 w-fit cursor-pointer ${className}`}
       onClick={onClick}
       style={{ backgroundColor: tag.color }}
     >
       <DynamicIcon icon={tag.icon} />
-      <span>{tag.name}</span>
+      <span className="uppercase tracking-wide text-[11px] font-semibold">{tag.name}</span>
       {onClose && id && (
         <Button
           type="button"
@@ -39,10 +39,10 @@ export default function TagComponent({ onClick, onClose, tag, className }: Props
             e.stopPropagation();
             onClose(id);
           }}
-          className="h-4 w-4 p-0 ml-1.5 rounded-full bg-white/20 hover:bg-white/40 border-none transition-colors group flex items-center justify-center"
+          className="h-4 w-4 p-0 ml-1.5 rounded-full border-none group flex items-center justify-center"
           variant="ghost"
         >
-          <X className="h-3 w-3 text-white" />
+          <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
         </Button>
       )}
     </Badge>

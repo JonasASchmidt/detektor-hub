@@ -12,7 +12,6 @@ import {
   DateRangeFilter,
   TagSelectFilter,
   TagOption,
-  SelectFilter,
 } from "@/components/filters";
 
 function formatDateRange(fromIso: string, toIso: string): string {
@@ -75,18 +74,18 @@ export default function CommunityFilters() {
             const tag = availableTags.find((t) => t.id === id);
             return (
               <span key={id} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: tag?.color ?? "#888" }}>
-                {tag?.name ?? id}
-                <button type="button" onClick={() => setFilter("tags", currentTags.filter((t) => t !== id).join(",") || null)} className="!bg-transparent !text-foreground rounded-full p-0.5 hover:bg-black/20 hover:!text-foreground">
-                  <X className="h-3 w-3" />
+                {tag?.name ?? "…"}
+                <button type="button" onClick={() => setFilter("tags", currentTags.filter((t) => t !== id).join(",") || null)} className="group !bg-transparent rounded-full p-0.5">
+                  <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
                 </button>
               </span>
             );
           })}
           {dateChipLabel && (
-            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 text-sm font-medium">
+            <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "#9aa8b2" }}>
               {dateChipLabel}
-              <button type="button" onClick={() => setMultipleFilters({ dateFrom: null, dateTo: null })} className="bg-transparent rounded-full p-0.5 hover:bg-primary/20">
-                <X className="h-3 w-3" />
+              <button type="button" onClick={() => setMultipleFilters({ dateFrom: null, dateTo: null })} className="group !bg-transparent rounded-full p-0.5">
+                <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
               </button>
             </span>
           )}
@@ -116,13 +115,6 @@ export default function CommunityFilters() {
           onClear={() => setMultipleFilters({ dateFrom: null, dateTo: null })}
         />
 
-        <SelectFilter
-          value={searchParams.get("sort") || "newest"}
-          onChange={(v) => setFilter("sort", v)}
-          options={[{ value: "newest", label: "Neueste zuerst" }]}
-          placeholder="Sortieren"
-          className="w-[140px]"
-        />
       </FilterBar>
   );
 }

@@ -19,6 +19,8 @@ export async function GET(req: Request) {
   const tagIds = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
+  const orderBy = searchParams.get("orderBy") || "createdAt";
+  const order = searchParams.get("order") || "desc";
 
   const where = {
     AND: [
@@ -43,8 +45,9 @@ export async function GET(req: Request) {
           take: 1,
           include: { user: { select: { name: true, image: true } } },
         },
+        _count: { select: { comments: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { [orderBy]: order },
       skip,
       take: pageSize,
     });
@@ -60,8 +63,9 @@ export async function GET(req: Request) {
       thumbnailId: f.thumbnailId,
       images: f.images,
       tags: f.tags,
-      latitude: f.latitude,
-      longitude: f.longitude,
+      status: f.status,
+      reported: f.reported,
+      commentsCount: f._count.comments,
       user: { name: f.user?.name ?? null, image: f.user?.image ?? null },
       latestComment: f.comments[0]
         ? {

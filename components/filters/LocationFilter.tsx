@@ -128,7 +128,7 @@ export function LocationFilter({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1 shrink-0 h-8 whitespace-nowrap text-muted-foreground">
+          <Button variant="outline" size="sm" className={`gap-1 shrink-0 h-8 whitespace-nowrap ${lat ? "text-foreground" : "text-muted-foreground"}`}>
             <MapPin className="h-3.5 w-3.5" />
             Umkreis
           </Button>

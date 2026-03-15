@@ -1,44 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sondlr
+
+A web platform for legal registration of archaeological metal detector finds in Germany. Connects volunteer detectorists ("Sondler*innen") with state archaeology authorities (Landesdenkmalämter).
+
+**UI and domain language: German.**
+
+---
+
+## What It Does
+
+- Detectors document finds with photos, location, dating, measurements and tags
+- Finds have a two-step lifecycle: **Entwurf** (draft, private) → **Aktiv** (published, community-visible)
+- Community members identify and comment on published finds
+- Detectors report finds to their state authority via a guided **Melde-workflow** (in development)
+- Zones (permitted search areas) and field sessions are tracked per user
+
+---
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev           # Start dev server (Turbopack)
+npm run build         # Build for production
+npm run lint          # ESLint
+npx prisma db seed    # Seed demo data (2 users, ~26 finds with images, tags, comments)
+npx prisma studio     # Open Prisma GUI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Default seed accounts:
+- `demo@detektorhub.de` / `password123` (Max Sondler)
+- `jonas.a.schmidt@gmail.com` / `password123` (JonasASchmidt)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack
 
-## Learn More
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
+| Auth | NextAuth v4, JWT, credentials provider |
+| Database | PostgreSQL + PostGIS via Prisma ORM |
+| Images | Cloudinary |
+| UI | shadcn/ui, Radix UI, Tailwind CSS, lucide-react |
+| Maps | Leaflet + react-leaflet (SSR-disabled via `dynamic`) |
+| Validation | Zod (shared between API routes and forms) |
+| Notifications | Sonner (toast) |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Required in `.env.local`:
 
-## Deploy on Vercel
+```
+POSTGRES_PRISMA_URL=          # Pooled connection
+POSTGRES_URL_NON_POOLING=     # Direct connection (migrations)
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Commands
 
-## Notes to myself
+```bash
+npx prisma migrate dev --name <name>   # Create + apply new migration
+npx prisma generate                    # Regenerate TS types from schema
+npx prisma migrate deploy              # Apply pending migrations (CI/prod)
+```
 
-- Start Prisma Studio: npx prisma studio
-- To deploy latest migrations: npx prisma migrate deploy
-- To create new types from prisma schema: npx prisma generate
-- Update schema: npx prisma migrate dev --name add_icon_and_color_to_tags
-- Components from shadcn
+---
+
+## Concept & Roadmap
+
+See `PROBLEMS.md` for user problems this codebase solves.
+See `CHANGELOG.md` for a history of changes.
+
+### Planned features
+- **Melde-workflow modal** — guided find registration with authority lookup, pre-filled form, and preset selection
+- **Email notifications** — notify find owners when a comment is posted on their find
+- **In-app notifications** — `Notification` model exists in schema; UI panel exists (`NotificationCenter`); backend delivery not yet wired
+- **Map markers by tag color** — location pin icon colored by primary tag
+- **Filter chips** — date range, location, tags as removable chips

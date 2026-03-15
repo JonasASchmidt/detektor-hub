@@ -7,8 +7,15 @@ import { FindingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
+import { logActivity } from "@/lib/activityLog";
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+  const userId = session.user.id;
+
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("q") || "";
   const orderBy = searchParams.get("orderBy") || "createdAt";
@@ -24,6 +31,7 @@ export async function GET(req: Request) {
   const tagsParam = searchParams.get("tags"); // comma-separated
   const tagIds = tagsParam ? tagsParam.split(",").filter(Boolean) : tag ? [tag] : [];
   const reportedParam = searchParams.get("reported");
+  const hasCommentsParam = searchParams.get("hasComments");
   const lat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : null;
   const lng = searchParams.get("lng") ? parseFloat(searchParams.get("lng")!) : null;
   const radius = searchParams.get("radius") ? parseFloat(searchParams.get("radius")!) : null;
@@ -44,6 +52,7 @@ export async function GET(req: Request) {
 
   const where = {
     AND: [
+      { userId },
       search
         ? {
             name: {
@@ -61,6 +70,7 @@ export async function GET(req: Request) {
       ...(dateFrom ? [{ foundAt: { gte: new Date(dateFrom) } }] : []),
       ...(dateTo ? [{ foundAt: { lte: new Date(dateTo) } }] : []),
       ...(reportedParam !== null ? [{ reported: reportedParam === "true" }] : []),
+      ...(hasCommentsParam === "true" ? [{ comments: { some: {} } }] : []),
       ...(lat !== null && lng !== null && radius !== null ? [locationFilter] : []),
     ],
   };
@@ -140,6 +150,7 @@ export async function POST(req: Request) {
       dating_from: data.dating_from,
       dating_to: data.dating_to,
       references: data.references,
+      locationPublic: data.locationPublic ?? false,
       thumbnailId: data.thumbnailId,
       foundAt: data.foundAt,
       fieldSessionId: await resolveFieldSessionId(data.fieldSessionId, session.user.id),
@@ -151,6 +162,14 @@ export async function POST(req: Request) {
         connect: data.tags.map((tagId) => ({ id: tagId })),
       },
     },
+  });
+
+  await logActivity({
+    userId: session.user.id,
+    action: "finding.create",
+    entityType: "finding",
+    entityId: finding.id,
+    metadata: { name: finding.name ?? undefined },
   });
 
   revalidatePath("/dashboard/findings");

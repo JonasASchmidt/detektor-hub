@@ -126,16 +126,10 @@ export async function GET(request: Request) {
             municipality
     `;
   } catch {
-    return NextResponse.json(
-      { error: "Geodaten nicht verfügbar." },
-      { status: 404 }
-    );
+    return NextResponse.json({});
   }
   if (result.length == 0) {
-    return NextResponse.json(
-      { error: "Keine passende administrative Einheit gefunden." },
-      { status: 404 }
-    );
+    return NextResponse.json({});
   }
   // assuming there's only one matching administrative unit, we'll just return the first entry as response
   return NextResponse.json(result[0]);

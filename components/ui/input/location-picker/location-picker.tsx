@@ -13,6 +13,7 @@ import {
 
 interface Props {
   disabled?: boolean;
+  hideLabel?: boolean;
 }
 
 export default function LocationPicker<TFieldValues extends FieldValues>({
@@ -20,6 +21,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
   disabled,
   name,
   rules,
+  hideLabel,
 }: UseControllerProps<TFieldValues> & Props) {
   const { field, fieldState: _fieldState } = useController({ name, control, rules });
 
@@ -62,7 +64,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
 
   return (
     <div className="flex flex-col gap-1.5 flex-1 min-w-[280px]">
-      <Label htmlFor="lat">Fundort</Label>
+      {!hideLabel && <Label htmlFor="lat">Fundort</Label>}
       <div className="flex flex-row flex-wrap gap-1.5 items-center w-full">
         <Input
           id="lat"

@@ -1,19 +1,28 @@
 "use client";
 
+import { useRef, useState } from "react";
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Users,
+  Pencil,
+  ScrollText,
+  Settings,
 } from "lucide-react";
+import { SettingsDialog } from "@/components/SettingsDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
+
+const ActivityLogPanel = dynamic(() => import("@/components/ActivityLogPanel"), { ssr: false });
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,16 +35,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
-
-function getInitials(name: string | null | undefined): string {
-  if (!name) return "??";
-  return name
-    .split(" ")
-    .map((part) => part.charAt(0))
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
+import { getInitials } from "@/lib/initials";
 
 export function NavUser({
   user,
@@ -46,14 +46,59 @@ export function NavUser({
     avatar: string;
   };
 }) {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const { isMobile } = useSidebar();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activityLogOpen, setActivityLogOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  if (!session) {
-    return null;
+  if (!session) return null;
+
+  const currentName = session.user.name || user.name;
+
+  function startEditing() {
+    setNameValue(currentName ?? "");
+    setEditing(true);
+    setTimeout(() => {
+      inputRef.current?.select();
+    }, 0);
+  }
+
+  async function saveName() {
+    const trimmed = nameValue.trim();
+    if (!trimmed || trimmed === currentName) {
+      setEditing(false);
+      return;
+    }
+    await fetch("/api/user", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: trimmed }),
+    });
+    await update({ name: trimmed });
+    setEditing(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") saveName();
+    if (e.key === "Escape") setEditing(false);
   }
 
   return (
+    <>
+    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    <Dialog open={activityLogOpen} onOpenChange={setActivityLogOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Aktivitätslog</DialogTitle>
+        </DialogHeader>
+        <div className="overflow-y-auto max-h-[80vh]">
+          {activityLogOpen && <ActivityLogPanel />}
+        </div>
+      </DialogContent>
+    </Dialog>
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
@@ -63,13 +108,11 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-full">
-                <AvatarImage src={session?.user?.image || user.avatar} alt={session?.user?.name || user.name} />
-                <AvatarFallback className="rounded-full bg-[#2d2d2d] font-bold text-white">{getInitials(session?.user?.name)}</AvatarFallback>
+                <AvatarImage src={session?.user?.image || user.avatar} alt={currentName} />
+                <AvatarFallback className="rounded-full bg-[#2d2d2d] font-bold text-white">{getInitials(currentName)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {session.user.name}
-                </span>
+                <span className="truncate font-semibold">{currentName}</span>
                 <span className="truncate text-xs">{session.user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -84,37 +127,46 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-full">
-                  <AvatarImage src={user.avatar} alt={session.user.name} />
-                  <AvatarFallback className="rounded-full bg-[#2d2d2d] font-bold text-white">{getInitials(session?.user?.name)}</AvatarFallback>
+                  <AvatarImage src={user.avatar} alt={currentName} />
+                  <AvatarFallback className="rounded-full bg-[#2d2d2d] font-bold text-white">{getInitials(currentName)}</AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {session.user.name}
-                  </span>
-                  <span className="truncate text-xs">{session.user.email}</span>
+                <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+                  {editing ? (
+                    <input
+                      ref={inputRef}
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      onBlur={saveName}
+                      onKeyDown={handleKeyDown}
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      className="truncate font-semibold bg-transparent border-b border-foreground outline-none w-full"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      className="group flex items-center gap-1.5 text-left font-semibold truncate hover:opacity-70 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); startEditing(); }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      title="Namen bearbeiten"
+                    >
+                      <span className="truncate">{currentName}</span>
+                      <Pencil className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
+                    </button>
+                  )}
+                  <span className="truncate text-xs text-muted-foreground">{session.user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Users />
-                Your Team
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setActivityLogOpen(true)}>
+              <ScrollText />
+              Aktivitätslog
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
+              <Settings />
+              Einstellungen
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
               Log out
@@ -123,5 +175,6 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
+    </>
   );
 }

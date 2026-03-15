@@ -6,8 +6,10 @@ import { de } from "date-fns/locale";
 import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
 import { CldImage } from "next-cloudinary";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { MapPin, MessageSquare, Pencil } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/initials";
 import FindingLocationDialog from "./FindingLocationDialog";
 
 interface FindingCardProps {
@@ -17,10 +19,12 @@ interface FindingCardProps {
 
 export default function FindingCard({ finding, hideTags = false }: FindingCardProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isOwner = !!session?.user?.id && session.user.id === finding.userId;
   const [showMap, setShowMap] = useState(false);
   const [county, setCounty] = useState<string | null>(null);
 
-  const formattedDate = format(new Date(finding.createdAt), "d.M.yyyy", { locale: de });
+  const formattedDate = format(new Date(finding.createdAt), "d.M.yy", { locale: de });
   const displayImage = finding.images?.find(img => img.id === finding.thumbnailId) || finding.images?.[0];
   const hasLocation = finding.latitude != null && finding.longitude != null;
 
@@ -49,26 +53,33 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
               {finding.name}
             </h3>
 
-            <div className="flex items-center gap-2.5 flex-wrap -mt-2">
+            <div className="flex items-center gap-3 flex-wrap -mt-2">
               <span className="text-[12px] text-muted-foreground/70 font-normal">{formattedDate}</span>
               {county && (
-                <>
-                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-[12px] text-muted-foreground/70 font-normal">{county}</span>
-                </>
+                <span className="text-[12px] text-muted-foreground/70 font-normal">{county}</span>
               )}
-              <span className="text-muted-foreground/40 text-[10px]">●</span>
-              <span className="flex items-center gap-1.5">
+              <span
+                className="flex items-center gap-1.5 cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); if (finding.user?.id) router.push(`/dashboard/profile/${finding.user.id}`); }}
+              >
                 <Avatar className="h-5 w-5 rounded-full shrink-0">
                   <AvatarImage src={finding.user?.image ?? undefined} alt={finding.user?.name ?? "Anonym"} />
                   <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-[8px] font-bold">
-                    {(finding.user?.name ?? "A").charAt(0).toUpperCase()}
+                    {getInitials(finding.user?.name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[12px] text-muted-foreground/80 underline underline-offset-2 decoration-muted-foreground/30 font-normal cursor-default">
+                <span className="text-[12px] text-muted-foreground/80 underline underline-offset-2 decoration-muted-foreground/30 hover:decoration-muted-foreground/70 font-normal transition-colors">
                   {finding.user?.name ?? "Anonym"}
                 </span>
               </span>
+              {finding.status === "COMPLETED" ? (
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">Aktiv</span>
+              ) : (
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/60">Entwurf</span>
+              )}
+              {finding.reported && (
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">Gemeldet</span>
+              )}
             </div>
           </div>
 
@@ -85,7 +96,7 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
                 <span
                   key={tag.id}
                   onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/findings?tags=${tag.id}`); }}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-tight uppercase text-white hover:opacity-80 transition-opacity cursor-pointer"
+                  className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold tracking-tight uppercase text-white hover:opacity-80 transition-opacity cursor-pointer"
                   style={{ backgroundColor: tag.color }}
                 >
                   {tag.name}
@@ -123,19 +134,33 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}`); }}
-            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] relative"
             title="Kommentare"
           >
-            <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
+            {(() => {
+              const count = (finding as any).commentsCount ?? finding.comments?.length ?? 0;
+              return count > 0 ? (
+                <>
+                  <MessageSquare className="h-[19px] w-[19px]" strokeWidth={0} fill="currentColor" />
+                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white leading-none mt-0.5">
+                    {count}
+                  </span>
+                </>
+              ) : (
+                <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
+              );
+            })()}
           </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}/edit`); }}
-            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
-            title="Bearbeiten"
-          >
-            <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
-          </button>
+          {isOwner && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}/edit`); }}
+              className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+              title="Bearbeiten"
+            >
+              <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
+            </button>
+          )}
           {hasLocation && (
             <button
               type="button"

@@ -17,23 +17,29 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const [session, cookieStore] = await Promise.all([
+    getServerSession(authOptions),
+    cookies(),
+  ]);
 
   if (!session) {
     redirect("/login");
   }
 
-  // Resolve active field session from cookie
-  const cookieStore = await cookies();
+  // Resolve active field session from cookie (non-blocking — fails gracefully)
   const activeSessionId = cookieStore.get(ACTIVE_SESSION_COOKIE)?.value;
   let activeSession: { id: string; name: string } | null = null;
 
   if (activeSessionId && session.user?.id) {
-    const found = await prisma.fieldSession.findFirst({
-      where: { id: activeSessionId, userId: session.user.id },
-      select: { id: true, name: true },
-    });
-    activeSession = found ?? null;
+    try {
+      const found = await prisma.fieldSession.findFirst({
+        where: { id: activeSessionId, userId: session.user.id },
+        select: { id: true, name: true },
+      });
+      activeSession = found ?? null;
+    } catch {
+      // Non-critical — header renders without active session indicator
+    }
   }
 
   return (
@@ -43,7 +49,7 @@ export default async function DashboardLayout({
         <AppSidebar />
         <SidebarInset className="overflow-y-scroll overflow-x-hidden overscroll-none min-h-0">
           {children}
-          <Toaster position="top-right" richColors />
+          <Toaster position="top-right" richColors offset={{ top: 16, right: 4, bottom: 16, left: 16 }} />
         </SidebarInset>
       </div>
     </SidebarProvider>

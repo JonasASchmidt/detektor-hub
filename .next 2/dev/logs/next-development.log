@@ -1,0 +1,97 @@
+[00:00:00.405] Server  LOG     ✓ Ready in 315ms
+[00:00:03.957] Server  ERROR   (node:29890) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[00:00:06.254] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:06.418] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en" className="overflow-h...">
+                          <head>
+                          <body
+                            className="overflow-hidden h-full overscroll-none"
+-                           cz-shortcut-listen="true"
+                          >
+                            ...
+                              <div style={{...}} className="group/side..." ref={null}>
+                                ...
+                                  <Primitive.button type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                                    <Primitive.button.Slot type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                                      <Primitive.button.SlotClone type="button" aria-haspopup="dialog" ...>
+                                        <button
+                                          className="relative p-2 text-white hover:bg-white/10 rounded-full transition..."
+                                          type="button"
+                                          aria-haspopup="dialog"
+                                          aria-expanded={false}
++                                         aria-controls="radix-_R_3cnelb_"
+-                                         aria-controls="radix-_R_dknelb_"
+                                          data-state="closed"
+                                          onClick={function handleEvent}
+                                          ref={function}
+                                        >
+                                ...
+                                  <div data-state="open" data-disabled={undefined} className="group/coll..." ref={null}>
+                                    ...
+                                      <Primitive.button type="button" aria-controls="radix-_R_l..." aria-expanded={true} ...>
+                                        <Primitive.button.Slot type="button" aria-controls="radix-_R_l..." ...>
+                                          <Primitive.button.SlotClone type="button" aria-controls="radix-_R_l..." ...>
+                                            <button
+                                              className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-..."
+                                              onClick={function}
+                                              type="button"
++                                             aria-controls="radix-_R_l9knelb_"
+-                                             aria-controls="radix-_R_2l6knelb_"
+                                              aria-expanded={true}
+                                              data-state="open"
+                                              data-disabled={undefined}
+                                              disabled={undefined}
+                                              ref={null}
+                                            >
+                                    <CollapsibleContent>
+                                      <Presence present={true}>
+                                        <Primitive.div data-state="open" data-disabled={undefined} id="radix-_R_l..." ...>
+                                          <div
+                                            data-state="open"
+                                            data-disabled={undefined}
++                                           id="radix-_R_l9knelb_"
+-                                           id="radix-_R_2l6knelb_"
+                                            hidden={false}
+                                            style={{--radix-collapsible-content-height:undefined, ...}}
+                                            ref={function}
+                                          >
+                  ...
+
+[00:00:27.977] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:33.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_5: Resource not found - mock_detector_find_5
+[00:00:33.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_3: Resource not found - mock_detector_find_3
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_8: Resource not found - mock_detector_find_8
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_4: Resource not found - mock_detector_find_4
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_14: Resource not found - mock_detector_find_14
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_7: Resource not found - mock_detector_find_7
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_13: Resource not found - mock_detector_find_13
+[00:00:35.529] Browser ERROR   [CldImage] Failed to load image mock_detector_find_19: Resource not found - mock_detector_find_19

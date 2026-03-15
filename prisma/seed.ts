@@ -82,7 +82,7 @@ const DETECTORS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Findings — scattered across central Germany
+// Demo user findings (Max Sondler)
 // ---------------------------------------------------------------------------
 
 interface FindingSeed {
@@ -97,10 +97,10 @@ interface FindingSeed {
   depth?: number;
   weight?: number;
   description?: string;
-  tags: string[]; // tag names
+  tags: string[];
 }
 
-const FINDINGS: FindingSeed[] = [
+const DEMO_FINDINGS: FindingSeed[] = [
   {
     name: "Denar des Marc Aurel",
     latitude: 51.3396, longitude: 12.3713,
@@ -175,7 +175,7 @@ const FINDINGS: FindingSeed[] = [
   {
     name: "Bleigewicht",
     latitude: 51.21, longitude: 14.02,
-    status: "DRAFT", reported: false,
+    status: "COMPLETED", reported: false,
     dating: "Unbekannt", dating_from: 1000, dating_to: 2000,
     depth: 5, weight: 120,
     description: "Konisches Bleigewicht, Zweck unklar.",
@@ -184,7 +184,7 @@ const FINDINGS: FindingSeed[] = [
   {
     name: "Terra-Sigillata-Fragment",
     latitude: 51.60, longitude: 12.89,
-    status: "DRAFT", reported: false,
+    status: "COMPLETED", reported: false,
     dating: "1.–2. Jh. n. Chr.", dating_from: 50, dating_to: 200,
     depth: 25,
     description: "Mehrere Scherben mit Reliefdekor. Wahrscheinlich Drag. 37.",
@@ -238,19 +238,166 @@ const FINDINGS: FindingSeed[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Zones (GeoJSON polygons, simple rectangles around session areas)
+// Jonas user findings — detailed records with descriptions
+// ---------------------------------------------------------------------------
+
+interface DetailedFindingSeed extends FindingSeed {
+  diameter?: number;
+  description_front?: string;
+  description_back?: string;
+  foundAt: Date;
+}
+
+const JONAS_FINDINGS: DetailedFindingSeed[] = [
+  {
+    name: "Aucissa-Fibel aus Bronze",
+    latitude: 51.3562, longitude: 12.4108,
+    status: "COMPLETED", reported: true,
+    dating: "1.–2. Jh. n. Chr.", dating_from: 1, dating_to: 200,
+    depth: 6.0, weight: 18.2, diameter: 42.0,
+    description: "Vollständig erhaltene Aucissa-Fibel aus Bronze. Der Bügel ist leicht gewölbt und trägt eine umlaufende Rippenzier. Das Scharnier mit Nadelrast ist noch funktionsfähig. Patina olivgrün, stellenweise bräunlich.",
+    description_front: "Halbkreisförmiger Bügel mit zentraler Rippe, Inschrift \"AVCISSA\" schwach lesbar.",
+    description_back: "Nadelrast und Spiralmechanismus vollständig erhalten, leichte Korrosion an der Spirale.",
+    tags: ["Fibel", "Römerzeit"],
+    foundAt: new Date("2025-04-12"),
+  },
+  {
+    name: "Mittelalterlicher Fingerring",
+    latitude: 50.9278, longitude: 11.5891,
+    status: "COMPLETED", reported: false,
+    dating: "13.–14. Jh.", dating_from: 1200, dating_to: 1399,
+    depth: 4.0, weight: 6.8, diameter: 19.0,
+    description: "Schlichter Goldring mit ovalem Wulst. Innen glatt, außen mit feiner Punzierung. Ringweite entspricht etwa Größe 54. Keine Inschrift erkennbar, möglicherweise als Ehering getragen.",
+    description_front: "Ovaler, glatter Reif aus Goldlegierung mit leicht abgeplatteter Außenfläche.",
+    description_back: "Innenfläche poliert, keine Gravur. Minimale Gebrauchsspuren.",
+    tags: ["Ring", "Mittelalter"],
+    foundAt: new Date("2025-06-03"),
+  },
+  {
+    name: "Preußischer Uniformknopf (Landwehr)",
+    latitude: 52.3745, longitude: 13.1092,
+    status: "COMPLETED", reported: true,
+    dating: "1813–1866", dating_from: 1813, dating_to: 1866,
+    depth: 5.0, weight: 4.5, diameter: 24.0,
+    description: "Messingknopf der preußischen Landwehr mit geprägtem Adler und Umschrift. Auf der Rückseite Herstellerstempel \"WILH. SCHÜLER / BERLIN\". Sehr guter Erhaltungszustand, Vergoldungsreste sichtbar.",
+    description_front: "Vorderseite: Preußischer Adler mit Landwehrkreuz auf der Brust, Umschrift \"MIT GOTT FÜR KÖNIG UND VATERLAND\".",
+    description_back: "Öse intakt, Herstellerstempel \"WILH. SCHÜLER / BERLIN\" gut lesbar.",
+    tags: ["Uniformknopf"],
+    foundAt: new Date("2024-10-19"),
+  },
+  {
+    name: "Eiserne Pfeilspitze",
+    latitude: 51.8432, longitude: 12.6701,
+    status: "COMPLETED", reported: false,
+    dating: "Hochmittelalter", dating_from: 1000, dating_to: 1300,
+    depth: 22.0, weight: 38.0,
+    description: "Dreiflügelige Pfeilspitze aus Eisen, stark korrodiert. Tülle teilweise erhalten, Schaft fehlt. Typ entspricht mittelalterlichen Armbrustbolzen. Fundtiefe ungewöhnlich hoch – möglicherweise durch Pflugschicht verlagert.",
+    tags: ["Mittelalter"],
+    foundAt: new Date("2025-02-08"),
+  },
+  {
+    name: "Bronzeanhänger mit Eberkopf",
+    latitude: 48.2134, longitude: 11.7823,
+    status: "COMPLETED", reported: false,
+    dating: "1.–3. Jh. n. Chr.", dating_from: 1, dating_to: 300,
+    depth: 9.0, weight: 12.4, diameter: 31.0,
+    description: "Zoomorpher Anhänger in Form eines stilisierten Eberkopfes. Gussnaht sichtbar, Augen ursprünglich wohl mit Emaille eingelegt (Vertiefungen vorhanden). Öse oben zum Aufhängen. Verbreitet als Amuletttyp in der römischen Kaiserzeit.",
+    description_front: "Eberkopf von vorn, markante Hauerzähne, Rillen zur Andeutung des Fells.",
+    description_back: "Öse intakt, Gussnaht auf Mittelachse, Rückseite flach und undekoriert.",
+    tags: ["Anhänger", "Antike"],
+    foundAt: new Date("2024-07-27"),
+  },
+  {
+    name: "Sächsischer Silbergroschen (1697)",
+    latitude: 51.0504, longitude: 13.7373,
+    status: "COMPLETED", reported: true,
+    dating: "1697", dating_from: 1697, dating_to: 1697,
+    depth: 13.0, weight: 3.2, diameter: 27.0,
+    description: "Silbergroschen Kurfürst Friedrich August I. (der Starke), Jahrgang 1697. Münzstätte Dresden (Münzzeichen ILH). Vorderseite: Geharnischtes Brustbild mit Lorbeerkranz nach rechts. Rückseite: Kursächsisches Wappen im Barockrahmen. Erhaltung: ss (sehr schön).",
+    description_front: "Geharnischtes Brustbild Friedrich Augusts I. nach rechts, Umschrift: \"FRID·AUG·D·G·DUX·SAX·\".",
+    description_back: "Kursächsisches Vollwappen, Umschrift: \"ILH·ANNO·1697\", Wert \"1 GROS\" im Abschnitt.",
+    tags: ["Frühe Neuzeit"],
+    foundAt: new Date("2025-01-15"),
+  },
+  {
+    name: "Gotischer Schlüssel",
+    latitude: 51.9862, longitude: 14.1234,
+    status: "DRAFT", reported: false,
+    dating: "15.–16. Jh.", dating_from: 1400, dating_to: 1599,
+    depth: 19.0, weight: 41.0,
+    description: "Eisenschlüssel mit kleeblattförmigem Griffring und einfachem Bart. Gesamtlänge ca. 9 cm. Schaft gerade, rund. Bart einseitig, L-förmig. Stark von Rost befallen, Bart jedoch erkennbar. Ob der Schlüssel zu einer bekannten Schlosskonstruktion passt, ist noch zu prüfen.",
+    tags: ["Schlüssel", "Mittelalter"],
+    foundAt: new Date("2024-11-30"),
+  },
+  {
+    name: "Blaue Glasperle (Merowingerzeit)",
+    latitude: 51.4821, longitude: 11.9634,
+    status: "COMPLETED", reported: false,
+    dating: "6.–7. Jh. n. Chr.", dating_from: 500, dating_to: 700,
+    depth: 3.0, weight: 2.1, diameter: 11.0,
+    description: "Opake blaue Glasperle, gedrückt-kugelförmig. Lochkanal intakt, Wandstärke gleichmäßig. Oberfläche glatt, leichte Irisierung durch Verwitterung. Typ verbreitet in merowingerzeitlichen Frauengräbern als Halsschmuck.",
+    tags: ["Glasperle"],
+    foundAt: new Date("2025-05-22"),
+  },
+  {
+    name: "Bleibulle mit Stempeldruck",
+    latitude: 51.6123, longitude: 12.8934,
+    status: "DRAFT", reported: false,
+    dating: "Mittelalter–Frühe Neuzeit", dating_from: 1100, dating_to: 1600,
+    depth: 7.0, weight: 15.3, diameter: 22.0,
+    description: "Runde Bleibulle, beidseitig gestempelt. Durchmesser ca. 22 mm. Beide Seiten zeigen kreisförmige Stempelabdrücke, die Details sind durch Korrosion schwer lesbar. Möglicherweise Handelsplombe oder Tuchsiegel. Weitere Untersuchung erforderlich.",
+    tags: ["Blei"],
+    foundAt: new Date("2024-09-14"),
+  },
+  {
+    name: "Gürtelschnalle mit Tierkopfenden",
+    latitude: 50.7823, longitude: 10.9134,
+    status: "COMPLETED", reported: false,
+    dating: "17.–18. Jh.", dating_from: 1600, dating_to: 1800,
+    depth: 11.0, weight: 28.7, diameter: 47.0,
+    description: "Ovale Gürtelschnalle aus Bronze mit plastischen Tierkopfenden (stilisierte Drachenköpfe) am Rahmen. Dorn vollständig erhalten. Auf der Rückseite Reste einer Eisenspange zur Lederbefestigung. Typisches Exemplar aus der Frühen Neuzeit, verbreitet im mitteleuropäischen Raum.",
+    description_front: "Ovaler Rahmen mit zwei stilisierten Drachenköpfen an den Seiten, Dorn zentral.",
+    description_back: "Reste der Eisenspange für Ledergurt, Korrosionsspuren.",
+    tags: ["Gürtelschnalle", "Frühe Neuzeit"],
+    foundAt: new Date("2025-03-07"),
+  },
+  {
+    name: "Keltische Silbermünze (Büschelquinar)",
+    latitude: 48.5231, longitude: 12.1582,
+    status: "COMPLETED", reported: true,
+    dating: "2.–1. Jh. v. Chr.", dating_from: -200, dating_to: -50,
+    depth: 16.0, weight: 1.8, diameter: 14.0,
+    description: "Kleiner Silberquinar des keltischen Typs \"Büschelquinar\". Vorderseite: abstraktes Kopfbild, büschelartige Haarlinie. Rückseite: Pferd nach rechts springend, darunter Torques. Gewicht 1,8 g entspricht dem normalen Typ. Selten und gut erhalten für diesen Fundtyp.",
+    description_front: "Abstraktes Kopfbild mit büschelartigem Haar, teilweise dezentriert geprägt.",
+    description_back: "Springendes Pferd nach rechts, darunter Torques-Symbol, Punzen im Hintergrund.",
+    tags: ["Antike"],
+    foundAt: new Date("2024-08-11"),
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Sample Cloudinary public IDs (built-in demo assets in every Cloudinary account)
+// ---------------------------------------------------------------------------
+
+const SAMPLE_PUBLIC_IDS = [
+  "cld-sample",
+  "cld-sample-2",
+  "cld-sample-3",
+  "cld-sample-4",
+  "cld-sample-5",
+];
+
+// ---------------------------------------------------------------------------
+// Zones
 // ---------------------------------------------------------------------------
 
 const ZONES = [
   {
     name: "Äcker Norden",
     description: "Ackerfläche nördlich des Ortes, Genehmigung liegt vor.",
-    // Simple polygon around Leipzig north area
     geoJson: JSON.stringify({
       type: "Polygon",
-      coordinates: [[
-        [12.35, 51.37], [12.42, 51.37], [12.42, 51.41], [12.35, 51.41], [12.35, 51.37],
-      ]],
+      coordinates: [[[12.35, 51.37], [12.42, 51.37], [12.42, 51.41], [12.35, 51.41], [12.35, 51.37]]],
     }),
   },
   {
@@ -258,9 +405,7 @@ const ZONES = [
     description: "Streifen am Waldrand, max. 50 m ins Feld.",
     geoJson: JSON.stringify({
       type: "Polygon",
-      coordinates: [[
-        [13.70, 51.02], [13.78, 51.02], [13.78, 51.07], [13.70, 51.07], [13.70, 51.02],
-      ]],
+      coordinates: [[[13.70, 51.02], [13.78, 51.02], [13.78, 51.07], [13.70, 51.07], [13.70, 51.02]]],
     }),
   },
 ];
@@ -272,22 +417,31 @@ const ZONES = [
 async function main() {
   console.log("🌱 Starting seed …");
 
-  // 1. Test user
   const passwordHash = await bcrypt.hash("password123", 10);
-  const user = await prisma.user.upsert({
+
+  // 1. Users
+  const demoUser = await prisma.user.upsert({
     where: { email: "demo@detektorhub.de" },
     update: {},
-    create: {
-      email: "demo@detektorhub.de",
-      name: "Max Sondler",
-      password: passwordHash,
-      role: "USER",
-    },
+    create: { email: "demo@detektorhub.de", name: "Max Sondler", password: passwordHash, role: "USER" },
   });
-  console.log(`  ✓ User: ${user.email}`);
+
+  const jonasUser = await prisma.user.upsert({
+    where: { email: "jonas.a.schmidt@gmail.com" },
+    update: { role: "ADMIN" },
+    create: { email: "jonas.a.schmidt@gmail.com", name: "JonasASchmidt", password: passwordHash, role: "ADMIN" },
+  });
+
+  const roschlUser = await prisma.user.upsert({
+    where: { email: "roschl@detektorhub.de" },
+    update: { role: "ADMIN" },
+    create: { email: "roschl@detektorhub.de", name: "Roschl", password: passwordHash, role: "ADMIN" },
+  });
+
+  console.log(`  ✓ Users: ${demoUser.email}, ${jonasUser.email}, ${roschlUser.email}`);
 
   // 2. Tag categories + tags
-  const tagMap: Record<string, string> = {}; // tag name → id
+  const tagMap: Record<string, string> = {};
 
   for (const cat of CATEGORIES) {
     const category = await prisma.tagCategory.upsert({
@@ -300,12 +454,7 @@ async function main() {
       const tag = await prisma.tag.upsert({
         where: { name: t.name },
         update: {},
-        create: {
-          name: t.name,
-          color: t.color,
-          icon: t.icon,
-          categoryId: category.id,
-        },
+        create: { name: t.name, color: t.color, icon: t.icon, categoryId: category.id },
       });
       tagMap[t.name] = tag.id;
     }
@@ -315,119 +464,191 @@ async function main() {
   // 3. Detectors
   const detectorMap: Record<string, string> = {};
   for (const d of DETECTORS) {
-    const existing = await prisma.detector.findFirst({
-      where: { name: d.name, company: d.company },
-    });
+    const existing = await prisma.detector.findFirst({ where: { name: d.name, company: d.company } });
     const detector = existing ?? await prisma.detector.create({ data: d });
     detectorMap[d.name] = detector.id;
   }
   console.log(`  ✓ ${DETECTORS.length} Detektoren`);
 
-  // 4. Zones (raw SQL for PostGIS geometry)
+  // 4. Zones (for demo user)
   const zoneIds: string[] = [];
   for (const z of ZONES) {
-    // Upsert-like: delete if exists, then create
-    await prisma.zone.deleteMany({ where: { name: z.name, userId: user.id } });
+    await prisma.zone.deleteMany({ where: { name: z.name, userId: demoUser.id } });
     const zone = await prisma.zone.create({
-      data: { name: z.name, description: z.description, userId: user.id },
+      data: { name: z.name, description: z.description, userId: demoUser.id },
     });
-    await prisma.$executeRaw`
-      UPDATE "Zone"
-      SET geometry = ST_GeomFromGeoJSON(${z.geoJson})
-      WHERE id = ${zone.id}
-    `;
+    await prisma.$executeRaw`UPDATE "Zone" SET geometry = ST_GeomFromGeoJSON(${z.geoJson}) WHERE id = ${zone.id}`;
     zoneIds.push(zone.id);
   }
   console.log(`  ✓ ${ZONES.length} Zonen`);
 
-  // 5. Field sessions
+  // 5. Field sessions (for demo user)
   const equinoxId = detectorMap["Equinox 800"];
-
-  await prisma.fieldSession.deleteMany({ where: { userId: user.id } });
+  await prisma.fieldSession.deleteMany({ where: { userId: demoUser.id } });
 
   const session1 = await prisma.fieldSession.create({
-    data: {
-      name: "Frühjahrsbegehung Nordfeld",
-      description: "Erste Begehung nach der Schneeschmelze. Boden noch leicht feucht.",
-      dateFrom: new Date("2025-03-15"),
-      dateTo: new Date("2025-03-15"),
-      userId: user.id,
-      zoneId: zoneIds[0],
-      detectorId: equinoxId,
-    },
+    data: { name: "Frühjahrsbegehung Nordfeld", description: "Erste Begehung nach der Schneeschmelze. Boden noch leicht feucht.", dateFrom: new Date("2025-03-15"), dateTo: new Date("2025-03-15"), userId: demoUser.id, zoneId: zoneIds[0], detectorId: equinoxId },
   });
-
   const session2 = await prisma.fieldSession.create({
-    data: {
-      name: "Herbstbegehung Waldrand",
-      description: "Gute Bedingungen nach dem Regen, Boden locker.",
-      dateFrom: new Date("2024-10-20"),
-      dateTo: new Date("2024-10-21"),
-      userId: user.id,
-      zoneId: zoneIds[1],
-      detectorId: detectorMap["Deus II"],
-    },
+    data: { name: "Herbstbegehung Waldrand", description: "Gute Bedingungen nach dem Regen, Boden locker.", dateFrom: new Date("2024-10-20"), dateTo: new Date("2024-10-21"), userId: demoUser.id, zoneId: zoneIds[1], detectorId: detectorMap["Deus II"] },
   });
-
   const session3 = await prisma.fieldSession.create({
-    data: {
-      name: "Spontanbegehung Stoppelfeld",
-      description: "Kurzfristige Erlaubnis erhalten, 3 Stunden.",
-      dateFrom: new Date("2025-01-08"),
-      userId: user.id,
-      detectorId: equinoxId,
-    },
+    data: { name: "Spontanbegehung Stoppelfeld", description: "Kurzfristige Erlaubnis erhalten, 3 Stunden.", dateFrom: new Date("2025-01-08"), userId: demoUser.id, detectorId: equinoxId },
   });
-
   console.log("  ✓ 3 Begehungen");
 
-  // 6. Findings
-  await prisma.finding.deleteMany({ where: { userId: user.id } });
+  // 6. Demo user findings (delete comments first — no cascade on finding)
+  await prisma.comment.deleteMany({ where: { finding: { userId: demoUser.id } } });
+  await prisma.comment.deleteMany({ where: { finding: { userId: jonasUser.id } } });
+  await prisma.image.deleteMany({ where: { userId: demoUser.id } });
+  await prisma.image.deleteMany({ where: { userId: jonasUser.id } });
+  await prisma.finding.deleteMany({ where: { userId: demoUser.id } });
 
   const sessionAssignment = [
-    session1.id, session1.id, session1.id, session1.id, // first 4 in session1
-    session2.id, session2.id, session2.id, session2.id, // next 4 in session2
-    session3.id, session3.id,                           // 2 in session3
-    null, null, null, null, null,                       // rest unassigned
+    session1.id, session1.id, session1.id, session1.id,
+    session2.id, session2.id, session2.id, session2.id,
+    session3.id, session3.id,
+    null, null, null, null, null,
   ];
 
-  for (let i = 0; i < FINDINGS.length; i++) {
-    const f = FINDINGS[i];
-    const tagIds = (f.tags ?? [])
-      .map((name) => tagMap[name])
-      .filter(Boolean);
-
-    await prisma.finding.create({
+  for (let i = 0; i < DEMO_FINDINGS.length; i++) {
+    const f = DEMO_FINDINGS[i];
+    const tagIds = f.tags.map((name) => tagMap[name]).filter(Boolean);
+    const finding = await prisma.finding.create({
       data: {
-        name: f.name,
-        latitude: f.latitude,
-        longitude: f.longitude,
-        status: f.status,
-        reported: f.reported,
-        dating: f.dating,
-        dating_from: f.dating_from,
-        dating_to: f.dating_to,
-        depth: f.depth,
-        weight: f.weight,
-        description: f.description,
-        foundAt: new Date(
-          Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)
-        ),
-        userId: user.id,
+        name: f.name, latitude: f.latitude, longitude: f.longitude,
+        status: f.status, reported: f.reported,
+        dating: f.dating, dating_from: f.dating_from, dating_to: f.dating_to,
+        depth: f.depth, weight: f.weight, description: f.description,
+        foundAt: new Date(Date.now() - Math.floor(Math.random() * 365 * 24 * 60 * 60 * 1000)),
+        userId: demoUser.id,
         fieldSessionId: sessionAssignment[i] ?? null,
         tags: tagIds.length ? { connect: tagIds.map((id) => ({ id })) } : undefined,
       },
     });
+    const image = await prisma.image.create({
+      data: {
+        publicId: SAMPLE_PUBLIC_IDS[i % SAMPLE_PUBLIC_IDS.length],
+        userId: demoUser.id,
+        findingId: finding.id,
+        title: f.name,
+      },
+    });
+    await prisma.finding.update({ where: { id: finding.id }, data: { thumbnailId: image.id } });
   }
-  console.log(`  ✓ ${FINDINGS.length} Funde`);
+  console.log(`  ✓ ${DEMO_FINDINGS.length} Demo-Funde (Max Sondler)`);
+
+  // 7. Jonas user findings
+  // (comments and images already deleted above)
+  await prisma.finding.deleteMany({ where: { userId: jonasUser.id } });
+
+  for (let i = 0; i < JONAS_FINDINGS.length; i++) {
+    const f = JONAS_FINDINGS[i];
+    const tagIds = f.tags.map((name) => tagMap[name]).filter(Boolean);
+    const finding = await prisma.finding.create({
+      data: {
+        name: f.name, latitude: f.latitude, longitude: f.longitude,
+        status: f.status, reported: f.reported,
+        dating: f.dating, dating_from: f.dating_from, dating_to: f.dating_to,
+        depth: f.depth, weight: f.weight, diameter: f.diameter,
+        description: f.description,
+        description_front: f.description_front ?? null,
+        description_back: f.description_back ?? null,
+        foundAt: f.foundAt,
+        userId: jonasUser.id,
+        tags: tagIds.length ? { connect: tagIds.map((id) => ({ id })) } : undefined,
+      },
+    });
+    const image = await prisma.image.create({
+      data: {
+        publicId: SAMPLE_PUBLIC_IDS[i % SAMPLE_PUBLIC_IDS.length],
+        userId: jonasUser.id,
+        findingId: finding.id,
+        title: f.name,
+      },
+    });
+    await prisma.finding.update({ where: { id: finding.id }, data: { thumbnailId: image.id } });
+  }
+  console.log(`  ✓ ${JONAS_FINDINGS.length} Funde (Jonas)`);
+
+  // 8. Comments on completed findings
+  const commentSeeds: { findingName: string; authorEmail: string; text: string }[] = [
+    {
+      findingName: "Aucissa-Fibel aus Bronze",
+      authorEmail: "demo@detektorhub.de",
+      text: "Sehr schöner Fund! Die Inschrift \"AVCISSA\" deutet auf eine gallische Werkstatt hin. Ich habe ein fast identisches Stück aus der Gegend um Trier – gleiche Rippenzier am Bügel.",
+    },
+    {
+      findingName: "Aucissa-Fibel aus Bronze",
+      authorEmail: "demo@detektorhub.de",
+      text: "Das Scharniersystem ist bei diesem Typ ungewöhnlich gut erhalten. Hast du die Fundtiefe notiert? Bei meinem Exemplar lag sie bei nur 4 cm.",
+    },
+    {
+      findingName: "Mittelalterlicher Fingerring",
+      authorEmail: "demo@detektorhub.de",
+      text: "Der Wulst erinnert mich an Ringe aus dem Rheinland, 13. Jh. – könnte ein Händlerring sein. Lohnt sich eine Materialanalyse, um den Goldgehalt zu bestimmen.",
+    },
+    {
+      findingName: "Keltische Silbermünze (Büschelquinar)",
+      authorEmail: "demo@detektorhub.de",
+      text: "Büschelquinare aus diesem Raum sind selten. Hast du den Fund schon dem LDA gemeldet? Wäre interessant für die Verbreitungskarte.",
+    },
+    {
+      findingName: "Sächsischer Silbergroschen (1697)",
+      authorEmail: "demo@detektorhub.de",
+      text: "ILH steht für Johann Lorenz Holländer, Münzwardein in Dresden. Der Jahrgang 1697 ist weniger häufig als 1693–1695. Schöner Erhaltungszustand!",
+    },
+    {
+      findingName: "Denar des Marc Aurel",
+      authorEmail: "jonas.a.schmidt@gmail.com",
+      text: "Toller Fund! Die Victoriamotiv-Rückseite ist typisch für die frühen Jahre Marc Aurels. Wo genau hast du den Denar gefunden – Acker oder Waldrand?",
+    },
+    {
+      findingName: "Bronzefibel",
+      authorEmail: "jonas.a.schmidt@gmail.com",
+      text: "Kniefibeln mit Emaileinlage kommen in Sachsen öfter vor, meistens aus dem 2. Jh. Die Grünpatina sieht sehr stabil aus – gut für die Langzeitlagerung.",
+    },
+    {
+      findingName: "Uniformknopf Preußen",
+      authorEmail: "jonas.a.schmidt@gmail.com",
+      text: "Preußische Landwehrknöpfe – immer ein schöner Fund. Ich habe eine Sammlung davon, aber das Vergoldungsreste sind bei meinen Exemplaren meist stärker abgerieben.",
+    },
+    {
+      findingName: "Frühmittelalterliche Gürtelschnalle",
+      authorEmail: "jonas.a.schmidt@gmail.com",
+      text: "Merowingische Schnallen mit Dornbeschlag sind selten in gutem Zustand. Wurde der Fund dem zuständigen Landesamt gemeldet? Das wäre meldepflichtig.",
+    },
+    {
+      findingName: "Bleigewicht",
+      authorEmail: "jonas.a.schmidt@gmail.com",
+      text: "Konische Bleigewichte dieses Typs werden oft als Fischernetzsenkbleie oder Waaggewichte interpretiert. Das Gewicht von 120 g passt gut zu einem Handelsgewicht.",
+    },
+  ];
+
+  let commentCount = 0;
+  for (const cs of commentSeeds) {
+    const author = await prisma.user.findUnique({ where: { email: cs.authorEmail }, select: { id: true } });
+    const finding = await prisma.finding.findFirst({ where: { name: cs.findingName }, select: { id: true } });
+    if (author && finding) {
+      await prisma.comment.create({
+        data: { userId: author.id, findingId: finding.id, text: cs.text },
+      });
+      commentCount++;
+    }
+  }
+  console.log(`  ✓ ${commentCount} Kommentare`);
+
+  await prisma.user.updateMany({
+    where: { email: { in: ["jonas.a.schmidt@gmail.com", "roschl@detektorhub.de"] } },
+    data: { role: "ADMIN" },
+  });
 
   console.log("\n✅ Seed abgeschlossen!");
-  console.log("   Login: demo@detektorhub.de / password123");
+  console.log("   demo@detektorhub.de  / password123  (Max Sondler)");
+  console.log("   jonas.a.schmidt@gmail.com / password123  (Jonas, ADMIN)");
+  console.log("   roschl@detektorhub.de / password123  (Roschl, ADMIN)");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
+  .catch((e) => { console.error(e); process.exit(1); })
   .finally(() => prisma.$disconnect());

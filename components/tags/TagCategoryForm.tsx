@@ -58,8 +58,8 @@ export function TagCategoryForm({ category, onAddCategory }: Props) {
           </p>
         </header>
 
-        <div className="grid gap-2">
-          <Label htmlFor="name" className="text-[10px] font-bold ml-1 uppercase text-muted-foreground tracking-wider whitespace-nowrap opacity-70">Kategorie Name</Label>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="name">Kategorie Name</Label>
           <Input
             id="name"
             type="text"

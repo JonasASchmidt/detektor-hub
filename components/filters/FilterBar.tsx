@@ -19,7 +19,7 @@ export function FilterBar({
   clearLabel = "Filter zurücksetzen",
 }: FilterBarProps) {
   return (
-    <div className="bg-muted rounded-lg border border-border [&_input]:bg-white [&_button]:bg-white [&_[role=combobox]]:bg-white">
+    <div className="rounded-lg border border-border [&_input]:bg-white [&_button]:bg-white [&_[role=combobox]]:bg-white" style={{ backgroundColor: "#F6F6F2" }}>
       <div className="flex flex-nowrap gap-3 p-4 items-center overflow-x-auto">
         {children}
         {hasActiveFilters && onClearAll && (

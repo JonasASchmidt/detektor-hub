@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { name } = await req.json();
+  if (!name?.trim()) {
+    return NextResponse.json({ error: "Name erforderlich." }, { status: 400 });
+  }
+  try {
+    const category = await prisma.tagCategory.update({
+      where: { id },
+      data: { name: name.trim() },
+    });
+    return NextResponse.json({ category });
+  } catch {
+    return NextResponse.json({ error: "Fehler beim Speichern." }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

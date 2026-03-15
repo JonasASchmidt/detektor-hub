@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -14,6 +15,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import type { Image } from "@prisma/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface Props {
   image: Image;
@@ -27,9 +29,36 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function ImageEditor({ image, onChange: _onChange }: Props) {
+export default function ImageEditor({ image, onChange }: Props) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(image.title ?? "");
+  const [description, setDescription] = useState(image.description ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/images/${image.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title || null, description: description || null }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const updated = await res.json();
+      onChange(updated);
+      toast.success("Änderungen gespeichert.");
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="icon" variant="secondary">
           <Pencil className="w-4 h-4" />
@@ -44,7 +73,12 @@ export default function ImageEditor({ image, onChange: _onChange }: Props) {
             <Label htmlFor="name" className="text-right">
               Titel
             </Label>
-            <Input id="name" defaultValue={image.title ?? ""} className="col-span-3" />
+            <Input
+              id="name"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">
@@ -52,7 +86,8 @@ export default function ImageEditor({ image, onChange: _onChange }: Props) {
             </Label>
             <Input
               id="description"
-              defaultValue={image.description ?? ""}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className="col-span-3"
             />
           </div>
@@ -77,7 +112,9 @@ export default function ImageEditor({ image, onChange: _onChange }: Props) {
         </div>
 
         <DialogFooter>
-          <Button type="submit">Änderungen speichern</Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Wird gespeichert..." : "Änderungen speichern"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

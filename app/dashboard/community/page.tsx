@@ -8,7 +8,10 @@ import CommunityFilters from "./_components/CommunityFilters";
 import { useFiltersFromURL } from "../findings/_components/FindingFilters";
 import { useFindings } from "@/app/_hooks/useFindings";
 import FindingCard from "../findings/_components/FindingCard";
+import { SelectFilter } from "@/components/filters";
+import { useURLFilters } from "@/app/_hooks/useURLFilters";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/initials";
 import { MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -42,7 +45,7 @@ function CommentStrip({ findingId, comment }: { findingId: string; comment: Late
       <Avatar className="h-5 w-5 rounded-full shrink-0">
         <AvatarImage src={comment.userImage ?? undefined} alt={comment.userName ?? "Anonym"} />
         <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-[8px] font-bold">
-          {(comment.userName ?? "A").charAt(0).toUpperCase()}
+          {getInitials(comment.userName)}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0 flex items-baseline gap-2">
@@ -87,6 +90,7 @@ export default function CommunityPage() {
 function CommunityPageContent() {
   const filters = useFiltersFromURL();
   const { findings, loading } = useFindings(filters, "/api/community/findings");
+  const { searchParams, setFilter } = useURLFilters();
 
   return (
     <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
@@ -94,7 +98,20 @@ function CommunityPageContent() {
       <CommunityFilters />
 
       <section className="pt-4">
-        <h2 className="text-2xl font-bold mb-4">Alle Beiträge</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Alle Beiträge</h2>
+          <SelectFilter
+            value={searchParams.get("sort") || "newest"}
+            onChange={(v) => setFilter("sort", v)}
+            options={[
+              { value: "newest", label: "Neueste zuerst" },
+              { value: "oldest", label: "Älteste zuerst" },
+              { value: "az", label: "Alphabetisch" },
+            ]}
+            placeholder="Sortieren"
+            className="w-[160px]"
+          />
+        </div>
         {loading ? (
           <SectionSkeleton />
         ) : findings.length === 0 ? (

@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { findingSchemaCompleted } from "@/schemas/finding";
+import { findingSchemaCompleted, findingDraftSchema } from "@/schemas/finding";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
 import { logActivity } from "@/lib/activityLog";
+import { applyNamingScheme } from "@/lib/namingScheme";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -135,9 +136,27 @@ export async function POST(req: Request) {
 
   const data = parseResult.data;
 
+  // Auto-generate name from session naming scheme if no explicit name provided
+  let resolvedName = data.name || null;
+  const resolvedSessionId = await resolveFieldSessionId(data.fieldSessionId, session.user.id);
+  if (!resolvedName && resolvedSessionId) {
+    const fieldSession = await prisma.fieldSession.findUnique({
+      where: { id: resolvedSessionId },
+      select: { name: true, namingScheme: true, _count: { select: { findings: true } } },
+    });
+    if (fieldSession?.namingScheme) {
+      resolvedName = applyNamingScheme(
+        fieldSession.namingScheme,
+        fieldSession.name,
+        fieldSession._count.findings + 1,
+        data.foundAt ? new Date(data.foundAt) : new Date()
+      );
+    }
+  }
+
   const finding = await prisma.finding.create({
     data: {
-      name: data.name,
+      name: resolvedName,
       latitude: data.location.lat,
       longitude: data.location.lng,
       depth: data.depth,
@@ -153,7 +172,7 @@ export async function POST(req: Request) {
       locationPublic: data.locationPublic ?? false,
       thumbnailId: data.thumbnailId,
       foundAt: data.foundAt,
-      fieldSessionId: await resolveFieldSessionId(data.fieldSessionId, session.user.id),
+      fieldSessionId: resolvedSessionId,
       userId: session.user.id,
       images: {
         connect: data.images.map((imageId) => ({ id: imageId })),

@@ -18,6 +18,7 @@ import FindingsPicker from "./FindingsPicker";
 import ZonePicker from "./ZonePicker";
 import { useZonePicker } from "./useZonePicker";
 import { pointInPolygon } from "@/lib/geo";
+import { applyNamingScheme } from "@/lib/namingScheme";
 
 export interface FindingOption {
   id: string;
@@ -35,6 +36,7 @@ interface Props {
     id: string;
     name: string;
     description?: string | null;
+    namingScheme?: string | null;
     dateFrom: Date | string;
     dateTo?: Date | string | null;
     zoneId?: string | null;
@@ -61,6 +63,7 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
       defaultValues: {
         name: initialData?.name ?? "",
         description: initialData?.description ?? "",
+        namingScheme: initialData?.namingScheme ?? "",
         dateFrom: initialData?.dateFrom ? new Date(initialData.dateFrom) : undefined,
         dateTo: initialData?.dateTo ? new Date(initialData.dateTo) : null,
         detectorId: initialData?.detectorId ?? "",
@@ -69,8 +72,18 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
     });
 
   const watchName = watch("name");
+  const watchNamingScheme = watch("namingScheme");
   const dateFrom = useWatch({ control, name: "dateFrom" });
   const dateTo = useWatch({ control, name: "dateTo" });
+
+  const namingPreview = useMemo(() => {
+    if (!watchNamingScheme || !watchName) return null;
+    try {
+      return applyNamingScheme(watchNamingScheme, watchName || "Session", 1);
+    } catch {
+      return null;
+    }
+  }, [watchNamingScheme, watchName]);
 
   const filteredFindings = useMemo(() => {
     const hasZone = zone.activeZoneCoords && zone.activeZoneCoords.length >= 3;
@@ -158,6 +171,32 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
                 rows={3}
                 {...register("description")}
               />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="namingScheme">
+                Benennungsschema für Funde{" "}
+                <span className="text-muted-foreground font-normal">(optional)</span>
+              </Label>
+              <Input
+                id="namingScheme"
+                placeholder="z. B. {session}-{n:03} oder Fund {n} – {datum}"
+                {...register("namingScheme")}
+              />
+              <p className="text-xs text-muted-foreground">
+                Tokens: <code className="bg-muted px-1 rounded">{"{session}"}</code> Session-Name,{" "}
+                <code className="bg-muted px-1 rounded">{"{n}"}</code> Fundnummer,{" "}
+                <code className="bg-muted px-1 rounded">{"{n:03}"}</code> mit Nullen (001),{" "}
+                <code className="bg-muted px-1 rounded">{"{date}"}</code> Datum (YYYY-MM-DD)
+              </p>
+              {namingPreview && (
+                <p className="text-xs text-foreground">
+                  Vorschau: <span className="font-medium">{namingPreview}</span>,{" "}
+                  <span className="text-muted-foreground">
+                    {applyNamingScheme(watchNamingScheme!, watchName || "Session", 2)}, …
+                  </span>
+                </p>
+              )}
             </div>
 
             <div className="flex flex-row flex-wrap gap-4 items-end">

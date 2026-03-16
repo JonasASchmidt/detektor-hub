@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, description, dateFrom, dateTo, zoneId, detectorId } =
+  const { name, description, namingScheme, dateFrom, dateTo, zoneId, detectorId } =
     parseResult.data;
 
   // Verify the zone belongs to this user if provided
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
     data: {
       name,
       description,
+      namingScheme: namingScheme ?? null,
       dateFrom,
       dateTo: dateTo ?? null,
       zoneId: zoneId ?? null,

@@ -15,20 +15,32 @@ export async function GET(
 
   const { id } = await params;
 
-  const fieldSession = await prisma.fieldSession.findUnique({
-    where: { id },
-    include: {
-      detector: true,
-      zone: { select: { id: true, name: true } },
-      findings: { select: { id: true, name: true } },
-    },
-  });
+  const [fieldSession, routeRows] = await Promise.all([
+    prisma.fieldSession.findUnique({
+      where: { id },
+      include: {
+        detector: true,
+        zone: { select: { id: true, name: true } },
+        findings: {
+          select: { id: true, name: true, latitude: true, longitude: true, foundAt: true, status: true },
+          orderBy: { foundAt: "asc" },
+        },
+      },
+    }),
+    prisma.$queryRaw<Array<{ routeGeoJson: string | null }>>`
+      SELECT ST_AsGeoJSON(route) AS "routeGeoJson"
+      FROM "FieldSession"
+      WHERE id = ${id}
+    `,
+  ]);
 
   if (!fieldSession || fieldSession.userId !== session.user.id) {
     return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
   }
 
-  return NextResponse.json({ fieldSession });
+  const routeGeoJson = routeRows[0]?.routeGeoJson ?? null;
+
+  return NextResponse.json({ fieldSession: { ...fieldSession, routeGeoJson } });
 }
 
 export async function PUT(
@@ -56,7 +68,7 @@ export async function PUT(
     return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
   }
 
-  const { name, description, dateFrom, dateTo, zoneId, detectorId } =
+  const { name, description, namingScheme, dateFrom, dateTo, zoneId, detectorId } =
     parseResult.data;
 
   // Verify the zone belongs to this user if provided
@@ -72,6 +84,7 @@ export async function PUT(
     data: {
       name,
       description,
+      namingScheme: namingScheme ?? null,
       dateFrom,
       dateTo: dateTo ?? null,
       zoneId: zoneId ?? null,

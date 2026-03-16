@@ -18,7 +18,7 @@ export async function GET() {
 
   const fieldSession = await prisma.fieldSession.findFirst({
     where: { id: sessionId, userId: session.user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, namingScheme: true },
   });
 
   return NextResponse.json({ activeSession: fieldSession ?? null });
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   // Verify the session belongs to the user
   const fieldSession = await prisma.fieldSession.findFirst({
     where: { id: sessionId, userId: session.user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, namingScheme: true },
   });
 
   if (!fieldSession) {

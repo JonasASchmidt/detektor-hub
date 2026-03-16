@@ -23,6 +23,22 @@ export interface FindingFormData {
   locationPublic?: boolean;
 }
 
+/** Minimal schema for the mobile quick-find form. Name is optional (auto-generated from session naming scheme). */
+export const findingDraftSchema = z.object({
+  name: z.string().optional(),
+  location: z.object({
+    lat: z.coerce.number({ required_error: "Koordinaten fehlen." }),
+    lng: z.coerce.number({ required_error: "Koordinaten fehlen." }),
+  }),
+  description: z.string().optional(),
+  conductivity: z.coerce.number().optional(),
+  foundAt: z.coerce.date(),
+  images: z.string().array().default([]),
+  fieldSessionId: z.string().optional().nullable(),
+});
+
+export type FindingDraftData = z.infer<typeof findingDraftSchema>;
+
 export const findingSchemaCompleted = z
   .object({
     name: z.string({ required_error: "Name wird benötigt." }),

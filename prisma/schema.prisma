@@ -151,20 +151,22 @@ model Zone {
 }
 
 model FieldSession {
-  id          String    @id @default(uuid())
-  name        String
-  description String?
-  dateFrom    DateTime
-  dateTo      DateTime?
-  zoneId      String?
-  detectorId  String?
-  userId      String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  zone        Zone?     @relation(fields: [zoneId], references: [id])
-  detector    Detector? @relation(fields: [detectorId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-  findings    Finding[]
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  namingScheme String?
+  dateFrom     DateTime
+  dateTo       DateTime?
+  zoneId       String?
+  detectorId   String?
+  userId       String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  route        Unsupported("geometry(LineString,4326)")?
+  zone         Zone?     @relation(fields: [zoneId], references: [id])
+  detector     Detector? @relation(fields: [detectorId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
+  findings     Finding[]
 }
 
 model Comment {

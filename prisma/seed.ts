@@ -487,10 +487,10 @@ async function main() {
   await prisma.fieldSession.deleteMany({ where: { userId: demoUser.id } });
 
   const session1 = await prisma.fieldSession.create({
-    data: { name: "Frühjahrsbegehung Nordfeld", description: "Erste Begehung nach der Schneeschmelze. Boden noch leicht feucht.", dateFrom: new Date("2025-03-15"), dateTo: new Date("2025-03-15"), userId: demoUser.id, zoneId: zoneIds[0], detectorId: equinoxId },
+    data: { name: "Frühjahrsbegehung Nordfeld", description: "Erste Begehung nach der Schneeschmelze. Boden noch leicht feucht.", namingScheme: "{date}-Nordfeld-{n:03}", dateFrom: new Date("2025-03-15"), dateTo: new Date("2025-03-15"), userId: demoUser.id, zoneId: zoneIds[0], detectorId: equinoxId },
   });
   const session2 = await prisma.fieldSession.create({
-    data: { name: "Herbstbegehung Waldrand", description: "Gute Bedingungen nach dem Regen, Boden locker.", dateFrom: new Date("2024-10-20"), dateTo: new Date("2024-10-21"), userId: demoUser.id, zoneId: zoneIds[1], detectorId: detectorMap["Deus II"] },
+    data: { name: "Herbstbegehung Waldrand", description: "Gute Bedingungen nach dem Regen, Boden locker.", namingScheme: "Waldrand-{n:03}", dateFrom: new Date("2024-10-20"), dateTo: new Date("2024-10-21"), userId: demoUser.id, zoneId: zoneIds[1], detectorId: detectorMap["Deus II"] },
   });
   const session3 = await prisma.fieldSession.create({
     data: { name: "Spontanbegehung Stoppelfeld", description: "Kurzfristige Erlaubnis erhalten, 3 Stunden.", dateFrom: new Date("2025-01-08"), userId: demoUser.id, detectorId: equinoxId },

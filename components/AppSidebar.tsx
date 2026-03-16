@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, MapIcon, UsersIcon, X } from "lucide-react";
+import { LocateIcon, MapIcon, SmartphoneIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/NavMain";
@@ -58,6 +58,11 @@ const navMain = [
     title: "Öffentlich",
     url: "/dashboard/community",
     icon: UsersIcon,
+  },
+  {
+    title: "Felderfassung",
+    url: "/field",
+    icon: SmartphoneIcon,
   },
 ];
 

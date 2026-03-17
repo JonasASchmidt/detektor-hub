@@ -4,6 +4,14 @@ User problems this codebase solves, mapped to their implementations.
 
 ---
 
+## "Archaeological reports require coordinates in a specific coordinate system (e.g. ETRS89/UTM33 for Saxony), not decimal GPS coordinates"
+
+Each German state archaeology authority requires coordinates in their preferred coordinate system for official reports. GPS coordinates (WGS84 decimal degrees) are not accepted as-is.
+
+**Implementation:** `lib/coordinates.ts` — pure-JS Transverse Mercator projection (no external dependency); `FindingLocationDialog` — CRS dropdown (WGS84 / UTM32 / UTM33) updates the displayed coordinates on demand. Future: auto-select based on `Bundesland`, include transformed coordinates in CSV/report export.
+
+---
+
 ## "I found an archaeological object but don't know how to legally register it"
 
 Detectors in Germany are legally required to report finds to their state archaeology authority (Landesdenkmalamt). The process is opaque and varies by state. Sondlr provides a guided "Fund Melden" workflow on each find's detail page that will walk users through registering with the correct authority and selecting which information to share.

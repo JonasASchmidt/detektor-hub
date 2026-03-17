@@ -5,9 +5,19 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-17] — `coordinate-transformation`
+
+### Features
+
+- **Coordinate system selector in location dialog** (`FindingLocationDialog`) — users can switch between WGS84 (GPS), ETRS89/UTM Zone 32N, and ETRS89/UTM Zone 33N (required by Saxony and other eastern German state archaeology authorities)
+- **`lib/coordinates.ts`** — pure-JS WGS84 → UTM Transverse Mercator projection; exports `wgs84ToUTM`, `formatUTM`, `formatCoordinates`, `COORDINATE_SYSTEM_LABELS`
+
+---
+
 ## [2026-03-15] — `ui-improvements` (session 7)
 
 ### Bug Fixes
+
 - **Removed React DevTools script** (`app/layout.tsx`) — `<Script src="http://localhost:8097">` was unconditionally loaded in dev, causing `ERR_CONNECTION_REFUSED` in the console whenever React DevTools standalone wasn't running
 - **Fixed `SearchFilter` mount-time navigation** (`components/filters/SearchFilter.tsx`) — added `mounted` ref so `onChange` effect skips the initial render; previously it called `router.replace()` on every page load, triggering a navigation that tried to fetch stale Turbopack chunk hashes (404 cascade after Fast Refresh)
 
@@ -16,11 +26,13 @@ Format: `[Date] — Branch — Description`
 ## [2026-03-15] — `ui-improvements`
 
 ### Security
+
 - **Edit-page ownership guard** (`app/dashboard/findings/[id]/edit/page.tsx`) — server-side `getServerSession` check; non-owners receive 404 (no existence leak)
 - **Edit button visibility** (`FindingCard`) — `useSession()` compares `session.user.id` to `finding.userId`; button only renders for the owner
 - **PATCH endpoint** (`app/api/findings/[id]/route.ts`) — new handler with Zod validation + ownership check for toggling `status` and `reported` fields
 
 ### Features
+
 - **Status & Reported toggles on find detail page** — owners can click Aktiv/Entwurf and Gemeldet/Nicht gemeldet inline in the meta row; PATCH call updates DB; non-owners see read-only labels
 - **"Fund Veröffentlichen" button** — shown on detail page when status is DRAFT; publishes the find (DRAFT → COMPLETED) via existing PATCH endpoint
 - **"Fund Melden" button** — shown on detail page when find is not yet reported; sets `reported: true`; placeholder for future Melde-workflow modal
@@ -29,6 +41,7 @@ Format: `[Date] — Branch — Description`
 - **Seed images** — `prisma/seed.ts` now creates one Cloudinary `Image` record per finding (using `cld-sample` through `cld-sample-5` cycling) and sets `thumbnailId` on each finding
 
 ### UI / Polish
+
 - **Meta row dots removed** — separator dots (● / ·) removed from find card and detail page meta rows; replaced with `gap-3` spacing
 - **Year shortened to YY** — date format changed from `yyyy` to `yy` in FindingCard and FindingDetail meta rows
 - **Tag horizontal padding reduced by 4px** — `Tag.tsx` `px-3 → px-2`; inline card tags `px-2 → px-1`
@@ -40,6 +53,7 @@ Format: `[Date] — Branch — Description`
 - **Notification bell active state** — filled bell icon replaces background highlight
 
 ### Bug Fixes
+
 - **ChunkLoadError** — stale Turbopack chunk; resolved by clearing `.next` cache (documented in known issues)
 - **Seed cleanup order** — images deleted before findings to avoid FK constraint errors during re-seed
 - **Jonas findings delete** — added missing `await prisma.finding.deleteMany({ where: { userId: jonasUser.id } })` before re-seeding Jonas's finds
@@ -49,6 +63,7 @@ Format: `[Date] — Branch — Description`
 ## Earlier sessions (reconstructed from git log)
 
 ### [2026-03-09] — `ui-improvements`
+
 - Next.js 15 → 16.1.6, React 19.2.4
 - Image detail lightbox with prev/next navigation
 - Mobile burger menu (fullscreen Sheet drawer)
@@ -59,6 +74,7 @@ Format: `[Date] — Branch — Description`
 - Removed `prisma migrate deploy` from build script
 
 ### [~2026-02] — `implement-zones`
+
 - Zone model + PostGIS geometry field
 - Zone form, map drawing, zone list
 - Field sessions linked to zones

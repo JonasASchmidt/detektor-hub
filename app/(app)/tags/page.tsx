@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import TagsPage from "./TagsPage"; // Client-side component
+import TagsPage from "./_components/TagsPage";
 import type { Tag, TagCategory } from "@prisma/client";
 
 export default async function TagsServer() {

@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import type { Tag, TagCategory } from "@prisma/client";
-import { TagForm } from "@/app/(app)/tags/TagForm";
+import { TagForm } from "./TagForm";
 import { Input } from "@/components/ui/input";
 import TagComponent from "@/components/tags/Tag";
 import { TagDeleteModal } from "@/components/modals/TagDeleteModal";

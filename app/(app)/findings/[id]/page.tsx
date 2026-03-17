@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import FindingDetail from "../_components/FindingDetail";
-import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
+import { FindingWithRelations } from "@/types/FindingWithRelations";
 
 interface Props {
   params: Promise<{

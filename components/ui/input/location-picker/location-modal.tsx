@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { LatLng, LatLngLiteral } from "leaflet";
 import dynamic from "next/dynamic";
 
-const SimpleMap = dynamic(() => import("@/components/map/simple-map"), {
+const SimpleMap = dynamic(() => import("@/components/map/SimpleMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[400px] bg-muted animate-pulse rounded-lg" />

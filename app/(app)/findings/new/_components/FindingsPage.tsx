@@ -1,7 +1,7 @@
 "use client";
 
-import FindingsForm from "./FindingsForm";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import FindingsForm from "../../_components/FindingsForm";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 
 interface SessionOption {
   id: string;

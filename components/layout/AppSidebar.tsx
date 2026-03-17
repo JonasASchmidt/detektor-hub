@@ -1,11 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, MapIcon, SmartphoneIcon, UsersIcon, X } from "lucide-react";
+import {
+  LocateIcon,
+  MapIcon,
+  SmartphoneIcon,
+  UsersIcon,
+  X,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 
-import { NavMain } from "@/components/NavMain";
-import { NavUser } from "@/components/NavUser";
+import { NavMain } from "@/components/layout/NavMain";
+import { NavUser } from "@/components/layout/NavUser";
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +21,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const navMain = [
   {

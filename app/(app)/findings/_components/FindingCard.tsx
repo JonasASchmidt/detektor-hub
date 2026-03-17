@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
+import { FindingWithRelations } from "@/types/FindingWithRelations";
 import { CldImage } from "next-cloudinary";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -17,24 +17,34 @@ interface FindingCardProps {
   hideTags?: boolean;
 }
 
-export default function FindingCard({ finding, hideTags = false }: FindingCardProps) {
+export default function FindingCard({
+  finding,
+  hideTags = false,
+}: FindingCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const isOwner = !!session?.user?.id && session.user.id === finding.userId;
   const [showMap, setShowMap] = useState(false);
   const [county, setCounty] = useState<string | null>(null);
 
-  const formattedDate = format(new Date(finding.createdAt), "d.M.yy", { locale: de });
-  const displayImage = finding.images?.find(img => img.id === finding.thumbnailId) || finding.images?.[0];
+  const formattedDate = format(new Date(finding.createdAt), "d.M.yy", {
+    locale: de,
+  });
+  const displayImage =
+    finding.images?.find((img) => img.id === finding.thumbnailId) ||
+    finding.images?.[0];
   const hasLocation = finding.latitude != null && finding.longitude != null;
 
-  useEffect(() => {
+  /* FOR NOW REMOVED, I GUESS IT WOULD BE ENOUGH TO STORE ADMIN UNITS IN THE
+   * FINDING, SO FETCH IS ONLY NEEDED ONCE.
+   */
+  /*useEffect(() => {
     if (!hasLocation) return;
     fetch(`/api/geo/admin-units?lat=${finding.latitude}&lon=${finding.longitude}`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data?.county) setCounty(data.county); })
       .catch(() => {});
-  }, [finding.latitude, finding.longitude, hasLocation]);
+  }, [finding.latitude, finding.longitude, hasLocation]);*/
 
   const handleCardClick = () => {
     router.push(`findings/${finding.id}`);
@@ -54,16 +64,27 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
             </h3>
 
             <div className="flex items-center gap-3 flex-wrap -mt-2">
-              <span className="text-[12px] text-muted-foreground/70 font-normal">{formattedDate}</span>
+              <span className="text-[12px] text-muted-foreground/70 font-normal">
+                {formattedDate}
+              </span>
               {county && (
-                <span className="text-[12px] text-muted-foreground/70 font-normal">{county}</span>
+                <span className="text-[12px] text-muted-foreground/70 font-normal">
+                  {county}
+                </span>
               )}
               <span
                 className="flex items-center gap-1.5 cursor-pointer"
-                onClick={(e) => { e.stopPropagation(); if (finding.user?.id) router.push(`/profile/${finding.user.id}`); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (finding.user?.id)
+                    router.push(`/profile/${finding.user.id}`);
+                }}
               >
                 <Avatar className="h-5 w-5 rounded-full shrink-0">
-                  <AvatarImage src={finding.user?.image ?? undefined} alt={finding.user?.name ?? "Anonym"} />
+                  <AvatarImage
+                    src={finding.user?.image ?? undefined}
+                    alt={finding.user?.name ?? "Anonym"}
+                  />
                   <AvatarFallback className="rounded-full bg-[#2d2d2d] text-white text-[8px] font-bold">
                     {getInitials(finding.user?.name)}
                   </AvatarFallback>
@@ -73,12 +94,18 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
                 </span>
               </span>
               {finding.status === "COMPLETED" ? (
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">Aktiv</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">
+                  Aktiv
+                </span>
               ) : (
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/60">Entwurf</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/60">
+                  Entwurf
+                </span>
               )}
               {finding.reported && (
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">Gemeldet</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-green-600">
+                  Gemeldet
+                </span>
               )}
             </div>
           </div>
@@ -95,7 +122,10 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
               {finding.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  onClick={(e) => { e.stopPropagation(); router.push(`/findings?tags=${tag.id}`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/findings?tags=${tag.id}`);
+                  }}
                   className="inline-flex items-center gap-1 pl-2 pr-2 py-0.5 rounded uppercase text-[11px] font-semibold tracking-wide text-white cursor-pointer hover:opacity-80 transition-opacity"
                   style={{ backgroundColor: tag.color }}
                 >
@@ -122,8 +152,16 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
             />
             {(displayImage.title || displayImage.description) && (
               <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                {displayImage.title && <p className="text-[11px] font-semibold leading-tight truncate">{displayImage.title}</p>}
-                {displayImage.description && <p className="text-[10px] text-white/75 leading-tight truncate mt-0.5">{displayImage.description}</p>}
+                {displayImage.title && (
+                  <p className="text-[11px] font-semibold leading-tight truncate">
+                    {displayImage.title}
+                  </p>
+                )}
+                {displayImage.description && (
+                  <p className="text-[10px] text-white/75 leading-tight truncate mt-0.5">
+                    {displayImage.description}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -133,28 +171,42 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
         <div className="flex flex-col gap-2 shrink-0 justify-start">
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}`); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`findings/${finding.id}`);
+            }}
             className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] relative"
             title="Kommentare"
           >
             {(() => {
-              const count = (finding as any).commentsCount ?? finding.comments?.length ?? 0;
+              const count =
+                (finding as any).commentsCount ?? finding.comments?.length ?? 0;
               return count > 0 ? (
                 <>
-                  <MessageSquare className="h-[19px] w-[19px]" strokeWidth={0} fill="currentColor" />
+                  <MessageSquare
+                    className="h-[19px] w-[19px]"
+                    strokeWidth={0}
+                    fill="currentColor"
+                  />
                   <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white leading-none mt-0.5">
                     {count}
                   </span>
                 </>
               ) : (
-                <MessageSquare className="h-[19px] w-[19px]" strokeWidth={1.2} />
+                <MessageSquare
+                  className="h-[19px] w-[19px]"
+                  strokeWidth={1.2}
+                />
               );
             })()}
           </button>
           {isOwner && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); router.push(`findings/${finding.id}/edit`); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`findings/${finding.id}/edit`);
+              }}
               className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
               title="Bearbeiten"
             >
@@ -164,7 +216,10 @@ export default function FindingCard({ finding, hideTags = false }: FindingCardPr
           {hasLocation && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); setShowMap(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMap(true);
+              }}
               className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
               title="Fundort"
             >

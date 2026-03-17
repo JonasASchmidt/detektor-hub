@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { CldImage } from "next-cloudinary";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
+import { FindingWithRelations } from "@/types/FindingWithRelations";
 import TagComponent from "@/components/tags/Tag";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const SessionMap = dynamic(() => import("@/components/map/session-map"), { ssr: false });
+const SessionMap = dynamic(() => import("@/components/map/SessionMap"), { ssr: false });
 
 interface Finding {
   id: string;

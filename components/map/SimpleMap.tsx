@@ -2,7 +2,7 @@
 
 import L from "leaflet";
 import { MapContainer, TileLayer } from "react-leaflet";
-import ClickHandler from "./click-handler";
+import ClickHandler from "./ClickHandler";
 import { Marker } from "@adamscybot/react-leaflet-component-marker";
 import { LocateFixedIcon } from "lucide-react";
 

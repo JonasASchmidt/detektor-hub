@@ -38,7 +38,6 @@ export function NavMain({
   const pathname = usePathname();
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
-
   const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     for (const item of items) {
@@ -53,7 +52,10 @@ export function NavMain({
         {items.map((item) => {
           const isParentExact = pathname === item.url;
           const hasActiveChild =
-            item.items?.some((sub) => pathname === sub.url || pathname.startsWith(sub.url + "/")) ?? false;
+            item.items?.some(
+              (sub) =>
+                pathname === sub.url || pathname.startsWith(sub.url + "/"),
+            ) ?? false;
 
           // Expanded: highlight parent only on its own URL (children have their own highlight)
           // Collapsed: highlight parent if it or any child is active (children are hidden)
@@ -80,29 +82,36 @@ export function NavMain({
                     isActive={isParentActive}
                     className={cn(
                       isParentExact || hasActiveChild ? "font-bold" : "",
-                      item.items && item.items.length > 0 ? "pr-8" : ""
+                      item.items && item.items.length > 0 ? "pr-8" : "",
                     )}
                   >
-                    <Link href={item.url} onClick={() => isMobile && setOpenMobile(false)}>
+                    <Link
+                      href={item.url}
+                      onClick={() => isMobile && setOpenMobile(false)}
+                    >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                  {item.items && item.items.length > 0 && sidebarState === "expanded" && (
-                    <CollapsibleTrigger asChild>
-                      <button
-                        className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-[#2d2d2d] hover:text-white transition-colors duration-150"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ChevronRight
-                          className="h-4 w-4 transition-transform duration-200"
-                          style={{
-                            transform: openState[item.title] ? "rotate(90deg)" : "rotate(0deg)",
-                          }}
-                        />
-                      </button>
-                    </CollapsibleTrigger>
-                  )}
+                  {item.items &&
+                    item.items.length > 0 &&
+                    sidebarState === "expanded" && (
+                      <CollapsibleTrigger asChild>
+                        <button
+                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-[#2d2d2d] hover:text-white transition-colors duration-150"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronRight
+                            className="h-4 w-4 transition-transform duration-200"
+                            style={{
+                              transform: openState[item.title]
+                                ? "rotate(90deg)"
+                                : "rotate(0deg)",
+                            }}
+                          />
+                        </button>
+                      </CollapsibleTrigger>
+                    )}
                 </div>
                 {item.items && item.items.length > 0 && (
                   <CollapsibleContent>
@@ -122,8 +131,13 @@ export function NavMain({
                                   : ""
                               }
                             >
-                              <Link href={subItem.url} onClick={() => isMobile && setOpenMobile(false)}>
-                                {isNewFund && <Plus className="h-3.5 w-3.5 shrink-0" />}
+                              <Link
+                                href={subItem.url}
+                                onClick={() => isMobile && setOpenMobile(false)}
+                              >
+                                {isNewFund && (
+                                  <Plus className="h-3.5 w-3.5 shrink-0" />
+                                )}
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>

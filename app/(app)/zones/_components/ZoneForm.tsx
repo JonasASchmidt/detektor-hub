@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { toGeoJSON, fromGeoJSON } from "@/lib/geo";
 
-const ZonePickerMap = dynamic(() => import("@/components/map/zone-picker-map"), {
+const ZonePickerMap = dynamic(() => import("@/components/map/ZonePickerMap"), {
   ssr: false,
   loading: () => <div className="h-[350px] bg-muted animate-pulse rounded-lg" />,
 });

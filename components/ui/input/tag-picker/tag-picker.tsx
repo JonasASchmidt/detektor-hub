@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FieldValues, useController, UseControllerProps } from "react-hook-form";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import { Label } from "../../label";
 import { Button } from "../../button";
 import { Input } from "../../input";

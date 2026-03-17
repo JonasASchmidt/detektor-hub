@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/initials";
 import FindingCard from "@/app/(app)/findings/_components/FindingCard";
-import { FindingWithRelations } from "@/app/_types/FindingWithRelations.type";
+import { FindingWithRelations } from "@/types/FindingWithRelations";
 
 interface Props {
   params: Promise<{ userId: string }>;

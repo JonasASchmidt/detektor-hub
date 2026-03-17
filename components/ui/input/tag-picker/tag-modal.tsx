@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "../../dialog";
 import { Button } from "../../button";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import TagComponent from "@/components/tags/Tag";
 import { Tag } from "@prisma/client";
 import { Input } from "../../input";

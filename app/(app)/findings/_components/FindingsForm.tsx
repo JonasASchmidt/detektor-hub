@@ -1,6 +1,6 @@
 "use client";
 
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import ImageGallery from "@/components/images/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

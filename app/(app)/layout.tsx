@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 import {
   SidebarInset,
   SidebarProvider,
@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
-import { AppHeaderBar } from "@/components/AppHeaderBar";
+import { AppHeaderBar } from "@/components/layout/AppHeaderBar";
 import { cookies } from "next/headers";
 import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
 import prisma from "@/lib/prisma";

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import FindingsPage from "./FindingsPage";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import FindingsPage from "./_components/FindingsPage";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 

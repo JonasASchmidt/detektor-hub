@@ -9,7 +9,7 @@ import ActiveSessionBar from "./ActiveSessionBar";
 import QuickFindForm from "./QuickFindForm";
 import { useRouteTracker } from "./useRouteTracker";
 
-const SessionMap = dynamic(() => import("@/components/map/session-map"), { ssr: false });
+const SessionMap = dynamic(() => import("@/components/map/SessionMap"), { ssr: false });
 
 interface OpenSession {
   id: string;

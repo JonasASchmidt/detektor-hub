@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { NEW_ZONE_VALUE, type ZoneOption } from "./useZonePicker";
+import { NEW_ZONE_VALUE, type ZoneOption } from "@/app/_hooks/useZonePicker";
 
-const ZonePickerMap = dynamic(() => import("@/components/map/zone-picker-map"), {
+const ZonePickerMap = dynamic(() => import("@/components/map/ZonePickerMap"), {
   ssr: false,
   loading: () => <div className="h-[300px] bg-muted animate-pulse rounded-lg" />,
 });

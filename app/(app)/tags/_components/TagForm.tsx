@@ -8,16 +8,16 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Tag, TagCategory } from "@prisma/client";
-import IconPicker from "../../../components/ui/input/icon-picker";
-import ColorPicker from "../../../components/ui/input/color-picker";
+import IconPicker from "@/components/ui/input/icon-picker";
+import ColorPicker from "@/components/ui/input/color-picker";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
-import TagComponent from "../../../components/tags/Tag";
+} from "@/components/ui/select";
+import TagComponent from "@/components/tags/Tag";
 import { toast } from "sonner";
 
 interface Props {
@@ -37,7 +37,11 @@ export function TagForm({
 }: Props) {
   const [formData, setFormData] = useState({
     category: initialTag?.categoryId ?? "",
-    color: initialTag?.color ?? `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
+    color:
+      initialTag?.color ??
+      `#${Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, "0")}`,
     name: initialTag?.name ?? "",
     icon: initialTag?.icon ?? "",
   });
@@ -47,7 +51,11 @@ export function TagForm({
   useEffect(() => {
     setFormData({
       category: initialTag?.categoryId ?? "",
-      color: initialTag?.color ?? `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
+      color:
+        initialTag?.color ??
+        `#${Math.floor(Math.random() * 16777215)
+          .toString(16)
+          .padStart(6, "0")}`,
       name: initialTag?.name ?? "",
       icon: initialTag?.icon ?? "",
     });
@@ -57,7 +65,9 @@ export function TagForm({
     resetTag();
     setFormData({
       category: "",
-      color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
+      color: `#${Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, "0")}`,
       name: "",
       icon: "",
     });
@@ -149,7 +159,8 @@ export function TagForm({
             {initialTag ? "Tag bearbeiten" : "Neuen Tag erstellen"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Definiere Name, Farbe und Icon für eine einfache Kategorisierung deiner Funde.
+            Definiere Name, Farbe und Icon für eine einfache Kategorisierung
+            deiner Funde.
           </p>
         </header>
 
@@ -173,12 +184,19 @@ export function TagForm({
               onValueChange={handleChangeCategory}
               value={formData.category}
             >
-              <SelectTrigger id="category" className="h-8 bg-white hover:bg-white border-black/[0.05]">
+              <SelectTrigger
+                id="category"
+                className="h-8 bg-white hover:bg-white border-black/[0.05]"
+              >
                 <SelectValue placeholder="Wählen..." />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-black/[0.05] shadow-xl">
                 {tagCategories.map((category) => (
-                  <SelectItem key={category.id} value={category.id} className="cursor-pointer">
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                    className="cursor-pointer"
+                  >
                     {category.name}
                   </SelectItem>
                 ))}
@@ -189,7 +207,10 @@ export function TagForm({
           <div className="shrink-0 flex flex-col gap-1.5">
             <Label>Farbe</Label>
             <div className="h-8 flex items-center border border-transparent">
-              <ColorPicker onChange={handleChangeColor} value={formData.color} />
+              <ColorPicker
+                onChange={handleChangeColor}
+                value={formData.color}
+              />
             </div>
           </div>
 
@@ -226,13 +247,13 @@ export function TagForm({
               Abbrechen
             </Button>
           )}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className={`flex-1 font-bold transition-all shadow-sm ${
-              initialTag 
-                ? "bg-black text-white hover:bg-black/90" 
+              initialTag
+                ? "bg-black text-white hover:bg-black/90"
                 : "bg-primary text-primary-foreground hover:scale-[1.01]"
-            }`} 
+            }`}
             disabled={loading}
           >
             {loading ? (

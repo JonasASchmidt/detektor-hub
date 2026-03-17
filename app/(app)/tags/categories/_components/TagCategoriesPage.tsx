@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import type { TagCategory } from "@prisma/client";
 import { TagCategoryForm } from "@/components/tags/TagCategoryForm";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";

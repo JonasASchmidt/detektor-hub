@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { TagCategoryWithTags } from "@/app/_types/TagCategoryWithTags.type";
+import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import { FindingFormData } from "@/schemas/finding";
-import FindingsForm from "@/app/(app)/findings/new/FindingsForm";
+import FindingsForm from "@/app/(app)/findings/_components/FindingsForm";
 
 interface Props {
   params: Promise<{ id: string }>;

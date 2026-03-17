@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { Menu, Square, X } from "lucide-react";
-import { Button } from "./ui/button";
-import { useSidebar } from "./ui/sidebar";
-import { NotificationCenter } from "./NotificationCenter";
+import { Button } from "../ui/button";
+import { useSidebar } from "../ui/sidebar";
+import { NotificationCenter } from "../NotificationCenter";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -29,13 +29,25 @@ export function AppHeaderBar({ activeSession }: Props) {
           className="mr-2 text-white hover:bg-white/10"
           onClick={() => setOpenMobile(!openMobile)}
         >
-          {openMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {openMobile ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </Button>
       )}
 
-      <Link href="/findings" className="flex items-baseline gap-2 hover:text-gray-300 transition-colors shrink-0">
+      <Link
+        href="/findings"
+        className="flex items-baseline gap-2 hover:text-gray-300 transition-colors shrink-0"
+      >
         <span className="text-lg md:text-2xl font-bold text-white">Sondlr</span>
-        <span className="text-lg md:text-2xl font-normal" style={{ color: "#ffff00" }}>Finde alles ...</span>
+        <span
+          className="text-lg md:text-2xl font-normal"
+          style={{ color: "#ffff00" }}
+        >
+          Finde alles ...
+        </span>
       </Link>
 
       {activeSession && (

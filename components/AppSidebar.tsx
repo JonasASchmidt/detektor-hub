@@ -20,43 +20,43 @@ import { Button } from "./ui/button";
 const navMain = [
   {
     title: "Deine Funde",
-    url: "/dashboard/findings",
+    url: "/findings",
     icon: LocateIcon,
     isActive: true,
     items: [
       {
         title: "Neuer Fund",
-        url: "/dashboard/findings/new",
+        url: "/findings/new",
       },
       {
         title: "Karte",
-        url: "/dashboard/findings/map",
+        url: "/findings/map",
       },
       {
         title: "Tags",
-        url: "/dashboard/tags",
+        url: "/tags",
       },
       {
         title: "Kategorien",
-        url: "/dashboard/tags/categories",
+        url: "/tags/categories",
       },
       {
         title: "Bilder",
-        url: "/dashboard/images",
+        url: "/images",
       },
       {
         title: "Begehungen",
-        url: "/dashboard/sessions",
+        url: "/sessions",
       },
       {
         title: "Zonen",
-        url: "/dashboard/zones",
+        url: "/zones",
       },
     ],
   },
   {
     title: "Öffentlich",
-    url: "/dashboard/community",
+    url: "/community",
     icon: UsersIcon,
   },
   {

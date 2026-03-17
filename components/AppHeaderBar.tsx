@@ -33,7 +33,7 @@ export function AppHeaderBar({ activeSession }: Props) {
         </Button>
       )}
 
-      <Link href="/dashboard" className="flex items-baseline gap-2 hover:text-gray-300 transition-colors shrink-0">
+      <Link href="/findings" className="flex items-baseline gap-2 hover:text-gray-300 transition-colors shrink-0">
         <span className="text-lg md:text-2xl font-bold text-white">Sondlr</span>
         <span className="text-lg md:text-2xl font-normal" style={{ color: "#ffff00" }}>Finde alles ...</span>
       </Link>
@@ -42,7 +42,7 @@ export function AppHeaderBar({ activeSession }: Props) {
         <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-400/30 rounded-full pl-2.5 pr-1.5 py-1 min-w-0">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
           <Link
-            href={`/dashboard/sessions/${activeSession.id}`}
+            href={`/sessions/${activeSession.id}`}
             className="text-amber-300 text-xs font-medium truncate max-w-[120px] hover:text-amber-200 transition-colors"
             title={activeSession.name}
           >

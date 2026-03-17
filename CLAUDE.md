@@ -59,20 +59,20 @@ No test runner is configured yet.
 ```
 app/
   layout.tsx              # Root layout — AuthProvider + Leaflet CSS
-  dashboard/
-    layout.tsx            # Auth-gated: AppSidebar + AppHeaderBar + Toaster
-    findings/             # Main findings area
+  (app)/                  # Route group — auth-gated: AppSidebar + AppHeaderBar + Toaster (no URL segment)
+    layout.tsx
+    findings/             # Main findings area → /findings
       page.tsx            # KPI stats + mini map
       [id]/page.tsx       # Find detail (FindingDetail component)
       [id]/edit/page.tsx  # Edit form — server-side ownership check via getServerSession
       map/                # Full map view
       new/                # Create new finding
-    community/            # Public finds feed with comments preview
-    tags/                 # Tag and category management
-    images/               # User image library
-    zones/                # Permitted search area management
-    sessions/             # Field session management
-    profile/[userId]/     # User profile page
+    community/            # Public finds feed with comments preview → /community
+    tags/                 # Tag and category management → /tags
+    images/               # User image library → /images
+    zones/                # Permitted search area management → /zones
+    sessions/             # Field session management → /sessions
+    profile/[userId]/     # User profile page → /profile/[userId]
   api/
     findings/             # GET (filtered list + pagination), POST (create)
       stats/              # Aggregated KPI stats

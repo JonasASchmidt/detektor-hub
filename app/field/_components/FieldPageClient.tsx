@@ -74,7 +74,7 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
     <>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b">
-        <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+        <Link href="/findings" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-semibold text-base flex-1">Felderfassung</h1>

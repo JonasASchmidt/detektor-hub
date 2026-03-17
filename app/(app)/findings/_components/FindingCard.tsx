@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { FindingWithRelations } from "@/types/FindingWithRelations";

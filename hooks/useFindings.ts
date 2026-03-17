@@ -1,7 +1,7 @@
 "use client";
 
+import { FindingWithRelations } from "@/types/FindingWithRelations";
 import { useEffect, useMemo, useState } from "react";
-import { FindingWithRelations } from "../_types/FindingWithRelations.type";
 
 export interface UseFindingsParams {
   search?: string;
@@ -21,7 +21,10 @@ export interface UseFindingsParams {
   hasComments?: boolean;
 }
 
-export function useFindings(params: UseFindingsParams, endpoint: string = "/api/findings") {
+export function useFindings(
+  params: UseFindingsParams,
+  endpoint: string = "/api/findings",
+) {
   const [data, setData] = useState<{
     findings: FindingWithRelations[];
     total: number;

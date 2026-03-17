@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/app/_hooks/useDebounce";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface SearchFilterProps {
   value: string;

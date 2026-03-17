@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFindings, UseFindingsParams } from "@/app/_hooks/useFindings";
+import { useFindings, UseFindingsParams } from "@/hooks/useFindings";
 import { MapContainer, TileLayer } from "react-leaflet";
 import ClickHandler from "@/components/map/ClickHandler";
 import * as LucideIcons from "lucide-react";

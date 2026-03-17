@@ -132,13 +132,13 @@ app/
 - `PATCH /api/findings/[id]` — partial update for `status` and `reported` fields only; Zod schema inline
 
 ### Filter persistence
-`app/_hooks/useURLFilters.ts` provides `setFilter`, `setMultipleFilters`, `clearAll`, `get` — always use this for filterable pages. Filter state lives in URL params.
+`hooks/useURLFilters.ts` provides `setFilter`, `setMultipleFilters`, `clearAll`, `get` — always use this for filterable pages. Filter state lives in URL params.
 
 ### Reusable filter components
 `components/filters/`: `FilterBar`, `SearchFilter`, `SelectFilter`, `MultiSelectFilter`, `TagSelectFilter`, `DateRangeFilter`, `LocationFilter`
 
 ### Hooks
-All custom hooks live in `app/_hooks/` and use camelCase naming (`useXxx.ts`).
+All custom hooks live in `hooks/` (root level, alongside `components/` and `lib/`) and use camelCase naming (`useXxx.ts`).
 
 ### Types
 All custom TypeScript types live in `types/` (root). No `.type.ts` double-extension — plain `.ts`.

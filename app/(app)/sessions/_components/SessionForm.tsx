@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import type { Detector } from "@prisma/client";
 import FindingsPicker from "./FindingsPicker";
 import ZonePicker from "./ZonePicker";
-import { useZonePicker } from "@/app/_hooks/useZonePicker";
+import { useZonePicker } from "@/hooks/useZonePicker";
 import { pointInPolygon } from "@/lib/geo";
 import { applyNamingScheme } from "@/lib/namingScheme";
 

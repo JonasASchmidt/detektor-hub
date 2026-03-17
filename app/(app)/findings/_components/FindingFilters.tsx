@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { X } from "lucide-react";
-import { useURLFilters } from "@/app/_hooks/useURLFilters";
-import { UseFindingsParams } from "@/app/_hooks/useFindings";
+import { useURLFilters } from "@/hooks/useURLFilters";
+import { UseFindingsParams } from "@/hooks/useFindings";
 import {
   FilterBar,
   SearchFilter,

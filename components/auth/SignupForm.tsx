@@ -29,7 +29,7 @@ export function SignupForm({
   const { data: session } = useSession();
 
   useEffect(() => {
-    if (session) router.push("/dashboard");
+    if (session) router.push("/findings");
   }, [session, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +65,7 @@ export function SignupForm({
     if (result?.error) {
       setError(result.error);
     } else {
-      router.push("/dashboard");
+      router.push("/findings");
     }
   };
 

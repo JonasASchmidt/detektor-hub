@@ -24,7 +24,7 @@ import {
 import { Loader2, LocateFixed, MapPin, Map } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const SimpleMap = dynamic(() => import("@/components/map/simple-map"), {
+const SimpleMap = dynamic(() => import("@/components/map/SimpleMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[35vh] bg-muted animate-pulse rounded-lg" />

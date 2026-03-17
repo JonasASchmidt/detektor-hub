@@ -59,29 +59,49 @@ No test runner is configured yet.
 ```
 app/
   layout.tsx              # Root layout — AuthProvider + Leaflet CSS
-  dashboard/
-    layout.tsx            # Auth-gated: AppSidebar + AppHeaderBar + Toaster
-    findings/             # Main findings area
+  page.tsx                # Redirects to /findings
+  login/                  # Login page
+  signup/                 # Registration page
+  field/                  # Field mode (quick-capture, GPS tracking) → /field
+  (app)/                  # Route group — auth-gated: AppSidebar + AppHeaderBar + Toaster (no URL segment)
+    layout.tsx            # Auth guard + sidebar layout; redirects to /login if unauthenticated
+    findings/             # → /findings
       page.tsx            # KPI stats + mini map
-      [id]/page.tsx       # Find detail (FindingDetail component)
-      [id]/edit/page.tsx  # Edit form — server-side ownership check via getServerSession
-      map/                # Full map view
-      new/                # Create new finding
-    community/            # Public finds feed with comments preview
-    tags/                 # Tag and category management
-    images/               # User image library
-    zones/                # Permitted search area management
-    sessions/             # Field session management
-    profile/[userId]/     # User profile page
+      _components/        # FindingCard, FindingDetail, FindingMap, FindingsForm, FindingsClient, …
+      new/                # → /findings/new
+        _components/      # FindingsPage (client wrapper)
+      [id]/               # → /findings/:id
+        edit/             # → /findings/:id/edit
+    community/            # Public finds feed with comments preview → /community
+    tags/                 # Tag management → /tags
+      categories/         # Tag category management → /tags/categories
+    images/               # User image library → /images
+    zones/                # Permitted search areas → /zones
+      new/                # → /zones/new
+      [id]/               # → /zones/:id
+    sessions/             # Field sessions → /sessions
+      new/                # → /sessions/new
+      [id]/               # → /sessions/:id
+        edit/             # → /sessions/:id/edit
+    profile/[userId]/     # User profile → /profile/:userId
   api/
     findings/             # GET (filtered list + pagination), POST (create)
       stats/              # Aggregated KPI stats
+      draft/              # POST — save draft
       [id]/               # GET, PUT (full update), PATCH (status/reported), DELETE
+        comments/         # POST comment
     tags/                 # Tag CRUD
     tag-categories/       # Category CRUD
-    images/               # Image upload via Cloudinary
+    images/               # Image upload via Cloudinary; [id]/ for GET/DELETE; bulk/ for bulk ops
     user-images/          # User-scoped image list
-    auth/                 # NextAuth handler
+    field-sessions/       # Field session CRUD; [id]/route/ for GPS track PATCH/DELETE
+    zones/                # Zone CRUD
+    active-session/       # Cookie-backed active session read/write
+    notifications/        # Notification list + read-all
+    community/findings/   # Public findings feed (no location data)
+    detectors/            # Detector list
+    user/                 # User profile update
+    auth/                 # NextAuth handler + register
     geo/admin-units/      # Reverse geocoding: coordinates → Bundesland/Landkreis/Gemeinde
 ```
 
@@ -112,10 +132,28 @@ app/
 - `PATCH /api/findings/[id]` — partial update for `status` and `reported` fields only; Zod schema inline
 
 ### Filter persistence
-`app/_hooks/useURLFilters.ts` provides `setFilter`, `setMultipleFilters`, `clearAll`, `get` — always use this for filterable pages. Filter state lives in URL params.
+`hooks/useURLFilters.ts` provides `setFilter`, `setMultipleFilters`, `clearAll`, `get` — always use this for filterable pages. Filter state lives in URL params.
 
 ### Reusable filter components
 `components/filters/`: `FilterBar`, `SearchFilter`, `SelectFilter`, `MultiSelectFilter`, `TagSelectFilter`, `DateRangeFilter`, `LocationFilter`
+
+### Hooks
+All custom hooks live in `hooks/` (root level, alongside `components/` and `lib/`) and use camelCase naming (`useXxx.ts`).
+
+### Types
+All custom TypeScript types live in `types/` (root). No `.type.ts` double-extension — plain `.ts`.
+
+### Layout components
+`components/layout/`: `AppSidebar`, `AppHeaderBar`, `NavMain`, `NavUser`, `SessionProvider`, `Breadcrumbs`, `PageTitle`, `TeamSwitcher`.
+
+### Image components
+`components/images/`: the single source of truth for all image-related UI — `ImageGallery`, `ImageCard`, `ImageDetailDialog`, `ImageDeleteDialog`, `ImageEditor`.
+
+### Map components
+`components/map/`: all Leaflet map components use **PascalCase** filenames (`ClickHandler.tsx`, `SessionMap.tsx`, `SimpleMap.tsx`, `ZonePickerMap.tsx`). Always lazy-loaded via `dynamic(() => import('...'), { ssr: false })`.
+
+### Route-local components
+Non-route files inside a route folder must live in `_components/`. `page.tsx`, `layout.tsx`, and `loading.tsx` are the only files allowed at the root of a route folder.
 
 ### Initials utility
 `lib/initials.ts` — `getInitials(name)`: 2-letter initials (first + last word) or 1 letter. Use for all `AvatarFallback` components.

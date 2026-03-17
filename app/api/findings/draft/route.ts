@@ -84,6 +84,6 @@ export async function POST(req: Request) {
     metadata: { name: finding.name ?? undefined, source: "field-mobile" },
   });
 
-  revalidatePath("/dashboard/findings");
+  revalidatePath("/findings");
   return NextResponse.json({ finding }, { status: 201 });
 }

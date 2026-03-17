@@ -191,7 +191,7 @@ export async function POST(req: Request) {
     metadata: { name: finding.name ?? undefined },
   });
 
-  revalidatePath("/dashboard/findings");
-  revalidatePath("/dashboard/community");
+  revalidatePath("/findings");
+  revalidatePath("/community");
   return NextResponse.json({ finding }, { status: 201 });
 }

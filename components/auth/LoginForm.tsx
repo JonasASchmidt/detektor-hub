@@ -27,7 +27,7 @@ export function LoginForm({
 
   useEffect(() => {
     if (session) {
-      router.push("/dashboard");
+      router.push("/findings");
     }
   }, [session, router]);
 
@@ -51,7 +51,7 @@ export function LoginForm({
     if (result?.error) {
       setError(result.error);
     } else {
-      router.push("/dashboard");
+      router.push("/findings");
     }
   };
 

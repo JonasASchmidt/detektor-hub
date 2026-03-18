@@ -5,6 +5,23 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-18] — `main` (admin units)
+
+### Features
+
+- **Administrative unit lookup on finding create/update** (`lib/geo.ts`, `app/api/findings/route.ts`, `app/api/findings/[id]/route.ts`) — when a finding is saved with coordinates, a PostGIS `ST_Intersects` query resolves the German administrative hierarchy (Gemeinde → Landkreis → Bundesland → Land) and stores it on the finding; re-runs only when coordinates change on update
+- **Admin unit polygon map in FindingDetail** (`components/map/AdminUnitMap.tsx`, `app/api/geo/admin-units/polygon/route.ts`) — when the exact location is private, a Leaflet map renders the municipality boundary polygon (falls back to county → federal state); bounds auto-fit to the polygon; non-interactive (no zoom/pan controls)
+- **Admin unit text label always visible** (`FindingDetail.tsx`) — Gemeinde · Landkreis · Bundesland shown with a pin icon below whichever map is displayed; gracefully absent for coordinates outside Germany
+- **`npm run seed:geo`** (`package.json`, `scripts/create_administrative_units_table.py`) — new npm script runs the Python geo data script; script now reads `POSTGRES_URL_NON_POOLING` from `.env.local` directly instead of 4 separate env vars; requires `uv`
+- **Admin unit tables declared in Prisma schema** (`prisma/schema.prisma`) — four `@@ignore` models prevent `prisma db push` from dropping the PostGIS tables managed by the Python script
+
+### Refactors
+
+- **`lib/geo.ts`** — `lookupAdminUnits` helper extracted from `app/api/geo/admin-units/route.ts`; geo API route now delegates to the shared helper
+- **`scripts/create_administrative_units_table.py`** — removed unused `psycopg` import; repeated transform blocks extracted into `load_layer()` and `write_layer()` helpers
+
+---
+
 ## [2026-03-18] — `field-session-improvements`
 
 ### Features

@@ -4,6 +4,14 @@ User problems this codebase solves, mapped to their implementations.
 
 ---
 
+## "The exact location of my find must not be publicly visible, but the report still needs to show roughly where it was found"
+
+German archaeology authorities and community members need geographic context (region, county, municipality) without exposing the precise GPS coordinates, which could lead to illegal excavation at the site.
+
+**Implementation:** `Finding` model stores `adminCountry`, `adminFederalState`, `adminCounty`, `adminMunicipality` (all nullable strings). On every create/update, `lookupAdminUnits()` (`lib/geo.ts`) queries the PostGIS admin unit tables via `ST_Intersects` and writes the resolved names. When `locationPublic === false`, `FindingDetail` shows the municipality boundary polygon on a Leaflet map (`AdminUnitMap`) plus a "Gemeinde · Landkreis · Bundesland" text label instead of exact coordinates. Coordinates outside Germany result in all-null fields (shown as absent). Future: support non-German administrative units.
+
+---
+
 ## "Archaeological reports require coordinates in a specific coordinate system (e.g. ETRS89/UTM33 for Saxony), not decimal GPS coordinates"
 
 Each German state archaeology authority requires coordinates in their preferred coordinate system for official reports. GPS coordinates (WGS84 decimal degrees) are not accepted as-is.

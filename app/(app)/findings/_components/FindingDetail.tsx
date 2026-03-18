@@ -64,7 +64,7 @@ export default function FindingDetail({ finding }: Props) {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
-  const [adminPolygon, setAdminPolygon] = useState<object | null>(null);
+  const [adminPolygon, setAdminPolygon] = useState<import("geojson").GeoJsonObject | null>(null);
   const [status, setStatus] = useState(finding.status);
   const [reported, setReported] = useState(finding.reported);
   const [statusUpdating, setStatusUpdating] = useState(false);

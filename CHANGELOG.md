@@ -5,6 +5,23 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-18] — `field-session-improvements`
+
+### Features
+
+- **Client-side image resize before upload** (`lib/resizeImage.ts`, `QuickFindForm.tsx`) — images are resized to max 1920px on the long edge and re-encoded as JPEG at 82% quality before upload; significantly reduces upload time on mobile and Cloudinary storage costs; original files already within bounds are passed through unchanged
+- **GPS route tracking: distance filter** (`useRouteTracker.ts`) — new points are only recorded when the user has moved ≥ 10 m from the last accepted point (Haversine formula); readings with accuracy worse than 30 m are discarded; eliminates duplicate points when standing still
+- **GPS route tracking: single server write** (`useRouteTracker.ts`) — removed periodic 30-second sync interval; route is now written to the database only once when tracking is stopped, reducing DB writes to zero during a session
+- **Continue route tracking** (`useRouteTracker.ts`) — when tracking is started for a session that already has a stored route, the existing coordinates are loaded from the server and merged with new points on stop; old route data is preserved across multiple tracking sessions
+- **Screen Wake Lock during tracking** (`useRouteTracker.ts`, `ActiveSessionBar.tsx`) — requests `navigator.wakeLock` when tracking starts to prevent the browser from being suspended when the screen dims on mobile; automatically re-acquires the lock when the tab regains visibility; a phone icon in the session bar indicates whether the lock is active
+- **Swipeable / dismissable toasts** (`components/ui/sonner.tsx`) — added `closeButton` prop to the global Sonner toaster; all toasts now show an X button and can be swiped away on mobile
+
+### Bug Fixes
+
+- **Field view overflow on small screens** (`app/field/layout.tsx`) — changed outer container from `min-h-dvh` to `h-dvh overflow-hidden`; the find form now scrolls within the fixed viewport height so the submit button is always reachable
+
+---
+
 ## [2026-03-17] — `coordinate-transformation`
 
 ### Features

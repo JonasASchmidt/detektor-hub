@@ -43,7 +43,7 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
   // Incremented after each submitted find to trigger a findings refresh
   const [findSubmitCount, setFindSubmitCount] = useState(0);
 
-  const { isTracking, points, accuracy, error, startTracking, stopTracking } =
+  const { isTracking, points, accuracy, error, wakeLockActive, startTracking, stopTracking } =
     useRouteTracker(activeSession?.id ?? null);
 
   const fetchSessionFindings = useCallback(async (sessionId: string) => {
@@ -100,6 +100,7 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
         trackingPoints={points.length}
         trackingAccuracy={accuracy}
         trackingError={error}
+        wakeLockActive={wakeLockActive}
         onStartTracking={startTracking}
         onStopTracking={stopTracking}
       />

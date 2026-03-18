@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { applyNamingScheme } from "@/lib/namingScheme";
+import { resizeImage } from "@/lib/resizeImage";
 
 interface ActiveSession {
   id: string;
@@ -105,8 +106,10 @@ export default function QuickFindForm({ activeSession, onFindSubmitted }: Props)
     if (!file) return;
 
     setUploadingImage(true);
+    // Resize to max 1920px / JPEG 82% before upload — keeps mobile uploads fast
+    const resized = await resizeImage(file);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", resized);
 
     try {
       const res = await fetch("/api/images", { method: "POST", body: formData });

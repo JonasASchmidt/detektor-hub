@@ -43,7 +43,7 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
   // Incremented after each submitted find to trigger a findings refresh
   const [findSubmitCount, setFindSubmitCount] = useState(0);
 
-  const { isTracking, points, accuracy, error, startTracking, stopTracking } =
+  const { isTracking, points, accuracy, error, wakeLockActive, startTracking, stopTracking } =
     useRouteTracker(activeSession?.id ?? null);
 
   const fetchSessionFindings = useCallback(async (sessionId: string) => {
@@ -72,22 +72,31 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b">
-        <Link href="/findings" className="text-muted-foreground hover:text-foreground transition-colors">
+      {/* Header — matches main app AppHeaderBar style */}
+      <div className="flex items-center h-[52px] shrink-0 bg-[#2d2d2d] pl-3 pr-4 gap-3 z-50">
+        <Link href="/findings" className="text-white/60 hover:text-white transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="font-semibold text-base flex-1">Felderfassung</h1>
+        <Link
+          href="/findings"
+          className="flex items-baseline gap-2 hover:text-gray-300 transition-colors shrink-0"
+        >
+          <span className="text-lg font-bold text-white">Sondlr</span>
+          <span className="text-lg font-normal" style={{ color: "#ffff00" }}>
+            Felderfassung
+          </span>
+        </Link>
         {activeSession && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowMap((v) => !v)}
-            className="h-8 w-8 p-0"
-            title={showMap ? "Karte ausblenden" : "Karte anzeigen"}
-          >
-            {showMap ? <MapPinOff className="h-4 w-4" /> : <Map className="h-4 w-4" />}
-          </Button>
+          <div className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMap((v) => !v)}
+              className="h-8 w-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
+            >
+              {showMap ? <MapPinOff className="h-4 w-4" /> : <Map className="h-4 w-4" />}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -100,6 +109,7 @@ export default function FieldPageClient({ openSessions, initialActiveSession }: 
         trackingPoints={points.length}
         trackingAccuracy={accuracy}
         trackingError={error}
+        wakeLockActive={wakeLockActive}
         onStartTracking={startTracking}
         onStopTracking={stopTracking}
       />

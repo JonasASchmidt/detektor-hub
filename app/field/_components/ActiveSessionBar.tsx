@@ -20,6 +20,7 @@ import {
   NavigationOff,
   Plus,
   Radio,
+  Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ interface Props {
   trackingPoints: number;
   trackingAccuracy: number | null;
   trackingError: string | null;
+  wakeLockActive: boolean;
   onStartTracking: () => void;
   onStopTracking: () => void;
 }
@@ -57,6 +59,7 @@ export default function ActiveSessionBar({
   trackingPoints,
   trackingAccuracy,
   trackingError,
+  wakeLockActive,
   onStartTracking,
   onStopTracking,
 }: Props) {
@@ -210,6 +213,13 @@ export default function ActiveSessionBar({
                 {trackingAccuracy !== null && (
                   <span className="text-muted-foreground">±{trackingAccuracy}m</span>
                 )}
+                {/* Wake lock indicator — green phone = screen stays on */}
+                <Smartphone
+                  className={cn(
+                    "h-3 w-3",
+                    wakeLockActive ? "text-emerald-600" : "text-muted-foreground"
+                  )}
+                />
               </span>
             )}
             {trackingError && (

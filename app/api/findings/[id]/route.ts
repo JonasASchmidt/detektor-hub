@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findingSchemaCompleted } from "@/schemas/finding";
 import { logActivity } from "@/lib/activityLog";
+import { lookupAdminUnits } from "@/lib/geo";
 
 export async function GET(
   req: Request,
@@ -68,8 +69,11 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  // Verify ownership before allowing update
-  const existing = await prisma.finding.findUnique({ where: { id }, select: { userId: true } });
+  // Fetch existing record for ownership check and coord comparison
+  const existing = await prisma.finding.findUnique({
+    where: { id },
+    select: { userId: true, latitude: true, longitude: true },
+  });
   if (!existing || existing.userId !== session.user.id) {
     return NextResponse.json({ error: "Fund nicht gefunden." }, { status: 404 });
   }
@@ -81,6 +85,13 @@ export async function PUT(
   }
 
   const data = parseResult.data;
+
+  // Only re-run the PostGIS lookup if the coordinates actually changed
+  const coordsChanged =
+    data.location.lat !== existing.latitude || data.location.lng !== existing.longitude;
+  const adminUnits = coordsChanged
+    ? await lookupAdminUnits(data.location.lat, data.location.lng)
+    : {};
 
   try {
     const finding = await prisma.finding.update({
@@ -102,6 +113,7 @@ export async function PUT(
         locationPublic: data.locationPublic ?? false,
         thumbnailId: data.thumbnailId ?? null,
         foundAt: data.foundAt,
+        ...adminUnits,
         images: { set: data.images.map((imgId) => ({ id: imgId })) },
         tags: { set: data.tags.map((tagId) => ({ id: tagId })) },
       },

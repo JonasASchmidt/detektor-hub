@@ -95,6 +95,10 @@ model Finding {
   conductivity      Int?
   detectorId        String?
   thumbnailId       String?
+  adminCountry      String?
+  adminFederalState String?
+  adminCounty       String?
+  adminMunicipality String?
   userId            String
   fieldSessionId    String?
   comments          Comment[]
@@ -197,6 +201,47 @@ model Notification {
   
   recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
   actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+}
+
+// Administrative unit tables are managed by scripts/create_administrative_units_table.py
+// and must not be modified or dropped by Prisma — hence @@ignore.
+model AdministrativeUnitsCountry {
+  id_country BigInt
+  name       String
+  geometry   Unsupported("geometry")
+
+  @@ignore
+  @@map("administrative_units_country")
+}
+
+model AdministrativeUnitsFederalStates {
+  id_country       BigInt
+  id_federal_state BigInt
+  name             String
+  geometry         Unsupported("geometry")
+
+  @@ignore
+  @@map("administrative_units_federal_states")
+}
+
+model AdministrativeUnitsCounties {
+  id_federal_state BigInt
+  id_county        BigInt
+  name             String
+  geometry         Unsupported("geometry")
+
+  @@ignore
+  @@map("administrative_units_counties")
+}
+
+model AdministrativeUnitsMunicipalities {
+  id_county       BigInt
+  id_municipality BigInt
+  name            String
+  geometry        Unsupported("geometry")
+
+  @@ignore
+  @@map("administrative_units_municipalities")
 }
 
 // Run: npx prisma migrate dev --name add_activity_log

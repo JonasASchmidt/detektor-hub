@@ -9,6 +9,7 @@ import { cookies } from "next/headers";
 import { ACTIVE_SESSION_COOKIE } from "@/app/api/active-session/route";
 import { logActivity } from "@/lib/activityLog";
 import { applyNamingScheme } from "@/lib/namingScheme";
+import { lookupAdminUnits } from "@/lib/geo";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -154,6 +155,8 @@ export async function POST(req: Request) {
     }
   }
 
+  const adminUnits = await lookupAdminUnits(data.location.lat, data.location.lng);
+
   const finding = await prisma.finding.create({
     data: {
       name: resolvedName,
@@ -174,6 +177,7 @@ export async function POST(req: Request) {
       foundAt: data.foundAt,
       fieldSessionId: resolvedSessionId,
       userId: session.user.id,
+      ...adminUnits,
       images: {
         connect: data.images.map((imageId) => ({ id: imageId })),
       },

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:geo": "uv run scripts/create_administrative_units_table.py"
   },
   "dependencies": {
     "@adamscybot/react-leaflet-component-marker": "^2.0.3",

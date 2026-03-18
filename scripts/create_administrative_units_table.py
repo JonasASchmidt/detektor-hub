@@ -30,7 +30,6 @@ from io import BytesIO
 from pathlib import Path
 import geopandas as gpd
 from zipfile import ZipFile
-import psycopg
 
 HERE = Path(__file__).parent
 LOCAL_FILE = HERE / "DE_VG5000.gpkg"
@@ -39,16 +38,37 @@ GF_CODE_MAINLAND = 9
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    # Reads POSTGRES_URL_NON_POOLING from .env.local (direct connection, required for PostGIS writes)
+    model_config = SettingsConfigDict(env_file=".env.local", case_sensitive=False, extra="ignore")
 
-    postgres_server: str
-    postgres_database: str
-    postgres_user: str
-    postgres_password: str
+    postgres_url_non_pooling: str
 
-    @property
-    def postgres_url(self):
-        return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_server}/{self.postgres_database}"
+
+def load_layer(
+    filepath: Path,
+    layer: str,
+    renames: dict[str, str],
+    columns: list[str],
+    const_cols: dict | None = None,
+    cast_cols: dict | None = None,
+) -> gpd.GeoDataFrame:
+    """Read a VG5000 layer, filter to mainland Germany, reproject to WGS84, and reshape."""
+    gdf = gpd.read_file(filepath, layer=layer)
+    gdf = gdf.rename(columns=str.lower)
+    gdf = gdf[gdf["gf"] == GF_CODE_MAINLAND]
+    gdf = gdf.to_crs("EPSG:4326")
+    if const_cols:
+        for col, val in const_cols.items():
+            gdf[col] = val
+    gdf = gdf.rename(columns=renames)
+    gdf = gdf.loc[:, columns]
+    if cast_cols:
+        gdf = gdf.astype(cast_cols)
+    return gdf
+
+
+def write_layer(gdf: gpd.GeoDataFrame, engine, table_name: str) -> None:
+    gdf.to_postgis(name=table_name, con=engine, if_exists="replace", index=False, schema="public")
 
 
 def main() -> None:
@@ -59,70 +79,38 @@ def main() -> None:
         with ZipFile(zip_file_in_bytes) as z:
             file_in_bytes = z.read("vg5000_01-01.utm32s.gpkg.ebenen/vg5000_ebenen_0101/DE_VG5000.gpkg")
         LOCAL_FILE.write_bytes(file_in_bytes)
-    # transformations
-    gdf_country = gpd.read_file(LOCAL_FILE, layer="vg5000_sta")
-    gdf_country = gdf_country.rename(columns=str.lower)
-    gdf_country = gdf_country[gdf_country["gf"] == GF_CODE_MAINLAND]
-    gdf_country = gdf_country.to_crs("EPSG:4326")
-    gdf_country["id_country"] = 0
-    gdf_country = gdf_country.rename(columns={"gen": "name"})
-    gdf_country = gdf_country.loc[:, ["id_country", "name", "geometry"]]
 
-    gdf_federal_state = gpd.read_file(LOCAL_FILE, layer="vg5000_lan")
-    gdf_federal_state = gdf_federal_state.rename(columns=str.lower)
-    gdf_federal_state = gdf_federal_state[gdf_federal_state["gf"] == GF_CODE_MAINLAND]
-    gdf_federal_state = gdf_federal_state.to_crs("EPSG:4326")
-    gdf_federal_state["id_country"] = 0
-    gdf_federal_state = gdf_federal_state.rename(columns={"sn_l": "id_federal_state", "gen": "name"})
-    gdf_federal_state = gdf_federal_state.loc[:, ["id_country", "id_federal_state", "name", "geometry"]]
-    gdf_federal_state = gdf_federal_state.astype({"id_federal_state": int})
+    gdf_country = load_layer(
+        LOCAL_FILE, "vg5000_sta",
+        renames={"gen": "name"},
+        columns=["id_country", "name", "geometry"],
+        const_cols={"id_country": 0},
+    )
+    gdf_federal_state = load_layer(
+        LOCAL_FILE, "vg5000_lan",
+        renames={"sn_l": "id_federal_state", "gen": "name"},
+        columns=["id_country", "id_federal_state", "name", "geometry"],
+        const_cols={"id_country": 0},
+        cast_cols={"id_federal_state": int},
+    )
+    gdf_county = load_layer(
+        LOCAL_FILE, "vg5000_krs",
+        renames={"sn_l": "id_federal_state", "sn_k": "id_county", "gen": "name"},
+        columns=["id_federal_state", "id_county", "name", "geometry"],
+        cast_cols={"id_federal_state": int, "id_county": int},
+    )
+    gdf_municipality = load_layer(
+        LOCAL_FILE, "vg5000_gem",
+        renames={"sn_k": "id_county", "sn_g": "id_municipality", "gen": "name"},
+        columns=["id_county", "id_municipality", "name", "geometry"],
+        cast_cols={"id_county": int, "id_municipality": int},
+    )
 
-    gdf_county = gpd.read_file(LOCAL_FILE, layer="vg5000_krs")
-    gdf_county = gdf_county.rename(columns=str.lower)
-    gdf_county = gdf_county[gdf_county["gf"] == GF_CODE_MAINLAND]
-    gdf_county = gdf_county.to_crs("EPSG:4326")
-    gdf_county = gdf_county.rename(columns={"sn_l": "id_federal_state", "sn_k": "id_county", "gen": "name"})
-    gdf_county = gdf_county.loc[:, ["id_federal_state", "id_county", "name", "geometry"]]
-    gdf_county = gdf_county.astype({"id_federal_state": int, "id_county": int})
-
-    gdf_municipality = gpd.read_file(LOCAL_FILE, layer="vg5000_gem")
-    gdf_municipality = gdf_municipality.rename(columns=str.lower)
-    gdf_municipality = gdf_municipality[gdf_municipality["gf"] == GF_CODE_MAINLAND]
-    gdf_municipality = gdf_municipality.to_crs("EPSG:4326")
-    gdf_municipality = gdf_municipality.rename(columns={"sn_k": "id_county", "sn_g": "id_municipality", "gen": "name"})
-    gdf_municipality = gdf_municipality.loc[:, ["id_county", "id_municipality", "name", "geometry"]]
-    gdf_municipality = gdf_municipality.astype({"id_county": int, "id_municipality": int})
-
-    # write to database
-    engine = create_engine(settings.postgres_url)
-    gdf_country.to_postgis(
-        name="administrative_units_country",
-        con=engine,
-        if_exists="replace",
-        index=False,
-        schema="public"
-    )
-    gdf_federal_state.to_postgis(
-        name="administrative_units_federal_states",
-        con=engine,
-        if_exists="replace",
-        index=False,
-        schema="public"
-    )
-    gdf_county.to_postgis(
-        name="administrative_units_counties",
-        con=engine,
-        if_exists="replace",
-        index=False,
-        schema="public"
-    )
-    gdf_municipality.to_postgis(
-        name="administrative_units_municipalities",
-        con=engine,
-        if_exists="replace",
-        index=False,
-        schema="public"
-    )
+    engine = create_engine(settings.postgres_url_non_pooling)
+    write_layer(gdf_country, engine, "administrative_units_country")
+    write_layer(gdf_federal_state, engine, "administrative_units_federal_states")
+    write_layer(gdf_county, engine, "administrative_units_counties")
+    write_layer(gdf_municipality, engine, "administrative_units_municipalities")
 
 if __name__ == "__main__":
     main()

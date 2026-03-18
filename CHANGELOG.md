@@ -5,6 +5,27 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-18] — `feature/data-import`
+
+### Features
+
+- **Import wizard at `/import`** (`app/(app)/import/`) — 3-step wizard (Upload → Vorschau → Fertig) for importing finds and sessions from external sources; accessible via sidebar under "Importieren"
+- **GPX import** (`parsers/parseGpx.ts`, `@tmcw/togeojson`) — parses `<trk>` elements into FieldSessions (with PostGIS LineString route) and `<wpt>` elements into Findings; handles both LineString and MultiLineString track geometries; supports GoTerrain, Garmin, and generic GPX exports
+- **Geotagged photo import** (`parsers/parseImages.ts`, `exifr`) — extracts GPS coordinates and `DateTimeOriginal` from JPEG/PNG/HEIC/HEIF EXIF data; HEIC converted to JPEG preview via `heic2any` (dynamic import); images without GPS are skipped with count reported
+- **Session assignment step** — always prompts whether to create a new session from the GPX track (name editable), attach to an existing session, or import with no session
+- **Duplicate detection** — `POST /api/import/findings` checks for existing findings at the exact same lat/lng per user; duplicate indices returned in response and surfaced in the result step
+- **`POST /api/import/sessions`** — creates a FieldSession with optional PostGIS route geometry from GeoJSON LineString coordinates (mirrors the existing `PATCH /api/field-sessions/[id]/route` pattern)
+- **`POST /api/import/findings`** — batch creates up to 500 findings; runs `lookupAdminUnits()` per finding; connects uploaded Cloudinary image if `imageId` provided; revalidates `/findings` and `/community`
+
+### Dependencies added
+
+- `@tmcw/togeojson` — GPX/KML → GeoJSON conversion
+- `exifr` — EXIF GPS + date extraction (supports HEIC natively)
+- `heic2any` — in-browser HEIC → JPEG conversion for previews
+- `papaparse` — CSV parsing (used in upcoming Phase 2 CSV import)
+
+---
+
 ## [2026-03-18] — `main` (admin units)
 
 ### Features

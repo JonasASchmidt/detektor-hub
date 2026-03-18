@@ -1,13 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  LocateIcon,
-  MapIcon,
-  SmartphoneIcon,
-  UsersIcon,
-  X,
-} from "lucide-react";
+import { LocateIcon, SmartphoneIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/layout/NavMain";
@@ -57,6 +51,10 @@ const navMain = [
       {
         title: "Zonen",
         url: "/zones",
+      },
+      {
+        title: "Importieren",
+        url: "/import",
       },
     ],
   },

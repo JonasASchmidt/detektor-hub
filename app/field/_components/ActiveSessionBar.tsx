@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Sheet,
@@ -18,10 +17,10 @@ import {
   MapPin,
   Navigation,
   NavigationOff,
-  Plus,
   Radio,
   Smartphone,
 } from "lucide-react";
+import NewSessionInlineForm from "@/components/sessions/NewSessionInlineForm";
 import { cn } from "@/lib/utils";
 
 interface OpenSession {
@@ -64,9 +63,6 @@ export default function ActiveSessionBar({
   onStopTracking,
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [newSessionName, setNewSessionName] = useState("");
-  const [newSessionScheme, setNewSessionScheme] = useState("");
-  const [creatingSession, setCreatingSession] = useState(false);
 
   async function activateSession(session: OpenSession) {
     const res = await fetch("/api/active-session", {
@@ -87,23 +83,19 @@ export default function ActiveSessionBar({
     toast.info("Session beendet");
   }
 
-  async function createAndActivate() {
-    if (!newSessionName.trim()) return;
-    setCreatingSession(true);
-
+  async function createAndActivate({ name, namingScheme }: { name: string; namingScheme: string }) {
     const res = await fetch("/api/field-sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: newSessionName.trim(),
-        namingScheme: newSessionScheme.trim() || null,
+        name,
+        namingScheme: namingScheme || null,
         dateFrom: new Date().toISOString(),
       }),
     });
 
     if (!res.ok) {
       toast.error("Session konnte nicht erstellt werden.");
-      setCreatingSession(false);
       return;
     }
 
@@ -115,9 +107,6 @@ export default function ActiveSessionBar({
     });
 
     onSessionChange({ id: fieldSession.id, name: fieldSession.name, namingScheme: fieldSession.namingScheme ?? null });
-    setNewSessionName("");
-    setNewSessionScheme("");
-    setCreatingSession(false);
     setSheetOpen(false);
     toast.success(`Session „${fieldSession.name}" gestartet`);
   }
@@ -153,27 +142,10 @@ export default function ActiveSessionBar({
             <div className="mt-4 flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <Label className="text-xs text-muted-foreground uppercase tracking-wide">Neue Session starten</Label>
-                <Input
-                  placeholder="Session-Name"
-                  value={newSessionName}
-                  onChange={(e) => setNewSessionName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && createAndActivate()}
+                <NewSessionInlineForm
+                  onSubmit={createAndActivate}
+                  submitLabel="Session starten"
                 />
-                <Input
-                  placeholder="Benennungsschema (optional), z. B. {session}-{n:03}"
-                  value={newSessionScheme}
-                  onChange={(e) => setNewSessionScheme(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Tokens:{" "}
-                  <code className="bg-muted px-1 rounded">{"{session}"}</code>{" "}
-                  <code className="bg-muted px-1 rounded">{"{n:03}"}</code>{" "}
-                  <code className="bg-muted px-1 rounded">{"{date}"}</code>
-                </p>
-                <Button onClick={createAndActivate} disabled={creatingSession || !newSessionName.trim()}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Session starten
-                </Button>
               </div>
 
               {openSessions.length > 0 && (

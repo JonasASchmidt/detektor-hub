@@ -88,10 +88,6 @@ export default function TagPicker<TFieldValues extends FieldValues>({
                           className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""
                             }`}
                         >
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ backgroundColor: tag.color ?? "#888" }}
-                          />
                           <span className="flex-1 text-left">{tag.name}</span>
                           {active && (
                             <X className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -122,20 +118,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
           )}
         </div>
         {selectedTags.map((tag) => (
-          <span
-            key={tag.id}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded uppercase tracking-wide text-[11px] font-semibold text-white"
-            style={{ backgroundColor: tag.color ?? "#888" }}
-          >
-            {tag.name}
-            <button
-              type="button"
-              onClick={() => toggle(tag.id)}
-              className="!bg-transparent rounded-full p-0.5 ml-0.5 focus:outline-none group transition-colors"
-            >
-              <X className="h-3.5 w-3.5 text-white/50 group-hover:text-white transition-colors" />
-            </button>
-          </span>
+          <TagComponent key={tag.id} tag={tag} onClose={() => toggle(tag.id)} />
         ))}
       </div>
     </div>

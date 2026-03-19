@@ -74,12 +74,12 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
       weight: finding.weight ?? undefined,
       diameter: finding.diameter ?? undefined,
       dating: finding.dating ?? undefined,
-      dating_from: finding.dating_from ?? undefined,
-      dating_to: finding.dating_to ?? undefined,
+      datingFrom: finding.datingFrom ?? undefined,
+      datingTo: finding.datingTo ?? undefined,
       references: finding.references ?? undefined,
       locationPublic: finding.locationPublic,
-      description_front: (finding as FindingWithRelations & { description_front?: string }).description_front ?? undefined,
-      description_back: (finding as FindingWithRelations & { description_back?: string }).description_back ?? undefined,
+      descriptionFront: finding.descriptionFront ?? undefined,
+      descriptionBack: finding.descriptionBack ?? undefined,
     },
   });
 
@@ -323,25 +323,25 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
           </div>
           <div className="flex flex-row gap-4 flex-wrap">
             <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
-              <Label htmlFor="dating_from">Datierung ab</Label>
-              <Input id="dating_from" type="number" placeholder="Jahr von" {...register("dating_from")} />
+              <Label htmlFor="datingFrom">Datierung ab</Label>
+              <Input id="datingFrom" type="number" placeholder="Jahr von" {...register("datingFrom")} />
             </div>
             <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
-              <Label htmlFor="dating_to">Datierung bis</Label>
-              <Input id="dating_to" type="number" placeholder="Jahr bis" {...register("dating_to")} />
+              <Label htmlFor="datingTo">Datierung bis</Label>
+              <Input id="datingTo" type="number" placeholder="Jahr bis" {...register("datingTo")} />
             </div>
           </div>
 
           {/* Vorderseite */}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="description_front">Vorderseite</Label>
-            <Textarea id="description_front" placeholder="Beschreibung Vorderseite…" rows={3} {...register("description_front")} />
+            <Label htmlFor="descriptionFront">Vorderseite</Label>
+            <Textarea id="descriptionFront" placeholder="Beschreibung Vorderseite…" rows={3} {...register("descriptionFront")} />
           </div>
 
           {/* Rückseite */}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="description_back">Rückseite</Label>
-            <Textarea id="description_back" placeholder="Beschreibung Rückseite…" rows={3} {...register("description_back")} />
+            <Label htmlFor="descriptionBack">Rückseite</Label>
+            <Textarea id="descriptionBack" placeholder="Beschreibung Rückseite…" rows={3} {...register("descriptionBack")} />
           </div>
 
           {/* Referenzen */}

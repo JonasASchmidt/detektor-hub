@@ -40,7 +40,7 @@ export async function GET(req: Request) {
       where: { parentId: null },
       orderBy: { createdAt: "desc" as const },
       take: 1,
-      include: { user: { select: { name: true, image: true } } },
+      include: { user: { select: { id: true, name: true, image: true } } },
     },
     _count: { select: { comments: true } },
   } as const;

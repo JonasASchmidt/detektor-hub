@@ -7,11 +7,11 @@ export interface FindingFormData {
   weight?: number;
   diameter?: number;
   description?: string;
-  description_front?: string;
-  description_back?: string;
+  descriptionFront?: string;
+  descriptionBack?: string;
   dating?: string;
-  dating_from?: number;
-  dating_to?: number;
+  datingFrom?: number;
+  datingTo?: number;
   references?: string;
   thumbnailId?: string;
   detectorId?: string;
@@ -50,11 +50,11 @@ export const findingSchemaCompleted = z
     weight: z.coerce.number().nonnegative().optional(),
     diameter: z.coerce.number().nonnegative().optional(),
     description: z.string().optional(),
-    description_front: z.string().optional(),
-    description_back: z.string().optional(),
+    descriptionFront: z.string().optional(),
+    descriptionBack: z.string().optional(),
     dating: z.string().optional(),
-    dating_from: z.coerce.number().optional(),
-    dating_to: z.coerce.number().optional(),
+    datingFrom: z.coerce.number().optional(),
+    datingTo: z.coerce.number().optional(),
     references: z.string().optional(),
     thumbnailId: z.string().optional(),
     conductivity: z.coerce.number().optional(),
@@ -66,13 +66,13 @@ export const findingSchemaCompleted = z
   })
   .refine(
     (data) => {
-      if (data.dating_from && data.dating_to) {
-        return data.dating_from <= data.dating_to;
+      if (data.datingFrom && data.datingTo) {
+        return data.datingFrom <= data.datingTo;
       }
       return true;
     },
     {
       message: "Muss vor 'Datierung bis Jahr' liegen.",
-      path: ["dating_from"],
+      path: ["datingFrom"],
     }
   );

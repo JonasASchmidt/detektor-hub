@@ -398,23 +398,23 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                 </div>
                 <div className="flex flex-row gap-4 flex-wrap">
                   <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
-                    <Label htmlFor="dating_from">Datierung ab</Label>
+                    <Label htmlFor="datingFrom">Datierung ab</Label>
                     <Input
-                      id="dating_from"
+                      id="datingFrom"
                       type="number"
                       placeholder="Jahr von"
                       className="w-full"
-                      {...register("dating_from")}
+                      {...register("datingFrom")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
-                    <Label htmlFor="dating_to">Datierung bis</Label>
+                    <Label htmlFor="datingTo">Datierung bis</Label>
                     <Input
-                      id="dating_to"
+                      id="datingTo"
                       type="number"
                       placeholder="Jahr bis"
                       className="w-full"
-                      {...register("dating_to")}
+                      {...register("datingTo")}
                     />
                   </div>
                 </div>

@@ -21,6 +21,27 @@ export async function GET(
         tags: true,
         user: true,
         images: true,
+        // Include both sides of the symmetric self-relation and merge client-side
+        relatedTo: {
+          select: {
+            id: true,
+            name: true,
+            foundAt: true,
+            createdAt: true,
+            images: { take: 1, select: { publicId: true } },
+            user: { select: { id: true, name: true, image: true } },
+          },
+        },
+        relatedFrom: {
+          select: {
+            id: true,
+            name: true,
+            foundAt: true,
+            createdAt: true,
+            images: { take: 1, select: { publicId: true } },
+            user: { select: { id: true, name: true, image: true } },
+          },
+        },
       },
     });
 
@@ -104,11 +125,11 @@ export async function PUT(
         weight: data.weight,
         diameter: data.diameter,
         description: data.description,
-        description_front: data.description_front,
-        description_back: data.description_back,
+        descriptionFront: data.descriptionFront,
+        descriptionBack: data.descriptionBack,
         dating: data.dating,
-        dating_from: data.dating_from,
-        dating_to: data.dating_to,
+        datingFrom: data.datingFrom,
+        datingTo: data.datingTo,
         references: data.references,
         locationPublic: data.locationPublic ?? false,
         thumbnailId: data.thumbnailId ?? null,

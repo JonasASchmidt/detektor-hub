@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import FindingDetail from "../_components/FindingDetail";
 import { FindingWithRelations } from "@/types/FindingWithRelations";
+import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
 
 interface Props {
   params: Promise<{
@@ -14,6 +15,18 @@ export default async function FindingDetailPage({ params }: Props) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
+  // Select shape reused for both sides of the symmetric self-relation
+  const relatedSelect = {
+    select: {
+      id: true,
+      name: true,
+      foundAt: true,
+      createdAt: true,
+      images: { take: 1, select: { publicId: true } },
+      user: { select: { id: true, name: true, image: true } },
+    },
+  } as const;
+
   const finding: FindingWithRelations | null = await prisma.finding.findUnique({
     where: { id },
     include: {
@@ -21,12 +34,29 @@ export default async function FindingDetailPage({ params }: Props) {
       images: true,
       tags: true,
       user: true,
+      relatedTo: relatedSelect,
+      relatedFrom: relatedSelect,
     },
-  });
+  }) as FindingWithRelations | null;
 
   if (!finding) {
     return <p>404 ERROR</p>;
   }
+
+  // Merge both sides of the symmetric relation and deduplicate
+  const rawFinding = finding as typeof finding & {
+    relatedTo: RelatedFindingSummary[];
+    relatedFrom: RelatedFindingSummary[];
+  };
+  const seenIds = new Set<string>();
+  const relatedFindings: RelatedFindingSummary[] = [
+    ...rawFinding.relatedTo,
+    ...rawFinding.relatedFrom,
+  ].filter((r) => {
+    if (seenIds.has(r.id)) return false;
+    seenIds.add(r.id);
+    return true;
+  });
 
   const commentIds = finding.comments.map((c) => c.id);
 
@@ -79,6 +109,7 @@ export default async function FindingDetailPage({ params }: Props) {
       userVoted={!!userVoteRecord}
       commentVoteCountMap={commentVoteCountMap}
       commentUserVotedSet={commentUserVotedSet}
+      relatedFindings={relatedFindings}
     />
   );
 }

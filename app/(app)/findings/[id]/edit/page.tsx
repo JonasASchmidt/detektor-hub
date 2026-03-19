@@ -45,8 +45,8 @@ export default async function EditFindingPage({ params }: Props) {
     weight: finding.weight ?? undefined,
     diameter: finding.diameter ?? undefined,
     dating: finding.dating ?? undefined,
-    dating_from: finding.dating_from ?? undefined,
-    dating_to: finding.dating_to ?? undefined,
+    datingFrom: finding.datingFrom ?? undefined,
+    datingTo: finding.datingTo ?? undefined,
     references: finding.references ?? undefined,
     locationPublic: finding.locationPublic,
   };

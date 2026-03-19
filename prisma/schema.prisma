@@ -83,12 +83,12 @@ model Finding {
   depth             Float?
   weight            Float?
   diameter          Float?
-  description       String?
-  description_front String?
-  description_back  String?
-  dating            String?
-  dating_from       Int?
-  dating_to         Int?
+  description      String?
+  descriptionFront String?
+  descriptionBack  String?
+  dating           String?
+  datingFrom       Int?
+  datingTo         Int?
   references        String?
   foundAt           DateTime      @default(now())
   createdAt         DateTime      @default(now())
@@ -108,8 +108,8 @@ model Finding {
   fieldSession      FieldSession? @relation(fields: [fieldSessionId], references: [id])
   images            Image[]
   tags              Tag[]         @relation("FindingTags")
-  Finding_A         Finding[]     @relation("RelatedFindings")
-  Finding_B         Finding[]     @relation("RelatedFindings")
+  relatedTo         Finding[]     @relation("RelatedFindings")
+  relatedFrom       Finding[]     @relation("RelatedFindings")
 }
 
 model Image {

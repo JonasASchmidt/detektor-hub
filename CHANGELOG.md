@@ -5,6 +5,24 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-19] — `feature/related-findings`
+
+### Features
+
+- **Verlinkung verwandter Funde** — Funde können miteinander verknüpft werden (z. B. Fragmente eines Gegenstands oder zusammengehörige Objekte); die Verknüpfung ist symmetrisch und für alle sichtbar, kann aber nur vom Eigentümer des Fundes verwaltet werden
+- **`POST /DELETE /api/findings/[id]/related`** — verknüpft oder trennt zwei Funde; Eigentümerprüfung; Ziel muss COMPLETED oder eigener Fund sein; verhindert Selbstverlinkung
+- **`RelatedFindingsSection` Komponente** (`app/(app)/findings/_components/RelatedFindingsSection.tsx`) — zeigt verknüpfte Funde als kompakte Karten mit Thumbnail, Name, Datum und Finder-Link; Eigentümer können Verknüpfungen per X-Button entfernen und neue über eine Live-Suche hinzufügen; Abschnitt wird bei Nicht-Eigentümern ausgeblendet wenn keine Verknüpfungen vorhanden
+- **Live-Suche im Picker** — debounced Suche (300 ms) gegen `GET /api/findings?search=…&status=COMPLETED`; bereits verknüpfte Funde und der Fund selbst werden ausgefiltert
+- **GET `/api/findings/[id]`** — gibt jetzt `relatedTo` und `relatedFrom` mit Thumbnail, Name, Datum und User zurück
+
+### Refactors
+
+- **Prisma-Felder in `Finding` auf camelCase umbenannt** — `description_front` → `descriptionFront`, `description_back` → `descriptionBack`, `dating_from` → `datingFrom`, `dating_to` → `datingTo`; DB-Spalten werden per Migration umbenannt (kein `@map` nötig); alle betroffenen API-Routen, Formulare, Komponenten und Schemas aktualisiert
+- **Self-Relation-Felder umbenannt** — `Finding_A` / `Finding_B` → `relatedTo` / `relatedFrom` für bessere Lesbarkeit; keine Migration nötig (Prisma-Layer-Umbenennung)
+- **Neuer Typ `RelatedFindingSummary`** (`types/RelatedFindingSummary.ts`) — definiert die kompakte Datendarstellung für verknüpfte Funde
+
+---
+
 ## [2026-03-19] — `feature/voting`
 
 ### Features

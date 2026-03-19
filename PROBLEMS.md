@@ -36,6 +36,14 @@ Detectors want to photograph, describe and categorise a find before making it vi
 
 ---
 
+## "I found multiple pieces of the same object — how do I show they belong together?"
+
+Metal detector finds are sometimes fragments of a single object (e.g. a broken fibula, sword fragments, a hoard dispersed across a small area). Without a way to link them, the connection is invisible to other users and authorities reviewing the finds.
+
+**Implementation:** `Finding` model has a symmetric many-to-many self-relation (`relatedTo` / `relatedFrom`) backed by the `_RelatedFindings` junction table. Linking is managed via `POST /DELETE /api/findings/[id]/related` (owner-only). `FindingDetail` shows a "Verwandte Funde" section with compact cards and a live-search picker for adding new links. Both sides of the relation are merged client-side so the link is visible regardless of who initiated it.
+
+---
+
 ## "I can't tell whose find I'm looking at or who commented"
 
 Community pages and find cards showed only a single initial as avatar fallback, making it hard to identify users when profile images weren't set.

@@ -36,6 +36,8 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/initials";
+import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
+import RelatedFindingsSection from "./RelatedFindingsSection";
 
 const FindingDetailMap = dynamic(() => import("./FindingDetailMap"), {
   ssr: false,
@@ -59,6 +61,7 @@ interface Props {
   userVoted?: boolean;
   commentVoteCountMap?: Record<string, number>;
   commentUserVotedSet?: Set<string>;
+  relatedFindings?: RelatedFindingSummary[];
 }
 
 export default function FindingDetail({
@@ -67,6 +70,7 @@ export default function FindingDetail({
   userVoted = false,
   commentVoteCountMap = {},
   commentUserVotedSet = new Set(),
+  relatedFindings = [],
 }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -119,11 +123,11 @@ export default function FindingDetail({
     finding.weight ||
     finding.diameter ||
     finding.dating ||
-    finding.dating_from ||
-    finding.dating_to ||
+    finding.datingFrom ||
+    finding.datingTo ||
     finding.references ||
-    finding.description_front ||
-    finding.description_back;
+    finding.descriptionFront ||
+    finding.descriptionBack;
 
   const sortedComments =
     commentSort === "newest" ? [...comments] : [...comments].reverse();
@@ -399,28 +403,28 @@ export default function FindingDetail({
             </div>
           )}
 
-          {(finding.dating || finding.dating_from || finding.dating_to) && (
+          {(finding.dating || finding.datingFrom || finding.datingTo) && (
             <div className="text-sm space-y-0.5">
               {finding.dating && <p>{finding.dating}</p>}
-              {(finding.dating_from || finding.dating_to) && (
+              {(finding.datingFrom || finding.datingTo) && (
                 <p className="text-muted-foreground">
-                  {finding.dating_from ?? "?"} – {finding.dating_to ?? "?"}
+                  {finding.datingFrom ?? "?"} – {finding.datingTo ?? "?"}
                 </p>
               )}
             </div>
           )}
 
-          {finding.description_front && (
+          {finding.descriptionFront && (
             <div className="text-sm space-y-0.5">
               <p className="font-medium text-muted-foreground">Vorderseite</p>
-              <p>{finding.description_front}</p>
+              <p>{finding.descriptionFront}</p>
             </div>
           )}
 
-          {finding.description_back && (
+          {finding.descriptionBack && (
             <div className="text-sm space-y-0.5">
               <p className="font-medium text-muted-foreground">Rückseite</p>
-              <p>{finding.description_back}</p>
+              <p>{finding.descriptionBack}</p>
             </div>
           )}
 
@@ -569,6 +573,13 @@ export default function FindingDetail({
           ))}
         </div>
       )}
+
+      {/* Related findings */}
+      <RelatedFindingsSection
+        findingId={finding.id}
+        initialRelated={relatedFindings}
+        isOwner={isOwner}
+      />
 
       {/* Comments */}
       <div id="comments" className="space-y-3 pt-2">

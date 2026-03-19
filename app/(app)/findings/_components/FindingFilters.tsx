@@ -116,7 +116,7 @@ export function useFiltersFromURL(): UseFindingsParams {
 
   const hasComments = searchParams.get("hasComments") === "true" ? true : undefined;
 
-  const orderBy = sort === "az" ? "name" : "createdAt";
+  const orderBy = sort === "az" ? "name" : sort === "votes" ? "votes" : "createdAt";
   const order: "asc" | "desc" =
     sort === "oldest" || sort === "az" ? "asc" : "desc";
 

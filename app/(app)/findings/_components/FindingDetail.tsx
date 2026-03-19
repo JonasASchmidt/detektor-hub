@@ -21,6 +21,7 @@ import {
   X,
   MapPin,
 } from "lucide-react";
+import VoteButton from "./VoteButton";
 import {
   Tooltip,
   TooltipContent,
@@ -54,9 +55,19 @@ type Comment = FindingWithRelations["comments"][number];
 
 interface Props {
   finding: FindingWithRelations;
+  votesCount?: number;
+  userVoted?: boolean;
+  commentVoteCountMap?: Record<string, number>;
+  commentUserVotedSet?: Set<string>;
 }
 
-export default function FindingDetail({ finding }: Props) {
+export default function FindingDetail({
+  finding,
+  votesCount = 0,
+  userVoted = false,
+  commentVoteCountMap = {},
+  commentUserVotedSet = new Set(),
+}: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const [comments, setComments] = useState<Comment[]>(finding.comments ?? []);
@@ -214,6 +225,17 @@ export default function FindingDetail({ finding }: Props) {
           >
             <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
           </Button>
+          {/* Vote button — visible for all users on completed findings */}
+          {finding.status === "COMPLETED" && (
+            <VoteButton
+              targetType="FINDING"
+              targetId={finding.id}
+              initialVotesCount={votesCount}
+              initialUserVoted={userVoted}
+              isOwner={isOwner}
+              variant="detail"
+            />
+          )}
           {isOwner && status === "DRAFT" && (
             <Button
               variant="ghost"
@@ -602,6 +624,16 @@ export default function FindingDetail({ finding }: Props) {
                       {format(new Date(comment.createdAt), "d. MMM yyyy", {
                         locale: de,
                       })}
+                    </span>
+                    <span className="ml-auto">
+                      <VoteButton
+                        targetType="COMMENT"
+                        targetId={comment.id}
+                        initialVotesCount={commentVoteCountMap[comment.id] ?? 0}
+                        initialUserVoted={commentUserVotedSet.has(comment.id)}
+                        isOwner={comment.userId === session?.user?.id}
+                        variant="comment"
+                      />
                     </span>
                   </div>
                   <p className="text-sm text-foreground/80 whitespace-pre-line">

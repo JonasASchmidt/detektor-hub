@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
-import { FindingFormData } from "@/schemas/finding";
-import FindingsForm from "@/app/(app)/findings/_components/FindingsForm";
+import FindingEditInline from "@/app/(app)/findings/_components/FindingEditInline";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,18 +13,14 @@ export default async function EditFindingPage({ params }: Props) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  const [finding, tagCategories, sessions] = await Promise.all([
+  const [finding, tagCategories] = await Promise.all([
     prisma.finding.findUnique({
       where: { id },
-      include: { tags: true, images: true },
+      include: { tags: true, images: true, user: true, comments: { include: { user: true } } },
     }),
     prisma.tagCategory.findMany({
       include: { tags: true },
     }) as Promise<TagCategoryWithTags[]>,
-    prisma.fieldSession.findMany({
-      select: { id: true, name: true, dateFrom: true, dateTo: true },
-      orderBy: { dateFrom: "desc" },
-    }),
   ]);
 
   if (!finding) notFound();
@@ -51,15 +46,12 @@ export default async function EditFindingPage({ params }: Props) {
     locationPublic: finding.locationPublic,
   };
 
+
   return (
-    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full min-w-0">
-      <FindingsForm
-        tagCategories={tagCategories}
-        sessions={sessions}
-        findingId={id}
-        initialData={initialData}
-        initialImages={finding.images}
-      />
-    </div>
+    <FindingEditInline
+      finding={finding}
+      tagCategories={tagCategories}
+      initialImages={finding.images}
+    />
   );
 }

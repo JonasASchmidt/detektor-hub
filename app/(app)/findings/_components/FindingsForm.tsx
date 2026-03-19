@@ -56,7 +56,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
     formState: { errors: _errors, isSubmitting: _isSubmitting },
   } = useForm<FindingFormData>({
     resolver: zodResolver(findingSchemaCompleted),
-    defaultValues: initialData ?? { location: { lat: 51.0504, lng: 13.7373 }, tags: [], images: [] },
+    defaultValues: initialData ?? { tags: [], images: [] },
   });
   const [loading, setLoading] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -85,7 +85,13 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
     return () => subscription.unsubscribe();
   }, [watch, isLoaded, isEditMode]);
 
-  const handleChangeImages = (ids: string[]) => setValue("images", ids);
+  const handleChangeImages = (ids: string[]) => {
+    setValue("images", ids);
+    // Auto-set first image as thumbnail if none is set
+    if (ids.length > 0 && !thumbnailId) {
+      setValue("thumbnailId", ids[0]);
+    }
+  };
 
   const handleRemoveImage = (id: string) => {
     setValue("images", selectedImageIds.filter((i: string) => i !== id));
@@ -171,7 +177,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                 <Label htmlFor="fieldSessionId">Begehung (optional)</Label>
                 <select
                   id="fieldSessionId"
-                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   {...register("fieldSessionId")}
                 >
                   <option value="">— keine Begehung —</option>
@@ -251,28 +257,22 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
 
                         {/* Title/description */}
                         {(img?.title || img?.description) && (
-                          <div className="px-4 pt-3 pb-2">
+                          <div className="px-4 pt-3 pb-2 bg-white">
                             {img?.title && <p className="font-semibold text-sm">{img.title}</p>}
                             {img?.description && <p className="text-sm text-muted-foreground mt-0.5">{img.description}</p>}
                           </div>
                         )}
 
-                        {/* Titelbild bar */}
-                        {thumbnailId === id && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-[10px] text-white py-0.5 px-1 font-bold text-center rounded-b-xl">
-                            Titelbild
-                          </div>
-                        )}
-
-                        {/* Controls */}
-                        <div className="absolute top-2 left-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        {/* Titelbild toggle */}
+                        <div className={`absolute top-2 left-2 z-10 ${thumbnailId === id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
                           <button
                             type="button"
                             onClick={() => handleSetCover(id)}
-                            className={`p-1.5 rounded-full shadow-md transition-colors ${thumbnailId === id ? "bg-black/70 text-white opacity-100" : "bg-black/50 text-white hover:bg-black/70"}`}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-md text-xs font-semibold transition-colors ${thumbnailId === id ? "bg-black/70 text-white" : "bg-black/50 text-white hover:bg-black/70"}`}
                             title={thumbnailId === id ? "Titelbild (aktiv)" : "Als Titelbild festlegen"}
                           >
                             <Star className={`w-3.5 h-3.5 ${thumbnailId === id ? "fill-current" : ""}`} />
+                            Titelbild
                           </button>
                         </div>
                         <button

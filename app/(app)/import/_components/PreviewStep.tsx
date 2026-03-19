@@ -159,7 +159,7 @@ export default function PreviewStep({
             )}
             {assignment.mode === "existing" && (
               <select
-                className="ml-6 h-8 rounded-md border border-input bg-background px-3 text-sm w-72"
+                className="ml-6 h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 text-sm w-72 transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
                 value={assignment.existingSessionId ?? ""}
                 onChange={(e) =>
                   onAssignmentChange({ ...assignment, existingSessionId: e.target.value })
@@ -246,7 +246,7 @@ export default function PreviewStep({
             )}
             {assignment.mode === "existing" && (
               <select
-                className="ml-6 h-8 rounded-md border border-input bg-background px-3 text-sm w-72"
+                className="ml-6 h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 text-sm w-72 transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
                 value={assignment.existingSessionId ?? ""}
                 onChange={(e) =>
                   onAssignmentChange({ ...assignment, existingSessionId: e.target.value })

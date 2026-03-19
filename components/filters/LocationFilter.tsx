@@ -128,7 +128,7 @@ export function LocationFilter({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className={`gap-1 shrink-0 h-8 whitespace-nowrap ${lat ? "text-foreground" : "text-muted-foreground"}`}>
+          <Button variant="outline" size="sm" className={`gap-1 shrink-0 whitespace-nowrap ${lat ? "" : "text-muted-foreground"}`}>
             <MapPin className="h-3.5 w-3.5" />
             Umkreis
           </Button>
@@ -168,7 +168,7 @@ export function LocationFilter({
             <div>
               <label className="text-xs text-muted-foreground">Umkreis</label>
               <Select value={locRadius} onValueChange={handleRadiusChange}>
-                <SelectTrigger className="mt-1 h-8">
+                <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,7 +185,7 @@ export function LocationFilter({
               <div className="flex-1">
                 <label className="text-xs text-muted-foreground">Breite</label>
                 <Input
-                  className="mt-1 h-8"
+                  className="mt-1"
                   type="number"
                   step="any"
                   placeholder="51.0504"
@@ -197,7 +197,7 @@ export function LocationFilter({
               <div className="flex-1">
                 <label className="text-xs text-muted-foreground">Länge</label>
                 <Input
-                  className="mt-1 h-8"
+                  className="mt-1"
                   type="number"
                   step="any"
                   placeholder="13.7373"

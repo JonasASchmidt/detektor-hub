@@ -45,7 +45,7 @@ export function SearchFilter({
       placeholder={placeholder}
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      className={`h-8 ${className}`}
+      className={className}
     />
   );
 }

@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { ArrowUpDown, ChevronDown, ChevronUp, Pencil, Trash2, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
 type SortKey = "name" | "tags";
 type SortDir = "asc" | "desc";
 

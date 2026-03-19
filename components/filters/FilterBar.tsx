@@ -29,7 +29,7 @@ export function FilterBar({
             size="icon"
             onClick={onClearAll}
             title={clearLabel}
-            className="shrink-0 ml-auto bg-white"
+            className="shrink-0 ml-auto"
           >
             <X className="h-4 w-4" />
           </Button>

@@ -98,7 +98,7 @@ export function NavMain({
                     sidebarState === "expanded" && (
                       <CollapsibleTrigger asChild>
                         <button
-                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-[#2d2d2d] hover:text-white transition-colors duration-150"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors duration-150"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ChevronRight
@@ -106,7 +106,7 @@ export function NavMain({
                             style={{
                               transform: openState[item.title]
                                 ? "rotate(90deg)"
-                                : "rotate(0deg)",
+                                : "rotate(180deg)",
                             }}
                           />
                         </button>

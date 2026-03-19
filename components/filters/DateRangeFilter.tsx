@@ -45,7 +45,7 @@ export function DateRangeFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={`gap-1 shrink-0 h-8 whitespace-nowrap ${hasValue ? "text-foreground" : "text-muted-foreground"}`}>
+        <Button variant="outline" size="sm" className={`gap-1 shrink-0 whitespace-nowrap ${hasValue ? "" : "text-muted-foreground"}`}>
           <CalendarIcon className="h-3.5 w-3.5" />
           {label}
         </Button>

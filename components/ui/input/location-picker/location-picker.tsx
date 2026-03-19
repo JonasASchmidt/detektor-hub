@@ -69,7 +69,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
         <Input
           id="lat"
           type="number"
-          className="h-8 flex-1 min-w-[80px] text-sm shrink-0"
+          className="flex-1 min-w-[80px] text-sm shrink-0"
           placeholder="Latitude"
           onBlur={handleBlur}
           onChange={handleChange}
@@ -82,7 +82,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
         <Input
           id="lng"
           type="number"
-          className="h-8 flex-1 min-w-[80px] text-sm shrink-0"
+          className="flex-1 min-w-[80px] text-sm shrink-0"
           placeholder="Longitude"
           onBlur={handleBlur}
           onChange={handleChange}
@@ -96,7 +96,7 @@ export default function LocationPicker<TFieldValues extends FieldValues>({
           type="button"
           variant="outline"
           onClick={() => setShowModal(true)}
-          className="h-8 px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0 hover:border-zinc-400 transition-colors"
+          className="px-3 flex-1 min-w-[120px] whitespace-nowrap gap-2 shrink-0"
         >
           <MapPinCheckIcon size={16} />
           Dein Standort

@@ -127,6 +127,7 @@ export async function GET(req: Request) {
             id: f.comments[0].id,
             text: f.comments[0].text,
             createdAt: f.comments[0].createdAt,
+            userId: f.comments[0].user?.id ?? null,
             userName: f.comments[0].user?.name ?? null,
             userImage: f.comments[0].user?.image ?? null,
           }

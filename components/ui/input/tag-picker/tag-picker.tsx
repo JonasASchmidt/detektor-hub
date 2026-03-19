@@ -54,7 +54,7 @@ export default function TagPicker<TFieldValues extends FieldValues>({
                 type="button"
                 variant="outline"
                 size="sm"
-                className={`h-8 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
+                className={`h-9 w-auto gap-1.5 shrink-0 ${selectedIds.length > 0
                   ? "rounded-r-none border-r-0 text-foreground"
                   : "text-muted-foreground"
                   }`}
@@ -88,6 +88,10 @@ export default function TagPicker<TFieldValues extends FieldValues>({
                           className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""
                             }`}
                         >
+                          <span
+                            className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: tag.color ?? "#888" }}
+                          />
                           <span className="flex-1 text-left">{tag.name}</span>
                           {active && (
                             <X className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -111,14 +115,14 @@ export default function TagPicker<TFieldValues extends FieldValues>({
               variant="outline"
               size="sm"
               onClick={() => field.onChange([])}
-              className="h-8 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
+              className="h-9 px-2 rounded-l-none shrink-0 text-muted-foreground hover:bg-destructive hover:text-white transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
           )}
         </div>
         {selectedTags.map((tag) => (
-          <TagComponent key={tag.id} tag={tag} onClose={() => toggle(tag.id)} />
+          <TagComponent key={tag.id} tag={tag} onClose={() => toggle(tag.id)} large />
         ))}
       </div>
     </div>

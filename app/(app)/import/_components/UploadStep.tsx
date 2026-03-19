@@ -108,7 +108,7 @@ export default function UploadStep({ onParsed }: Props) {
           "w-full border-2 border-dashed rounded-xl p-12 flex flex-col items-center gap-4 cursor-pointer transition-colors",
           dragging
             ? "border-foreground bg-zinc-100"
-            : "border-border hover:border-zinc-400 hover:bg-zinc-50"
+            : "border-border hover:border-foreground hover:bg-zinc-50"
         )}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}

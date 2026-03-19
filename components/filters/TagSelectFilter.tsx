@@ -44,7 +44,7 @@ export function TagSelectFilter({
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 shrink-0 h-8 ${selectedIds.length > 0 ? "text-foreground" : "text-muted-foreground"}`}
+          className={`gap-1.5 shrink-0 ${selectedIds.length > 0 ? "" : "text-muted-foreground"}`}
         >
           <Tag className="h-3.5 w-3.5" />
           {label}

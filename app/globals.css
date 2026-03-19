@@ -4,6 +4,21 @@
 
 .bg-parchment { background-color: #F6F6F2; }
 
+/* Skeleton shimmer — 45° white gradient sweep */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,0.5) 50%,
+    transparent 70%
+  );
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

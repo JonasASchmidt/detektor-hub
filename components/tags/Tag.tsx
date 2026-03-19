@@ -21,7 +21,7 @@ export default function TagComponent({ onClick, onClose, tag, className, compact
   const { id } = tag;
 
   const sizeClass = large
-    ? `h-8 pl-3 ${onClose ? "pr-2" : "pr-3"} gap-1.5 text-[12px]`
+    ? `h-9 pl-3 ${onClose ? "pr-2" : "pr-3"} gap-1.5 text-[12px]`
     : `pl-2 ${onClose ? "pr-1" : "pr-2"} ${compact ? "py-px" : "py-0.5"} gap-1 text-[11px]`;
 
   return (

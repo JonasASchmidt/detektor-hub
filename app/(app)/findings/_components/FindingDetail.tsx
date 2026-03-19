@@ -21,6 +21,7 @@ import {
   X,
   MapPin,
 } from "lucide-react";
+import VoteButton from "./VoteButton";
 import {
   Tooltip,
   TooltipContent,
@@ -35,6 +36,8 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/initials";
+import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
+import RelatedFindingsSection from "./RelatedFindingsSection";
 
 const FindingDetailMap = dynamic(() => import("./FindingDetailMap"), {
   ssr: false,
@@ -54,9 +57,21 @@ type Comment = FindingWithRelations["comments"][number];
 
 interface Props {
   finding: FindingWithRelations;
+  votesCount?: number;
+  userVoted?: boolean;
+  commentVoteCountMap?: Record<string, number>;
+  commentUserVotedSet?: Set<string>;
+  relatedFindings?: RelatedFindingSummary[];
 }
 
-export default function FindingDetail({ finding }: Props) {
+export default function FindingDetail({
+  finding,
+  votesCount = 0,
+  userVoted = false,
+  commentVoteCountMap = {},
+  commentUserVotedSet = new Set(),
+  relatedFindings = [],
+}: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const [comments, setComments] = useState<Comment[]>(finding.comments ?? []);
@@ -108,11 +123,11 @@ export default function FindingDetail({ finding }: Props) {
     finding.weight ||
     finding.diameter ||
     finding.dating ||
-    finding.dating_from ||
-    finding.dating_to ||
+    finding.datingFrom ||
+    finding.datingTo ||
     finding.references ||
-    finding.description_front ||
-    finding.description_back;
+    finding.descriptionFront ||
+    finding.descriptionBack;
 
   const sortedComments =
     commentSort === "newest" ? [...comments] : [...comments].reverse();
@@ -214,6 +229,17 @@ export default function FindingDetail({ finding }: Props) {
           >
             <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
           </Button>
+          {/* Vote button — visible for all users on completed findings */}
+          {finding.status === "COMPLETED" && (
+            <VoteButton
+              targetType="FINDING"
+              targetId={finding.id}
+              initialVotesCount={votesCount}
+              initialUserVoted={userVoted}
+              isOwner={isOwner}
+              variant="detail"
+            />
+          )}
           {isOwner && status === "DRAFT" && (
             <Button
               variant="ghost"
@@ -378,28 +404,28 @@ export default function FindingDetail({ finding }: Props) {
             </div>
           )}
 
-          {(finding.dating || finding.dating_from || finding.dating_to) && (
+          {(finding.dating || finding.datingFrom || finding.datingTo) && (
             <div className="text-sm space-y-0.5">
               {finding.dating && <p>{finding.dating}</p>}
-              {(finding.dating_from || finding.dating_to) && (
+              {(finding.datingFrom || finding.datingTo) && (
                 <p className="text-muted-foreground">
-                  {finding.dating_from ?? "?"} – {finding.dating_to ?? "?"}
+                  {finding.datingFrom ?? "?"} – {finding.datingTo ?? "?"}
                 </p>
               )}
             </div>
           )}
 
-          {finding.description_front && (
+          {finding.descriptionFront && (
             <div className="text-sm space-y-0.5">
               <p className="font-medium text-muted-foreground">Vorderseite</p>
-              <p>{finding.description_front}</p>
+              <p>{finding.descriptionFront}</p>
             </div>
           )}
 
-          {finding.description_back && (
+          {finding.descriptionBack && (
             <div className="text-sm space-y-0.5">
               <p className="font-medium text-muted-foreground">Rückseite</p>
-              <p>{finding.description_back}</p>
+              <p>{finding.descriptionBack}</p>
             </div>
           )}
 
@@ -549,6 +575,13 @@ export default function FindingDetail({ finding }: Props) {
         </div>
       )}
 
+      {/* Related findings */}
+      <RelatedFindingsSection
+        findingId={finding.id}
+        initialRelated={relatedFindings}
+        isOwner={isOwner}
+      />
+
       {/* Comments */}
       <div id="comments" className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
@@ -603,6 +636,16 @@ export default function FindingDetail({ finding }: Props) {
                       {format(new Date(comment.createdAt), "d. MMM yyyy", {
                         locale: de,
                       })}
+                    </span>
+                    <span className="ml-auto">
+                      <VoteButton
+                        targetType="COMMENT"
+                        targetId={comment.id}
+                        initialVotesCount={commentVoteCountMap[comment.id] ?? 0}
+                        initialUserVoted={commentUserVotedSet.has(comment.id)}
+                        isOwner={comment.userId === session?.user?.id}
+                        variant="comment"
+                      />
                     </span>
                   </div>
                   <p className="text-sm text-foreground/80 whitespace-pre-line">

@@ -28,6 +28,25 @@ export default async function EditFindingPage({ params }: Props) {
   // Only the owner may edit — return 404 to avoid leaking existence
   if (!session?.user?.id || finding.userId !== session.user.id) notFound();
 
+  const initialData: FindingFormData = {
+    name: finding.name ?? "",
+    location: { lat: finding.latitude ?? 51.0504, lng: finding.longitude ?? 13.7373 },
+    description: finding.description ?? undefined,
+    foundAt: finding.foundAt,
+    tags: finding.tags.map((t) => t.id),
+    images: finding.images.map((i) => i.id),
+    thumbnailId: finding.thumbnailId ?? undefined,
+    depth: finding.depth ?? undefined,
+    weight: finding.weight ?? undefined,
+    diameter: finding.diameter ?? undefined,
+    dating: finding.dating ?? undefined,
+    datingFrom: finding.datingFrom ?? undefined,
+    datingTo: finding.datingTo ?? undefined,
+    references: finding.references ?? undefined,
+    locationPublic: finding.locationPublic,
+  };
+
+
   return (
     <FindingEditInline
       finding={finding}

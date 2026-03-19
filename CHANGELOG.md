@@ -5,6 +5,59 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-19] — `feature/related-findings`
+
+### Features
+
+- **Verlinkung verwandter Funde** — Funde können miteinander verknüpft werden (z. B. Fragmente eines Gegenstands oder zusammengehörige Objekte); die Verknüpfung ist symmetrisch und für alle sichtbar, kann aber nur vom Eigentümer des Fundes verwaltet werden
+- **`POST /DELETE /api/findings/[id]/related`** — verknüpft oder trennt zwei Funde; Eigentümerprüfung; Ziel muss COMPLETED oder eigener Fund sein; verhindert Selbstverlinkung
+- **`RelatedFindingsSection` Komponente** (`app/(app)/findings/_components/RelatedFindingsSection.tsx`) — zeigt verknüpfte Funde als kompakte Karten mit Thumbnail, Name, Datum und Finder-Link; Eigentümer können Verknüpfungen per X-Button entfernen und neue über eine Live-Suche hinzufügen; Abschnitt wird bei Nicht-Eigentümern ausgeblendet wenn keine Verknüpfungen vorhanden
+- **Live-Suche im Picker** — debounced Suche (300 ms) gegen `GET /api/findings?search=…&status=COMPLETED`; bereits verknüpfte Funde und der Fund selbst werden ausgefiltert
+- **GET `/api/findings/[id]`** — gibt jetzt `relatedTo` und `relatedFrom` mit Thumbnail, Name, Datum und User zurück
+
+### Refactors
+
+- **Prisma-Felder in `Finding` auf camelCase umbenannt** — `description_front` → `descriptionFront`, `description_back` → `descriptionBack`, `dating_from` → `datingFrom`, `dating_to` → `datingTo`; DB-Spalten werden per Migration umbenannt (kein `@map` nötig); alle betroffenen API-Routen, Formulare, Komponenten und Schemas aktualisiert
+- **Self-Relation-Felder umbenannt** — `Finding_A` / `Finding_B` → `relatedTo` / `relatedFrom` für bessere Lesbarkeit; keine Migration nötig (Prisma-Layer-Umbenennung)
+- **Neuer Typ `RelatedFindingSummary`** (`types/RelatedFindingSummary.ts`) — definiert die kompakte Datendarstellung für verknüpfte Funde
+
+---
+
+## [2026-03-19] — `feature/voting`
+
+### Features
+
+- **Vote/Like system** — generic polymorphic `Vote` model (`userId`, `targetType`, `targetId`) covering any entity type; currently used for Findings; unique constraint prevents double-voting
+- **`POST /api/votes`** — toggle vote for any entity (`targetType: "FINDING"`, ...); validates finding exists and is COMPLETED; blocks self-voting; returns `{ voted, votesCount }`
+- **Vote button on `FindingCard`** — heart icon with count badge shown on community feed for non-owners; optimistic UI with rollback on error; red fill when voted
+- **Vote count + `userVoted` in community findings API** — two extra queries per page (groupBy for counts, findMany for user's votes); no N+1
+- **"Meiste Votes" sort** in community feed — when `sort=votes`, all matching findings are fetched, sorted by vote count in memory, then paginated; added to sort dropdown
+- **`GET /api/community/top-finding?period=week|year`** — returns the COMPLETED finding with the most votes in the last 7 days (week) or since Jan 1 (year); falls back to all-time top if no votes in window; includes `votesCount`, `userVoted`, `isFallback`
+- **"Fund der Woche" & "Fund des Jahres"** — featured cards at the top of the community page, fetched client-side on mount; hidden when no votes exist yet; "alle Zeit" label shown on fallback
+
+---
+
+## [2026-03-18] — `feature/data-import`
+
+### Features
+
+- **Import wizard at `/import`** (`app/(app)/import/`) — 3-step wizard (Upload → Vorschau → Fertig) for importing finds and sessions from external sources; accessible via sidebar under "Importieren"
+- **GPX import** (`parsers/parseGpx.ts`, `@tmcw/togeojson`) — parses `<trk>` elements into FieldSessions (with PostGIS LineString route) and `<wpt>` elements into Findings; handles both LineString and MultiLineString track geometries; supports GoTerrain, Garmin, and generic GPX exports
+- **Geotagged photo import** (`parsers/parseImages.ts`, `exifr`) — extracts GPS coordinates and `DateTimeOriginal` from JPEG/PNG/HEIC/HEIF EXIF data; HEIC converted to JPEG preview via `heic2any` (dynamic import); images without GPS are skipped with count reported
+- **Session assignment step** — always prompts whether to create a new session from the GPX track (name editable), attach to an existing session, or import with no session
+- **Duplicate detection** — `POST /api/import/findings` checks for existing findings at the exact same lat/lng per user; duplicate indices returned in response and surfaced in the result step
+- **`POST /api/import/sessions`** — creates a FieldSession with optional PostGIS route geometry from GeoJSON LineString coordinates (mirrors the existing `PATCH /api/field-sessions/[id]/route` pattern)
+- **`POST /api/import/findings`** — batch creates up to 500 findings; runs `lookupAdminUnits()` per finding; connects uploaded Cloudinary image if `imageId` provided; revalidates `/findings` and `/community`
+
+### Dependencies added
+
+- `@tmcw/togeojson` — GPX/KML → GeoJSON conversion
+- `exifr` — EXIF GPS + date extraction (supports HEIC natively)
+- `heic2any` — in-browser HEIC → JPEG conversion for previews
+- `papaparse` — CSV parsing (used in upcoming Phase 2 CSV import)
+
+---
+
 ## [2026-03-18] — `main` (admin units)
 
 ### Features

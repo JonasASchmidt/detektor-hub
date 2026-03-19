@@ -11,23 +11,24 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String    @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
-  role          String    @default("USER")
-  accounts      Account[]
-  comments      Comment[]
-  findings      Finding[]
-  fieldSessions FieldSession[]
-  zones         Zone[]
-  images        Image[]
-  sessions      Session[]
+  id                    String         @id @default(uuid())
+  name                  String?
+  email                 String         @unique
+  password              String?
+  emailVerified         DateTime?
+  image                 String?
+  role                  String         @default("USER")
+  accounts              Account[]
+  comments              Comment[]
+  findings              Finding[]
+  fieldSessions         FieldSession[]
+  zones                 Zone[]
+  images                Image[]
+  sessions              Session[]
+  votes                 Vote[]
   notificationsReceived Notification[] @relation("NotificationRecipient")
   notificationsSent     Notification[] @relation("NotificationActor")
-  activityLogs  ActivityLog[]
+  activityLogs          ActivityLog[]
 }
 
 model Account {
@@ -82,12 +83,12 @@ model Finding {
   depth             Float?
   weight            Float?
   diameter          Float?
-  description       String?
-  description_front String?  @map("descriptionFront")
-  description_back  String?  @map("descriptionBack")
-  dating            String?
-  dating_from       Int?     @map("datingFrom")
-  dating_to         Int?     @map("datingTo")
+  description      String?
+  descriptionFront String?
+  descriptionBack  String?
+  dating           String?
+  datingFrom       Int?
+  datingTo         Int?
   references        String?
   foundAt           DateTime      @default(now())
   createdAt         DateTime      @default(now())
@@ -107,8 +108,8 @@ model Finding {
   fieldSession      FieldSession? @relation(fields: [fieldSessionId], references: [id])
   images            Image[]
   tags              Tag[]         @relation("FindingTags")
-  Finding_A         Finding[]     @relation("RelatedFindings")
-  Finding_B         Finding[]     @relation("RelatedFindings")
+  relatedTo         Finding[]     @relation("RelatedFindings")
+  relatedFrom       Finding[]     @relation("RelatedFindings")
 }
 
 model Image {
@@ -143,19 +144,19 @@ model Detector {
 }
 
 model Zone {
-  id          String    @id @default(uuid())
+  id          String                                 @id @default(uuid())
   name        String
   description String?
   userId      String
   geometry    Unsupported("geometry(Polygon,4326)")?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime                               @default(now())
+  updatedAt   DateTime                               @default(now()) @updatedAt
+  user        User                                   @relation(fields: [userId], references: [id])
   sessions    FieldSession[]
 }
 
 model FieldSession {
-  id           String    @id @default(uuid())
+  id           String                                    @id @default(uuid())
   name         String
   description  String?
   namingScheme String?
@@ -164,28 +165,28 @@ model FieldSession {
   zoneId       String?
   detectorId   String?
   userId       String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
+  createdAt    DateTime                                  @default(now())
+  updatedAt    DateTime                                  @default(now()) @updatedAt
   route        Unsupported("geometry(LineString,4326)")?
-  zone         Zone?     @relation(fields: [zoneId], references: [id])
-  detector     Detector? @relation(fields: [detectorId], references: [id])
-  user         User      @relation(fields: [userId], references: [id])
+  zone         Zone?                                     @relation(fields: [zoneId], references: [id])
+  detector     Detector?                                 @relation(fields: [detectorId], references: [id])
+  user         User                                      @relation(fields: [userId], references: [id])
   findings     Finding[]
 }
 
 model Comment {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   findingId String
   parentId  String?
   text      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  
-  finding   Finding   @relation(fields: [findingId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  children  Comment[] @relation("CommentReplies")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  finding     Finding   @relation(fields: [findingId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  parent      Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  children    Comment[] @relation("CommentReplies")
   attachments Image[]
 }
 
@@ -198,9 +199,9 @@ model Notification {
   commentId   String?
   isRead      Boolean          @default(false)
   createdAt   DateTime         @default(now())
-  
-  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
-  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+
+  recipient User  @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  actor     User? @relation("NotificationActor", fields: [actorId], references: [id])
 }
 
 // Administrative unit tables are managed by scripts/create_administrative_units_table.py
@@ -210,8 +211,8 @@ model AdministrativeUnitsCountry {
   name       String
   geometry   Unsupported("geometry")
 
-  @@ignore
   @@map("administrative_units_country")
+  @@ignore
 }
 
 model AdministrativeUnitsFederalStates {
@@ -220,8 +221,8 @@ model AdministrativeUnitsFederalStates {
   name             String
   geometry         Unsupported("geometry")
 
-  @@ignore
   @@map("administrative_units_federal_states")
+  @@ignore
 }
 
 model AdministrativeUnitsCounties {
@@ -230,8 +231,8 @@ model AdministrativeUnitsCounties {
   name             String
   geometry         Unsupported("geometry")
 
-  @@ignore
   @@map("administrative_units_counties")
+  @@ignore
 }
 
 model AdministrativeUnitsMunicipalities {
@@ -240,11 +241,10 @@ model AdministrativeUnitsMunicipalities {
   name            String
   geometry        Unsupported("geometry")
 
-  @@ignore
   @@map("administrative_units_municipalities")
+  @@ignore
 }
 
-// Run: npx prisma migrate dev --name add_activity_log
 model ActivityLog {
   id            String   @id @default(uuid())
   userId        String
@@ -256,6 +256,19 @@ model ActivityLog {
   metadata      Json?
   createdAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id])
+}
+
+// Generic polymorphic vote — targetType: "FINDING" | "COMMENT" | ...
+model Vote {
+  id         String   @id @default(uuid())
+  userId     String
+  targetType String // e.g. "FINDING"
+  targetId   String // ID of the voted entity
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([targetType, targetId])
 }
 
 enum NotificationType {

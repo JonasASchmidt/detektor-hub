@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   const tagIds = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
-  const orderBy = searchParams.get("orderBy") || "createdAt";
+  const orderByParam = searchParams.get("orderBy") || "createdAt";
   const order = searchParams.get("order") || "desc";
 
   const where = {
@@ -32,25 +32,77 @@ export async function GET(req: Request) {
     ],
   };
 
+  const includeShape = {
+    images: true,
+    tags: true,
+    user: { select: { id: true, name: true, image: true } },
+    comments: {
+      where: { parentId: null },
+      orderBy: { createdAt: "desc" as const },
+      take: 1,
+      include: { user: { select: { name: true, image: true } } },
+    },
+    _count: { select: { comments: true } },
+  } as const;
+
   try {
-    const findings = await prisma.finding.findMany({
-      where,
-      include: {
-        images: true,
-        tags: true,
-        user: { select: { id: true, name: true, image: true } },
-        comments: {
-          where: { parentId: null },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          include: { user: { select: { id: true, name: true, image: true } } },
-        },
-        _count: { select: { comments: true } },
-      },
-      orderBy: { [orderBy]: order },
-      skip,
-      take: pageSize,
+    let findings: Awaited<ReturnType<typeof prisma.finding.findMany<{ include: typeof includeShape }>>>;
+    let total: number;
+
+    if (orderByParam === "votes") {
+      // For vote-sorted results: fetch all matching findings, sort by vote count in memory
+      const allFindings = await prisma.finding.findMany({
+        where,
+        include: includeShape,
+      });
+
+      const findingIds = allFindings.map((f) => f.id);
+      const voteCounts = await prisma.vote.groupBy({
+        by: ["targetId"],
+        where: { targetType: "FINDING", targetId: { in: findingIds } },
+        _count: { targetId: true },
+      });
+      const voteCountMap = Object.fromEntries(
+        voteCounts.map((v) => [v.targetId, v._count.targetId])
+      );
+
+      allFindings.sort(
+        (a, b) => (voteCountMap[b.id] ?? 0) - (voteCountMap[a.id] ?? 0)
+      );
+
+      total = allFindings.length;
+      findings = allFindings.slice(skip, skip + pageSize);
+    } else {
+      const prismaOrderBy = { [orderByParam]: order };
+      [findings, total] = await Promise.all([
+        prisma.finding.findMany({
+          where,
+          include: includeShape,
+          orderBy: prismaOrderBy,
+          skip,
+          take: pageSize,
+        }),
+        prisma.finding.count({ where }),
+      ]);
+    }
+
+    // Fetch vote counts for returned findings in one query
+    const pageIds = findings.map((f) => f.id);
+    const voteCounts = await prisma.vote.groupBy({
+      by: ["targetId"],
+      where: { targetType: "FINDING", targetId: { in: pageIds } },
+      _count: { targetId: true },
     });
+    const voteCountMap = Object.fromEntries(
+      voteCounts.map((v) => [v.targetId, v._count.targetId])
+    );
+
+    // Fetch which findings the current user has voted for
+    const userVotes = await prisma.vote.findMany({
+      where: { targetType: "FINDING", targetId: { in: pageIds }, userId: session.user.id },
+      select: { targetId: true },
+    });
+    const userVotedSet = new Set(userVotes.map((v) => v.targetId));
 
     const result = findings.map((f) => ({
       type: "finding" as const,
@@ -65,7 +117,10 @@ export async function GET(req: Request) {
       tags: f.tags,
       status: f.status,
       reported: f.reported,
+      userId: f.userId,
       commentsCount: f._count.comments,
+      votesCount: voteCountMap[f.id] ?? 0,
+      userVoted: userVotedSet.has(f.id),
       user: { id: f.user?.id ?? null, name: f.user?.name ?? null, image: f.user?.image ?? null },
       latestComment: f.comments[0]
         ? {
@@ -78,8 +133,6 @@ export async function GET(req: Request) {
           }
         : null,
     }));
-
-    const total = await prisma.finding.count({ where });
 
     return NextResponse.json(
       { findings: result, total },

@@ -11,21 +11,30 @@ import { MapPin, MessageSquare, Pencil } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/initials";
 import FindingLocationDialog from "./FindingLocationDialog";
+import VoteButton from "./VoteButton";
 
 interface FindingCardProps {
   finding: FindingWithRelations;
   hideTags?: boolean;
+  // Vote data — supplied by community feed; absent on private findings list
+  votesCount?: number;
+  userVoted?: boolean;
 }
 
 export default function FindingCard({
   finding,
   hideTags = false,
+  votesCount: initialVotesCount,
+  userVoted: initialUserVoted = false,
 }: FindingCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const isOwner = !!session?.user?.id && session.user.id === finding.userId;
   const [showMap, setShowMap] = useState(false);
   const [county, setCounty] = useState<string | null>(null);
+
+  // Vote data — only present when supplied by the community feed
+  const hasVoting = initialVotesCount !== undefined;
 
   const formattedDate = format(new Date(finding.createdAt), "d.M.yy", {
     locale: de,
@@ -34,17 +43,6 @@ export default function FindingCard({
     finding.images?.find((img) => img.id === finding.thumbnailId) ||
     finding.images?.[0];
   const hasLocation = finding.latitude != null && finding.longitude != null;
-
-  /* FOR NOW REMOVED, I GUESS IT WOULD BE ENOUGH TO STORE ADMIN UNITS IN THE
-   * FINDING, SO FETCH IS ONLY NEEDED ONCE.
-   */
-  /*useEffect(() => {
-    if (!hasLocation) return;
-    fetch(`/api/geo/admin-units?lat=${finding.latitude}&lon=${finding.longitude}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data?.county) setCounty(data.county); })
-      .catch(() => {});
-  }, [finding.latitude, finding.longitude, hasLocation]);*/
 
   const handleCardClick = () => {
     router.push(`findings/${finding.id}`);
@@ -169,6 +167,17 @@ export default function FindingCard({
 
         {/* Far right: action buttons */}
         <div className="flex flex-col gap-2 shrink-0 justify-start">
+          {/* Vote button — shown on community feed */}
+          {hasVoting && (
+            <VoteButton
+              targetType="FINDING"
+              targetId={finding.id}
+              initialVotesCount={initialVotesCount ?? 0}
+              initialUserVoted={initialUserVoted ?? false}
+              isOwner={isOwner}
+              variant="card"
+            />
+          )}
           <button
             type="button"
             onClick={(e) => {

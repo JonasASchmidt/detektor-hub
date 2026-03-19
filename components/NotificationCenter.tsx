@@ -103,7 +103,7 @@ export function NotificationCenter() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-0 mt-2 ml-1 shadow-2xl border-black/[0.1] rounded-2xl overflow-hidden" align="start">
+      <PopoverContent className="w-[380px] p-0 -mt-[12px] -ml-[8px] shadow-2xl border-black/[0.1] rounded-2xl overflow-hidden" align="start">
         <div className="bg-[#fcfcfc] border-b border-black/[0.05] p-4 flex items-center justify-between">
           <h3 className="font-bold text-lg">Mitteilungen</h3>
           {notifications.length > 0 && (

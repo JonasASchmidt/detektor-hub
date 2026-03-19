@@ -83,11 +83,11 @@ model Finding {
   weight            Float?
   diameter          Float?
   description       String?
-  description_front String?
-  description_back  String?
+  description_front String?  @map("descriptionFront")
+  description_back  String?  @map("descriptionBack")
   dating            String?
-  dating_from       Int?
-  dating_to         Int?
+  dating_from       Int?     @map("datingFrom")
+  dating_to         Int?     @map("datingTo")
   references        String?
   foundAt           DateTime      @default(now())
   createdAt         DateTime      @default(now())

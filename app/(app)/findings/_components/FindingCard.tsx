@@ -11,6 +11,7 @@ import { MapPin, MessageSquare, Pencil } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/initials";
 import FindingLocationDialog from "./FindingLocationDialog";
+import TagComponent from "@/components/tags/Tag";
 
 interface FindingCardProps {
   finding: FindingWithRelations;
@@ -120,17 +121,14 @@ export default function FindingCard({
           {!hideTags && finding.tags && finding.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-auto pt-3">
               {finding.tags.map((tag) => (
-                <span
+                <TagComponent
                   key={tag.id}
+                  tag={tag}
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(`/findings?tags=${tag.id}`);
                   }}
-                  className="inline-flex items-center gap-1 pl-2 pr-2 py-0.5 rounded uppercase text-[11px] font-semibold tracking-wide text-white cursor-pointer hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: tag.color }}
-                >
-                  {tag.name}
-                </span>
+                />
               ))}
             </div>
           )}

@@ -9,6 +9,9 @@ import { TagCategoryWithTags } from "@/types/TagCategoryWithTags";
 import TagComponent from "@/components/tags/Tag";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -298,98 +301,53 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
           <h2 className="text-xl font-bold">Details</h2>
 
           {/* Measurements */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-muted-foreground">Tiefe</span>
-              <input
-                type="number"
-                placeholder="—"
-                className={`w-14 text-sm ${INLINE}`}
-                {...register("depth")}
-              />
-              <span>cm</span>
-            </span>
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-muted-foreground">Gewicht</span>
-              <input
-                type="number"
-                placeholder="—"
-                className={`w-14 text-sm ${INLINE}`}
-                {...register("weight")}
-              />
-              <span>g</span>
-            </span>
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-muted-foreground">Durchmesser</span>
-              <input
-                type="number"
-                placeholder="—"
-                className={`w-14 text-sm ${INLINE}`}
-                {...register("diameter")}
-              />
-              <span>cm</span>
-            </span>
+          <div className="flex flex-row gap-4 flex-wrap">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+              <Label htmlFor="depth">Fundtiefe [cm]</Label>
+              <Input id="depth" type="number" placeholder="Tiefe" {...register("depth")} />
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+              <Label htmlFor="weight">Gewicht [g]</Label>
+              <Input id="weight" type="number" placeholder="Gewicht" {...register("weight")} />
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+              <Label htmlFor="diameter">Durchmesser [cm]</Label>
+              <Input id="diameter" type="number" placeholder="Durchmesser" {...register("diameter")} />
+            </div>
           </div>
 
           {/* Dating */}
-          <div className="text-sm space-y-2">
-            <input
-              type="text"
-              placeholder="Datierung (z. B. Mittelalter, ca. 1200–1400)"
-              className={`text-sm ${INLINE}`}
-              {...register("dating")}
-            />
-            <div className="flex items-baseline gap-2 text-muted-foreground">
-              <input
-                type="number"
-                placeholder="Jahr von"
-                className={`w-24 text-sm text-muted-foreground ${INLINE}`}
-                {...register("dating_from")}
-              />
-              <span>–</span>
-              <input
-                type="number"
-                placeholder="Jahr bis"
-                className={`w-24 text-sm text-muted-foreground ${INLINE}`}
-                {...register("dating_to")}
-              />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="dating">Datierung (Freitext)</Label>
+            <Input id="dating" type="text" placeholder="z. B. Mittelalter, ca. 1200–1400" {...register("dating")} />
+          </div>
+          <div className="flex flex-row gap-4 flex-wrap">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+              <Label htmlFor="dating_from">Datierung ab</Label>
+              <Input id="dating_from" type="number" placeholder="Jahr von" {...register("dating_from")} />
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+              <Label htmlFor="dating_to">Datierung bis</Label>
+              <Input id="dating_to" type="number" placeholder="Jahr bis" {...register("dating_to")} />
             </div>
           </div>
 
           {/* Vorderseite */}
-          <div className="text-sm space-y-0.5">
-            <p className="font-medium text-muted-foreground">Vorderseite</p>
-            <textarea
-              placeholder="Beschreibung Vorderseite…"
-              rows={2}
-              className={`text-sm resize-none ${INLINE}`}
-              {...register("description_front")}
-              onInput={(e) => autoResize(e.currentTarget)}
-            />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="description_front">Vorderseite</Label>
+            <Textarea id="description_front" placeholder="Beschreibung Vorderseite…" rows={3} {...register("description_front")} />
           </div>
 
           {/* Rückseite */}
-          <div className="text-sm space-y-0.5">
-            <p className="font-medium text-muted-foreground">Rückseite</p>
-            <textarea
-              placeholder="Beschreibung Rückseite…"
-              rows={2}
-              className={`text-sm resize-none ${INLINE}`}
-              {...register("description_back")}
-              onInput={(e) => autoResize(e.currentTarget)}
-            />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="description_back">Rückseite</Label>
+            <Textarea id="description_back" placeholder="Beschreibung Rückseite…" rows={3} {...register("description_back")} />
           </div>
 
           {/* Referenzen */}
-          <div className="text-sm space-y-0.5">
-            <p className="font-medium text-muted-foreground">Referenzen</p>
-            <textarea
-              placeholder="Referenzen…"
-              rows={2}
-              className={`text-sm resize-none whitespace-pre-line ${INLINE}`}
-              {...register("references")}
-              onInput={(e) => autoResize(e.currentTarget)}
-            />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="references">Referenzen</Label>
+            <Textarea id="references" placeholder="Auflistung der Referenzen" rows={3} {...register("references")} />
           </div>
         </Card>
 

@@ -14,11 +14,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/initials";
 import { MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface LatestComment {
   id: string;
   text: string;
   createdAt: string;
+  userId: string | null;
   userName: string | null;
   userImage: string | null;
 }
@@ -49,7 +51,17 @@ function CommentStrip({ findingId, comment }: { findingId: string; comment: Late
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0 flex items-baseline gap-2">
-        <span className="text-[12px] font-semibold text-foreground/80 shrink-0">{comment.userName ?? "Anonym"}</span>
+        {comment.userId ? (
+          <Link
+            href={`/profile/${comment.userId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-[12px] font-semibold text-foreground/80 shrink-0 hover:underline"
+          >
+            {comment.userName ?? "Anonym"}
+          </Link>
+        ) : (
+          <span className="text-[12px] font-semibold text-foreground/80 shrink-0">{comment.userName ?? "Anonym"}</span>
+        )}
         <p className="text-[12px] text-muted-foreground truncate">„{comment.text}"</p>
         <span className="text-[11px] text-muted-foreground/60 shrink-0">{formattedDate}</span>
       </div>

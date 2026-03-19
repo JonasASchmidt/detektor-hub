@@ -17,6 +17,7 @@ import {
 import { FindingStatus } from "@prisma/client";
 
 import SessionDetailMap from "./_components/SessionDetailMap";
+import TagComponent from "@/components/tags/Tag";
 
 export default async function SessionDetailPage({
   params,
@@ -42,7 +43,7 @@ export default async function SessionDetailPage({
             longitude: true,
             foundAt: true,
             status: true,
-            tags: { select: { id: true, name: true, color: true } },
+            tags: { select: { id: true, name: true, color: true, icon: true } },
           },
           orderBy: { foundAt: "asc" },
         },
@@ -156,13 +157,7 @@ export default async function SessionDetailPage({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {f.tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded text-white uppercase tracking-wide"
-                      style={{ backgroundColor: tag.color }}
-                    >
-                      {tag.name}
-                    </span>
+                    <TagComponent key={tag.id} tag={tag} compact />
                   ))}
                   <Badge variant={f.status === FindingStatus.COMPLETED ? "default" : "secondary"} className="text-[10px]">
                     {f.status === FindingStatus.COMPLETED ? "Fertig" : "Entwurf"}

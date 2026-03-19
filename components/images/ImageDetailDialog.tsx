@@ -8,7 +8,10 @@ import { ChevronLeft, ChevronRight, ExternalLink, Tag as TagIcon, Trash2, X } fr
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import DynamicIcon from "../ui/input/dynamic-icon";
+import TagComponent from "../tags/Tag";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { toast } from "sonner";
 
@@ -98,7 +101,8 @@ export default function ImageDetailDialog({ image, onClose, onPrev, onNext, hasP
 
   return (
     <Dialog open={!!image} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[90vw] w-full max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-row">
+      <DialogContent className="max-w-[90vw] w-full max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-row" aria-describedby={undefined}>
+        <VisuallyHidden.Root><DialogTitle>{image.title || "Bilddetails"}</DialogTitle></VisuallyHidden.Root>
 
         {/* Left: image */}
         <div className="relative flex-1 min-w-0 flex items-center justify-center bg-foreground/5">
@@ -172,7 +176,7 @@ export default function ImageDetailDialog({ image, onClose, onPrev, onNext, hasP
                                 onClick={() => toggleTag(tag.id)}
                                 className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""}`}
                               >
-                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color ?? "#888" }} />
+                                <span className="shrink-0" style={{ color: tag.color ?? "#888" }}><DynamicIcon icon={tag.icon} size={12} /></span>
                                 <span className="flex-1 text-left">{tag.name}</span>
                                 {active && <X className="h-3 w-3 text-muted-foreground shrink-0" />}
                               </button>
@@ -187,16 +191,7 @@ export default function ImageDetailDialog({ image, onClose, onPrev, onNext, hasP
                   </PopoverContent>
                 </Popover>
                 {selectedTags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="inline-flex items-center gap-1 h-8 px-2.5 rounded text-xs font-medium text-white"
-                    style={{ backgroundColor: tag.color ?? "#888" }}
-                  >
-                    {tag.name}
-                    <button type="button" onClick={() => toggleTag(tag.id)} className="hover:opacity-70">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
+                  <TagComponent key={tag.id} tag={tag} onClose={() => toggleTag(tag.id)} />
                 ))}
               </div>
             </div>

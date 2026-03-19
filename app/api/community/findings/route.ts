@@ -38,12 +38,12 @@ export async function GET(req: Request) {
       include: {
         images: true,
         tags: true,
-        user: { select: { name: true, image: true } },
+        user: { select: { id: true, name: true, image: true } },
         comments: {
           where: { parentId: null },
           orderBy: { createdAt: "desc" },
           take: 1,
-          include: { user: { select: { name: true, image: true } } },
+          include: { user: { select: { id: true, name: true, image: true } } },
         },
         _count: { select: { comments: true } },
       },
@@ -66,12 +66,13 @@ export async function GET(req: Request) {
       status: f.status,
       reported: f.reported,
       commentsCount: f._count.comments,
-      user: { name: f.user?.name ?? null, image: f.user?.image ?? null },
+      user: { id: f.user?.id ?? null, name: f.user?.name ?? null, image: f.user?.image ?? null },
       latestComment: f.comments[0]
         ? {
             id: f.comments[0].id,
             text: f.comments[0].text,
             createdAt: f.comments[0].createdAt,
+            userId: f.comments[0].user?.id ?? null,
             userName: f.comments[0].user?.name ?? null,
             userImage: f.comments[0].user?.image ?? null,
           }

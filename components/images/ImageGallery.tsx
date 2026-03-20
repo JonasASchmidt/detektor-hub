@@ -12,6 +12,8 @@ import { Skeleton } from "../ui/skeleton";
 import { FilterBar, SearchFilter, DateRangeFilter, SelectFilter } from "../filters";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Tag as TagIcon } from "lucide-react";
+import DynamicIcon from "@/components/ui/input/dynamic-icon";
+import TagComponent from "@/components/tags/Tag";
 
 export interface ImageGalleryHandle {
   triggerUpload: () => void;
@@ -297,12 +299,7 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
                 const tag = tagCategories.flatMap((c) => c.tags).find((t) => t.id === tid);
                 if (!tag) return null;
                 return (
-                  <span key={tid} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded text-sm font-medium text-white" style={{ backgroundColor: tag.color }}>
-                    {tag.name}
-                    <button onClick={() => setSelectedTagIds((prev) => prev.filter((i) => i !== tid))} className="group !bg-transparent rounded-full p-0.5">
-                      <X className="h-3 w-3 text-white/50 group-hover:text-white transition-colors" />
-                    </button>
-                  </span>
+                  <TagComponent key={tid} tag={tag} onClose={() => setSelectedTagIds((prev) => prev.filter((i) => i !== tid))} />
                 );
               })}
             </>
@@ -365,7 +362,7 @@ const ImageGallery = forwardRef<ImageGalleryHandle, Props>(function ImageGallery
                             onClick={() => setSelectedTagIds((prev) => active ? prev.filter((i) => i !== tag.id) : [...prev, tag.id])}
                             className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors ${active ? "bg-accent font-medium" : ""}`}
                           >
-                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                            <span className="shrink-0" style={{ color: tag.color }}><DynamicIcon icon={tag.icon} size={12} /></span>
                             <span className="flex-1 text-left">{tag.name}</span>
                             {active && <X className="h-3 w-3 text-muted-foreground" />}
                           </button>

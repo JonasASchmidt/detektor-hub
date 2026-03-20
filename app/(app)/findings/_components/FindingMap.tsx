@@ -11,6 +11,7 @@ import { FindingWithRelations } from "@/types/FindingWithRelations";
 import { CldImage } from "next-cloudinary";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import TagComponent from "@/components/tags/Tag";
 
 interface Props {
   filters: {
@@ -56,13 +57,7 @@ function MiniCard({ finding }: { finding: FindingWithRelations }) {
         {finding.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {finding.tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag.id}
-                className="inline-flex items-center gap-1 pl-2 pr-2 py-px rounded uppercase text-[11px] font-semibold tracking-wide text-white"
-                style={{ backgroundColor: tag.color }}
-              >
-                {tag.name}
-              </span>
+              <TagComponent key={tag.id} tag={tag} compact />
             ))}
           </div>
         )}

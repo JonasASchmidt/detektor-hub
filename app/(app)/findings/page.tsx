@@ -3,24 +3,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import FindingsClient from "./_components/FindingsClient";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import FindingsLoading from "./loading";
 
 export default function FindingsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
-          <Skeleton className="h-10 w-32" />
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="aspect-[2/1] rounded-xl" />
-            <Skeleton className="aspect-[2/1] rounded-xl" />
-          </div>
-          <Skeleton className="h-10 w-full" />
-        </div>
-      }
-    >
+    <Suspense fallback={<FindingsLoading />}>
       <FindingsPageContent />
     </Suspense>
   );

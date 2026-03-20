@@ -1,6 +1,5 @@
 "use client";
 
-import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Tag, TagCategory } from "@prisma/client";
-import IconPicker from "@/components/ui/input/icon-picker";
 import ColorPicker from "@/components/ui/input/color-picker";
 import {
   Select,
@@ -43,7 +41,6 @@ export function TagForm({
         .toString(16)
         .padStart(6, "0")}`,
     name: initialTag?.name ?? "",
-    icon: initialTag?.icon ?? "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +54,6 @@ export function TagForm({
           .toString(16)
           .padStart(6, "0")}`,
       name: initialTag?.name ?? "",
-      icon: initialTag?.icon ?? "",
     });
   }, [initialTag]);
 
@@ -69,7 +65,6 @@ export function TagForm({
         .toString(16)
         .padStart(6, "0")}`,
       name: "",
-      icon: "",
     });
   };
 
@@ -83,9 +78,6 @@ export function TagForm({
   const handleChangeColor = (color: string) =>
     setFormData({ ...formData, color });
 
-  const handleChangeIcon = (icon: keyof typeof LucideIcons) =>
-    setFormData({ ...formData, icon });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -97,7 +89,6 @@ export function TagForm({
       body: JSON.stringify({
         name: formData.name,
         color: formData.color,
-        icon: formData.icon,
         category: formData.category,
       }),
     });
@@ -131,7 +122,6 @@ export function TagForm({
         id: initialTag?.id,
         name: formData.name,
         color: formData.color,
-        icon: formData.icon,
         category: formData.category,
       }),
     });
@@ -159,8 +149,7 @@ export function TagForm({
             {initialTag ? "Tag bearbeiten" : "Neuen Tag erstellen"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Definiere Name, Farbe und Icon für eine einfache Kategorisierung
-            deiner Funde.
+            Definiere Name und Farbe für eine einfache Kategorisierung deiner Funde.
           </p>
         </header>
 
@@ -211,13 +200,6 @@ export function TagForm({
                 onChange={handleChangeColor}
                 value={formData.color}
               />
-            </div>
-          </div>
-
-          <div className="shrink-0 flex flex-col gap-1.5">
-            <Label>Icon</Label>
-            <div className="h-8 flex items-center border border-transparent">
-              <IconPicker onChange={handleChangeIcon} value={formData.icon} />
             </div>
           </div>
 

@@ -366,6 +366,7 @@ export default function FindingDetail({
               <TagComponent
                 key={tag.id}
                 tag={tag}
+                large
                 onClick={() => router.push(`/findings?tags=${tag.id}`)}
               />
             ))}

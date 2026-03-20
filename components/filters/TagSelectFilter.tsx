@@ -7,11 +7,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Tag, X } from "lucide-react";
+import DynamicIcon from "@/components/ui/input/dynamic-icon";
 
 export interface TagOption {
   id: string;
   name: string;
   color: string;
+  icon?: string;
 }
 
 interface TagSelectFilterProps {
@@ -42,7 +44,7 @@ export function TagSelectFilter({
         <Button
           variant="outline"
           size="sm"
-          className={`gap-1.5 shrink-0 h-8 ${selectedIds.length > 0 ? "text-foreground" : "text-muted-foreground"}`}
+          className={`gap-1.5 shrink-0 ${selectedIds.length > 0 ? "" : "text-muted-foreground"}`}
         >
           <Tag className="h-3.5 w-3.5" />
           {label}
@@ -64,10 +66,9 @@ export function TagSelectFilter({
                   active ? "bg-accent font-medium" : ""
                 }`}
               >
-                <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ backgroundColor: tag.color }}
-                />
+                <span className="shrink-0" style={{ color: tag.color }}>
+                  <DynamicIcon icon={tag.icon ?? ""} size={12} />
+                </span>
                 <span className="flex-1 text-left">{tag.name}</span>
                 {active && (
                   <X className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

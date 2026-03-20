@@ -34,7 +34,7 @@ export default function ColorPicker({ onChange, value }: Props) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-8 h-8 p-0 rounded-lg flex-shrink-0 border-black/[0.05] hover:border-zinc-400 transition-colors">
+        <Button variant="outline" className="w-9 h-9 p-0 rounded-lg flex-shrink-0">
           <span
             className="w-5 h-5 rounded-md border border-black/[0.05] shadow-sm"
             style={{ backgroundColor: color }}

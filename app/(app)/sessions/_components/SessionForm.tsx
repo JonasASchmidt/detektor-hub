@@ -217,7 +217,7 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
                 <Label htmlFor="detectorId">Verwendetes Gerät (optional)</Label>
                 <select
                   id="detectorId"
-                  className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   {...register("detectorId")}
                 >
                   <option value="">— kein Gerät ausgewählt —</option>

@@ -20,6 +20,9 @@ interface FindingCardProps {
   // Vote data — supplied by community feed; absent on private findings list
   votesCount?: number;
   userVoted?: boolean;
+  // Override the default action buttons (comment, edit, location) with custom ones.
+  // When provided, the default actions are hidden.
+  actions?: React.ReactNode;
 }
 
 export default function FindingCard({
@@ -27,6 +30,7 @@ export default function FindingCard({
   hideTags = false,
   votesCount: initialVotesCount,
   userVoted: initialUserVoted = false,
+  actions,
 }: FindingCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -46,7 +50,7 @@ export default function FindingCard({
   const hasLocation = finding.latitude != null && finding.longitude != null;
 
   const handleCardClick = () => {
-    router.push(`findings/${finding.id}`);
+    router.push(`/findings/${finding.id}`);
   };
 
   return (
@@ -165,73 +169,77 @@ export default function FindingCard({
 
         {/* Far right: action buttons */}
         <div className="flex flex-col gap-2 shrink-0 justify-start">
-          {/* Vote button — shown on community feed */}
-          {hasVoting && (
-            <VoteButton
-              targetType="FINDING"
-              targetId={finding.id}
-              initialVotesCount={initialVotesCount ?? 0}
-              initialUserVoted={initialUserVoted ?? false}
-              isOwner={isOwner}
-              variant="card"
-            />
-          )}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`findings/${finding.id}`);
-            }}
-            className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] relative"
-            title="Kommentare"
-          >
-            {(() => {
-              const count =
-                (finding as any).commentsCount ?? finding.comments?.length ?? 0;
-              return count > 0 ? (
-                <>
-                  <MessageSquare
-                    className="h-[19px] w-[19px]"
-                    strokeWidth={0}
-                    fill="currentColor"
-                  />
-                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white leading-none mt-0.5">
-                    {count}
-                  </span>
-                </>
-              ) : (
-                <MessageSquare
-                  className="h-[19px] w-[19px]"
-                  strokeWidth={1.2}
+          {actions ?? (
+            <>
+              {/* Vote button — shown on community feed */}
+              {hasVoting && (
+                <VoteButton
+                  targetType="FINDING"
+                  targetId={finding.id}
+                  initialVotesCount={initialVotesCount ?? 0}
+                  initialUserVoted={initialUserVoted ?? false}
+                  isOwner={isOwner}
+                  variant="card"
                 />
-              );
-            })()}
-          </button>
-          {isOwner && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`findings/${finding.id}/edit`);
-              }}
-              className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
-              title="Bearbeiten"
-            >
-              <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
-            </button>
-          )}
-          {hasLocation && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMap(true);
-              }}
-              className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
-              title="Fundort"
-            >
-              <MapPin className="h-[19px] w-[19px]" strokeWidth={1.2} />
-            </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/findings/${finding.id}`);
+                }}
+                className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] relative"
+                title="Kommentare"
+              >
+                {(() => {
+                  const count =
+                    (finding as any).commentsCount ?? finding.comments?.length ?? 0;
+                  return count > 0 ? (
+                    <>
+                      <MessageSquare
+                        className="h-[19px] w-[19px]"
+                        strokeWidth={0}
+                        fill="currentColor"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white leading-none mt-0.5">
+                        {count}
+                      </span>
+                    </>
+                  ) : (
+                    <MessageSquare
+                      className="h-[19px] w-[19px]"
+                      strokeWidth={1.2}
+                    />
+                  );
+                })()}
+              </button>
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`findings/${finding.id}/edit`);
+                  }}
+                  className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+                  title="Bearbeiten"
+                >
+                  <Pencil className="h-[19px] w-[19px]" strokeWidth={1.2} />
+                </button>
+              )}
+              {hasLocation && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMap(true);
+                  }}
+                  className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95]"
+                  title="Fundort"
+                >
+                  <MapPin className="h-[19px] w-[19px]" strokeWidth={1.2} />
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

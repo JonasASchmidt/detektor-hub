@@ -11,7 +11,10 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
-  const pageSize = parseInt(searchParams.get("pageSize") || "20");
+
+  // Cap pageSize to prevent excessive queries
+  const rawPageSize = parseInt(searchParams.get("pageSize") || "20");
+  const pageSize = Math.min(Math.max(rawPageSize, 1), 100);
   const skip = (page - 1) * pageSize;
 
   const search = searchParams.get("q") || "";
@@ -19,8 +22,14 @@ export async function GET(req: Request) {
   const tagIds = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
-  const orderByParam = searchParams.get("orderBy") || "createdAt";
-  const order = searchParams.get("order") || "desc";
+
+  // Validate orderBy/order against allowlist
+  const ALLOWED_ORDER_FIELDS = new Set(["createdAt", "foundAt", "name", "updatedAt", "votes"]);
+  const ALLOWED_ORDER_DIRS = new Set(["asc", "desc"]);
+  const rawOrderBy = searchParams.get("orderBy") || "createdAt";
+  const rawOrder = searchParams.get("order") || "desc";
+  const orderByParam = ALLOWED_ORDER_FIELDS.has(rawOrderBy) ? rawOrderBy : "createdAt";
+  const order = ALLOWED_ORDER_DIRS.has(rawOrder) ? rawOrder : "desc";
 
   const where = {
     AND: [

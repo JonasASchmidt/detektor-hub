@@ -17,6 +17,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "targetType und targetId erforderlich." }, { status: 400 });
   }
 
+  // Only allow voting on known entity types
+  const ALLOWED_TARGET_TYPES = new Set(["FINDING"]);
+  if (!ALLOWED_TARGET_TYPES.has(targetType)) {
+    return NextResponse.json({ error: "Ungültiger Zieltyp." }, { status: 400 });
+  }
+
   const userId = session.user.id;
 
   // For findings: verify it exists, is COMPLETED, and not owned by the voter

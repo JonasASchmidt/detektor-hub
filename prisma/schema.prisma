@@ -11,13 +11,15 @@ datasource db {
 }
 
 model User {
-  id                    String         @id @default(uuid())
+  id                    String             @id @default(uuid())
   name                  String?
-  email                 String         @unique
+  email                 String             @unique
   password              String?
   emailVerified         DateTime?
   image                 String?
-  role                  String         @default("USER")
+  // Static role: "USER" | "OFFICIAL" | "ADMIN"
+  // OFFICIAL means the user has at least one OfficialRole assignment; capabilities come from UserOfficialRole
+  role                  String             @default("USER")
   accounts              Account[]
   comments              Comment[]
   findings              Finding[]
@@ -26,10 +28,14 @@ model User {
   images                Image[]
   sessions              Session[]
   votes                 Vote[]
-  notificationsReceived Notification[] @relation("NotificationRecipient")
-  notificationsSent     Notification[] @relation("NotificationActor")
+  notificationsReceived Notification[]     @relation("NotificationRecipient")
+  notificationsSent     Notification[]     @relation("NotificationActor")
   activityLogs          ActivityLog[]
   collections           Collection[]
+  profile               UserProfile?
+  officialRoles         UserOfficialRole[] @relation("UserRoles")
+  rolesAssigned         UserOfficialRole[] @relation("RoleAssigner")
+  rolesCreated          OfficialRole[]     @relation("RoleCreator")
 }
 
 model Account {
@@ -166,6 +172,7 @@ model Zone {
   updatedAt   DateTime                               @default(now()) @updatedAt
   user        User                                   @relation(fields: [userId], references: [id])
   sessions    FieldSession[]
+  roleScopes  OfficialRoleScope[]
 }
 
 model FieldSession {
@@ -283,6 +290,86 @@ model Vote {
   @@unique([userId, targetType, targetId])
   @@index([targetType, targetId])
 }
+
+// ─── Official Role System ────────────────────────────────────────────────────
+
+// Scope types an OfficialRole can be bound to
+enum AdminUnitType {
+  FEDERAL_STATE
+  COUNTY
+  MUNICIPALITY
+  ZONE
+}
+
+// A named role created by an official within their admin unit.
+// Capabilities are a string array validated against the CAPABILITIES constant in lib/capabilities.ts.
+// Priority determines which badge is shown when a user holds multiple roles (higher = preferred).
+model OfficialRole {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  capabilities    String[]
+  badgeLabel      String?  // Short label shown next to username, e.g. "BY-Mod"
+  badgeColor      String?  // Hex or Tailwind token, e.g. "#2d2d2d"
+  priority        Int      @default(0)
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  createdBy User                @relation("RoleCreator", fields: [createdByUserId], references: [id])
+  scope     OfficialRoleScope[]
+  userRoles UserOfficialRole[]
+}
+
+// Polymorphic scope binding: one role can cover multiple admin units or zones.
+// adminUnitName is set for FEDERAL_STATE | COUNTY | MUNICIPALITY (matches Finding.adminXxx fields).
+// zoneId is set for ZONE — the official has authority over findings within that zone's geometry.
+model OfficialRoleScope {
+  id             String        @id @default(uuid())
+  officialRoleId String
+  adminUnitType  AdminUnitType
+  adminUnitName  String?       // e.g. "Bayern", "München (Landkreis)"
+  zoneId         String?       // references a user-created Zone
+
+  officialRole OfficialRole @relation(fields: [officialRoleId], references: [id], onDelete: Cascade)
+  zone         Zone?        @relation(fields: [zoneId], references: [id])
+}
+
+// Many-to-many: user ↔ role assignment with full audit trail.
+model UserOfficialRole {
+  id               String    @id @default(uuid())
+  userId           String
+  officialRoleId   String
+  assignedByUserId String
+  assignedAt       DateTime  @default(now())
+  expiresAt        DateTime? // Optional expiry for time-limited assignments
+
+  user         User         @relation("UserRoles", fields: [userId], references: [id], onDelete: Cascade)
+  officialRole OfficialRole @relation(fields: [officialRoleId], references: [id], onDelete: Cascade)
+  assignedBy   User         @relation("RoleAssigner", fields: [assignedByUserId], references: [id])
+
+  @@unique([userId, officialRoleId])
+}
+
+// Sensitive PII — stored separately from User for access-control isolation.
+// Fields are encrypted at the application layer via prisma-field-encryption.
+// Access is restricted in API routes to users holding the VIEW_USER_DATA capability.
+model UserProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  firstName String   /// @encrypted
+  lastName  String   /// @encrypted
+  street    String?  /// @encrypted
+  city      String?  /// @encrypted
+  zipcode   String?  /// @encrypted
+  birthdate String?  /// @encrypted — stored as ISO date string "YYYY-MM-DD", encrypted before write
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum NotificationType {
   MENTION

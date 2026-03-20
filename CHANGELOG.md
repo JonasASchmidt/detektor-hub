@@ -5,6 +5,57 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-20] — `feature/official-roles` (continued)
+
+### Role Management (CRUD)
+- **`GET/POST /api/official-roles`** — list roles (ADMIN: all; OFFICIAL: own) and create; requires `MANAGE_ROLES` capability or `ADMIN`
+- **`GET/PUT/DELETE /api/official-roles/[id]`** — fetch, full-update (scopes replaced atomically), delete; edit/delete restricted to creator or `ADMIN`
+- **`/management/roles`** — list page; shows name, badge preview, scope chips, capability count, member count; Edit/Delete buttons if permitted
+- **`/management/roles/new`** — create form; guards against missing `MANAGE_ROLES`
+- **`/management/roles/[id]/edit`** — edit form; guards against non-owner/non-admin access
+- **`RoleForm`** (`_components/RoleForm.tsx`) — react-hook-form + zod; fields: name, description, priority, badge (label + color with live preview), capability checkboxes (German labels), dynamic scope builder (Bundesland dropdown with all 16 states; Landkreis/Gemeinde free-text)
+- **`RolesList`** (`_components/RolesList.tsx`) — client list with inline delete confirmation via AlertDialog
+- **`schemas/official-role.ts`** — Zod schema, `CAPABILITY_LABELS`, `ADMIN_UNIT_TYPE_LABELS`
+- **`lib/constants/adminUnits.ts`** — `GERMAN_FEDERAL_STATES` const (16 Bundesländer)
+
+### Management Navigation & Dashboard
+
+- **`NavManagement`** (`components/layout/NavManagement.tsx`) — sidebar section with "Verwaltung" group label and links to Übersicht, Benutzer, Rollen; rendered below the main nav with a visual separator
+- **`AppSidebar`** — conditionally renders `NavManagement` for users with role `OFFICIAL` or `ADMIN`
+- **`/management`** — dashboard overview page with role-aware heading and quick-access cards to sub-sections; guards against non-official access (redirects to `/findings`)
+- **`/management/users`** — placeholder page for user management
+- **`/management/roles`** — placeholder page for role management
+- All management pages use server-side `getServerSession` access guard
+
+### Schema
+
+- **`UserProfile`** — separates PII (firstName, lastName, street, city, zipcode, birthdate) from the `User` model; all fields field-encrypted via `prisma-field-encryption`; one-to-one with `User`, cascades on delete
+- **`OfficialRole`** — named role with `capabilities: String[]`, `badgeLabel`, `badgeColor`, `priority` (higher = shown as primary badge), and `createdByUserId`
+- **`OfficialRoleScope`** — polymorphic scope binding for `OfficialRole`; each role can cover multiple `FEDERAL_STATE | COUNTY | MUNICIPALITY | ZONE` units; ZONE entries reference a user-created `Zone` for PostGIS containment checks
+- **`UserOfficialRole`** — many-to-many between `User` and `OfficialRole`; includes `assignedByUserId`, `assignedAt`, `expiresAt` for audit trail; unique constraint on `(userId, officialRoleId)`
+- **`AdminUnitType` enum** — `FEDERAL_STATE | COUNTY | MUNICIPALITY | ZONE`
+- `User` updated with `profile`, `officialRoles`, `rolesAssigned`, `rolesCreated` relations
+- `Zone` updated with `roleScopes` relation
+
+### Capabilities
+
+- **`lib/capabilities.ts`** — exhaustive `CAPABILITIES` const array and `Capability` type; includes `MANAGE_ROLES`, `MANAGE_USERS`, `VIEW_USER_DATA`, `GRANT_PERMISSION`, `ASSIGN_ZONES`, `MODERATE_COMMUNITY`, `VIEW_ALL_FINDINGS`, `VIEW_FINDING_LOCATIONS`
+
+### Utilities
+
+- **`lib/hasCapability.ts`** — `hasCapability(userId, capability, context?)` helper; resolves active role assignments, checks named admin unit scopes (with inheritance), and runs PostGIS `ST_Contains` for zone-scoped roles; also exports `getPrimaryRole(userId)` for badge rendering
+- **`lib/prisma.ts`** — extended with `fieldEncryptionExtension()` from `prisma-field-encryption`; PrismaClient type updated to reflect extended client
+
+### Types
+
+- **`types/roles.ts`** — `AdminUnitType`, `OfficialRole`, `OfficialRoleScope`, `RoleBadge`, `PrimaryRole`
+
+### Docs
+
+- `CLAUDE.md` updated with Role & Capability System conventions
+
+---
+
 ## [2026-03-19] — `feature/collections`
 
 ### Features

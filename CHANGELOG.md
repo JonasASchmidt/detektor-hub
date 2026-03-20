@@ -7,6 +7,17 @@ Format: `[Date] — Branch — Description`
 
 ## [2026-03-20] — `feature/official-roles` (continued)
 
+### Role Management (CRUD)
+- **`GET/POST /api/official-roles`** — list roles (ADMIN: all; OFFICIAL: own) and create; requires `MANAGE_ROLES` capability or `ADMIN`
+- **`GET/PUT/DELETE /api/official-roles/[id]`** — fetch, full-update (scopes replaced atomically), delete; edit/delete restricted to creator or `ADMIN`
+- **`/management/roles`** — list page; shows name, badge preview, scope chips, capability count, member count; Edit/Delete buttons if permitted
+- **`/management/roles/new`** — create form; guards against missing `MANAGE_ROLES`
+- **`/management/roles/[id]/edit`** — edit form; guards against non-owner/non-admin access
+- **`RoleForm`** (`_components/RoleForm.tsx`) — react-hook-form + zod; fields: name, description, priority, badge (label + color with live preview), capability checkboxes (German labels), dynamic scope builder (Bundesland dropdown with all 16 states; Landkreis/Gemeinde free-text)
+- **`RolesList`** (`_components/RolesList.tsx`) — client list with inline delete confirmation via AlertDialog
+- **`schemas/official-role.ts`** — Zod schema, `CAPABILITY_LABELS`, `ADMIN_UNIT_TYPE_LABELS`
+- **`lib/constants/adminUnits.ts`** — `GERMAN_FEDERAL_STATES` const (16 Bundesländer)
+
 ### Management Navigation & Dashboard
 
 - **`NavManagement`** (`components/layout/NavManagement.tsx`) — sidebar section with "Verwaltung" group label and links to Übersicht, Benutzer, Rollen; rendered below the main nav with a visual separator

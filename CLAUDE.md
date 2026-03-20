@@ -127,6 +127,15 @@ app/
 - Edit pages: add `getServerSession` + ownership check at the server component level — redirect to `notFound()` for non-owners
 - Never expose `latitude`/`longitude` on community/public API responses unless `locationPublic === true`
 
+### Role & Capability System
+
+- Static `User.role`: `"USER"` | `"OFFICIAL"` | `"ADMIN"`. `OFFICIAL` means the user has at least one `UserOfficialRole` assignment; actual capabilities come from those assignments.
+- Dynamic roles: `OfficialRole` (created by officials with `MANAGE_ROLES`), bound to ≥1 scopes via `OfficialRoleScope` (FEDERAL_STATE | COUNTY | MUNICIPALITY | ZONE).
+- Capability check: `hasCapability(userId, capability, context?)` in `lib/hasCapability.ts`. Handles scope inheritance (FEDERAL_STATE covers counties/municipalities within it) and PostGIS zone containment.
+- All valid capabilities are defined in `lib/capabilities.ts` as `CAPABILITIES` const — this is the single source of truth; never add a capability only to the DB.
+- `getPrimaryRole(userId)` returns the role with the highest `priority` value — use this for badge display (only show one badge per user).
+- PII (UserProfile) is field-encrypted via `prisma-field-encryption`. Only users holding `VIEW_USER_DATA` capability may read decrypted values. Raw DB access shows ciphertext only. Key: `PRISMA_FIELD_ENCRYPTION_KEY` in `.env.local`.
+
 ### PATCH vs PUT
 - `PUT /api/findings/[id]` — full finding update via `findingSchemaCompleted` (from the edit form)
 - `PATCH /api/findings/[id]` — partial update for `status` and `reported` fields only; Zod schema inline

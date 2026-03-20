@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ChevronLeft, Pencil, Trash2, FolderOpen, Plus } from "lucide-react";
+import { Pencil, Trash2, FolderOpen, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,6 +36,7 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
   const router = useRouter();
   const [findings, setFindings] = useState(collection.findings);
   const [deleting, setDeleting] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   // Re-fetch findings from the API after a new finding is added so FindingCard
   // gets the full data shape (images, tags, comments, user) it needs.
@@ -68,6 +69,7 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
   };
 
   const handleRemoveFinding = async (findingId: string) => {
+    setRemovingId(findingId);
     try {
       const res = await fetch(`/api/collections/${collection.id}/findings`, {
         method: "DELETE",
@@ -80,6 +82,7 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
       toast.success("Fund aus Sammlung entfernt.");
     } catch {
       toast.error("Fehler beim Entfernen.");
+      setRemovingId(null);
     }
   };
 
@@ -175,18 +178,29 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
       {findings.length > 0 ? (
         <div className="space-y-3">
           {findings.map((finding) => (
-            <div key={finding.id} className="relative group/row">
-              <FindingCard finding={finding} />
-              {isOwner && (
-                <button
-                  onClick={() => handleRemoveFinding(finding.id)}
-                  className="absolute top-3 right-3 z-10 p-1.5 rounded-md bg-white/80 hover:bg-red-50 text-muted-foreground hover:text-red-600 opacity-0 group-hover/row:opacity-100 transition-all border border-black/[0.06]"
-                  title="Aus Sammlung entfernen"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+            <FindingCard
+              key={finding.id}
+              finding={finding}
+              actions={
+                isOwner ? (
+                  <button
+                    type="button"
+                    disabled={removingId === finding.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveFinding(finding.id);
+                    }}
+                    className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-red-50 hover:text-red-600 border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50 disabled:pointer-events-none"
+                    title="Aus Sammlung entfernen"
+                  >
+                    {removingId === finding.id
+                      ? <Loader2 className="h-[19px] w-[19px] animate-spin" />
+                      : <Trash2 className="h-[19px] w-[19px]" strokeWidth={1.2} />
+                    }
+                  </button>
+                ) : undefined
+              }
+            />
           ))}
         </div>
       ) : (

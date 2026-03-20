@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function AppHeaderBar({ activeSession }: Props) {
-  const { isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { openMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
 
   const stopSession = async () => {
@@ -22,20 +22,20 @@ export function AppHeaderBar({ activeSession }: Props) {
 
   return (
     <div className="flex w-full shrink-0 items-center justify-start bg-[#2d2d2d] pl-3 pr-5 z-50 overscroll-none h-[52px] gap-3">
-      {isMobile && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mr-2 text-white hover:bg-white/10"
-          onClick={() => setOpenMobile(!openMobile)}
-        >
-          {openMobile ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </Button>
-      )}
+      {/* Always render burger menu, hide on desktop via CSS to avoid
+         hydration flash where useIsMobile() starts as false */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="mr-2 text-white hover:bg-white/10 md:hidden"
+        onClick={() => setOpenMobile(!openMobile)}
+      >
+        {openMobile ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <Menu className="h-5 w-5" />
+        )}
+      </Button>
 
       <Link
         href="/findings"

@@ -5,6 +5,14 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-20] — `claude/fix-mobile-layout-load-Y3Rue`
+
+### Bugfixes
+
+- **Mobile Layout: Burger-Menü erscheint sofort beim ersten Laden** — `AppHeaderBar` renderte den Burger-Menü-Button per JS-Bedingung (`isMobile && ...`), wobei `useIsMobile()` beim SSR/Hydration initial `false` zurückgibt. Auf Mobilgeräten fehlte dadurch das Burger-Menü und die Seite wirkte ohne App-Header beim ersten Laden. Fix: Button wird immer gerendert und per CSS (`md:hidden`) auf Desktop ausgeblendet — so ist er ab dem allerersten Paint sichtbar.
+
+---
+
 ## [2026-03-19] — `feature/collections`
 
 ### Features

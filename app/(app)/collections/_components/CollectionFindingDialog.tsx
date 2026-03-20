@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * CollectionFindingAdder
+ * CollectionFindingDialog
  *
- * Dialog for adding/removing findings from a collection.
+ * Dialog for adding findings to a collection.
  * All checkbox changes are local state — no API calls until "Auswahl übernehmen".
  * On confirm: batch POST/DELETE for every changed item, then call onApply() once.
  */
@@ -25,7 +25,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TagSelectFilter, TagOption } from "@/components/filters/TagSelectFilter";
+import {
+  TagSelectFilter,
+  TagOption,
+} from "@/components/filters/TagSelectFilter";
 
 type PickerFinding = {
   id: string;
@@ -110,7 +113,7 @@ export default function CollectionFindingDialog({
         ? `/api/findings?${params}`
         : `/api/community/findings?${params}`;
     },
-    [source, search, selectedTags]
+    [source, search, selectedTags],
   );
 
   // Re-fetch first page on filter change
@@ -172,14 +175,14 @@ export default function CollectionFindingDialog({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ findingId }),
-          })
+          }),
         ),
         ...toRemove.map((findingId) =>
           fetch(`/api/collections/${collectionId}/findings`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ findingId }),
-          })
+          }),
         ),
       ]);
 
@@ -187,8 +190,8 @@ export default function CollectionFindingDialog({
         toAdd.length > 0 && toRemove.length > 0
           ? `${toAdd.length} hinzugefügt, ${toRemove.length} entfernt.`
           : toAdd.length > 0
-          ? `${toAdd.length} ${toAdd.length === 1 ? "Fund" : "Funde"} hinzugefügt.`
-          : `${toRemove.length} ${toRemove.length === 1 ? "Fund" : "Funde"} entfernt.`
+            ? `${toAdd.length} ${toAdd.length === 1 ? "Fund" : "Funde"} hinzugefügt.`
+            : `${toRemove.length} ${toRemove.length === 1 ? "Fund" : "Funde"} entfernt.`,
       );
 
       setOpen(false);
@@ -264,81 +267,89 @@ export default function CollectionFindingDialog({
             // so the user can easily undo an accidental add.
             .filter((f) => !initialIds.has(f.id))
             .map((f) => {
-            const isSelected = selectedIds.has(f.id);
-            const wasInCollection = initialIds.has(f.id);
-            const thumb = f.images?.[0]?.publicId;
+              const isSelected = selectedIds.has(f.id);
+              const wasInCollection = initialIds.has(f.id);
+              const thumb = f.images?.[0]?.publicId;
 
-            return (
-              <button
-                key={f.id}
-                onClick={() => toggleFinding(f.id)}
-                className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left"
-              >
-                {/* Checkbox */}
-                <span
-                  className={`h-5 w-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
-                    isSelected ? "bg-[#2d2d2d] border-[#2d2d2d]" : "border-muted-foreground/30"
-                  }`}
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => toggleFinding(f.id)}
+                  className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left"
                 >
-                  {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-                </span>
-
-                {/* Thumbnail */}
-                {thumb ? (
-                  <CldImage
-                    src={thumb}
-                    width={40}
-                    height={40}
-                    crop="fill"
-                    gravity="auto"
-                    format="auto"
-                    quality="auto"
-                    alt=""
-                    className="h-10 w-10 rounded-md object-cover shrink-0 border border-black/[0.06]"
-                  />
-                ) : (
-                  <span className="h-10 w-10 rounded-md bg-muted shrink-0 border border-black/[0.06]" />
-                )}
-
-                {/* Text */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{f.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    {f.foundAt && (
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(f.foundAt), "d.M.yy", { locale: de })}
-                      </span>
+                  {/* Checkbox */}
+                  <span
+                    className={`h-5 w-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? "bg-[#2d2d2d] border-[#2d2d2d]"
+                        : "border-muted-foreground/30"
+                    }`}
+                  >
+                    {isSelected && (
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     )}
-                    {source === "community" && f.user?.name && (
-                      <span className="text-xs text-muted-foreground">{f.user.name}</span>
-                    )}
-                    {f.tags?.slice(0, 3).map((t) => (
-                      <span
-                        key={t.id}
-                        className="inline-block px-1.5 rounded text-[10px] font-semibold uppercase tracking-wide text-white"
-                        style={{ backgroundColor: t.color }}
-                      >
-                        {t.name}
-                      </span>
-                    ))}
+                  </span>
+
+                  {/* Thumbnail */}
+                  {thumb ? (
+                    <CldImage
+                      src={thumb}
+                      width={40}
+                      height={40}
+                      crop="fill"
+                      gravity="auto"
+                      format="auto"
+                      quality="auto"
+                      alt=""
+                      className="h-10 w-10 rounded-md object-cover shrink-0 border border-black/[0.06]"
+                    />
+                  ) : (
+                    <span className="h-10 w-10 rounded-md bg-muted shrink-0 border border-black/[0.06]" />
+                  )}
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{f.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      {f.foundAt && (
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(f.foundAt), "d.M.yy", {
+                            locale: de,
+                          })}
+                        </span>
+                      )}
+                      {source === "community" && f.user?.name && (
+                        <span className="text-xs text-muted-foreground">
+                          {f.user.name}
+                        </span>
+                      )}
+                      {f.tags?.slice(0, 3).map((t) => (
+                        <span
+                          key={t.id}
+                          className="inline-block px-1.5 rounded text-[10px] font-semibold uppercase tracking-wide text-white"
+                          style={{ backgroundColor: t.color }}
+                        >
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Status badge for newly added/removed */}
-                {!wasInCollection && isSelected && (
-                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-green-600 flex items-center gap-0.5">
-                    <Plus className="h-3 w-3" />
-                    Neu
-                  </span>
-                )}
-                {wasInCollection && !isSelected && (
-                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-red-500">
-                    Entfernt
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                  {/* Status badge for newly added/removed */}
+                  {!wasInCollection && isSelected && (
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-green-600 flex items-center gap-0.5">
+                      <Plus className="h-3 w-3" />
+                      Neu
+                    </span>
+                  )}
+                  {wasInCollection && !isSelected && (
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-red-500">
+                      Entfernt
+                    </span>
+                  )}
+                </button>
+              );
+            })}
 
           {hasMore && !loadingFindings && (
             <div className="px-5 py-3">
@@ -350,7 +361,10 @@ export default function CollectionFindingDialog({
                 disabled={loadingMore}
               >
                 {loadingMore ? (
-                  <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />Lädt…</>
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                    Lädt…
+                  </>
                 ) : (
                   "Mehr laden"
                 )}
@@ -365,27 +379,34 @@ export default function CollectionFindingDialog({
             {hasChanges ? (
               <>
                 {toAdd.length > 0 && (
-                  <span className="text-green-600 font-medium">{toAdd.length} hinzugefügt</span>
+                  <span className="text-green-600 font-medium">
+                    {toAdd.length} hinzugefügt
+                  </span>
                 )}
                 {toAdd.length > 0 && toRemove.length > 0 && " · "}
                 {toRemove.length > 0 && (
-                  <span className="text-red-500 font-medium">{toRemove.length} entfernt</span>
+                  <span className="text-red-500 font-medium">
+                    {toRemove.length} entfernt
+                  </span>
                 )}
               </>
             ) : (
               "Keine Änderungen"
             )}
           </span>
-          <Button variant="ghost" onClick={() => setOpen(false)} disabled={saving}>
+          <Button
+            variant="ghost"
+            onClick={() => setOpen(false)}
+            disabled={saving}
+          >
             Abbrechen
           </Button>
-          <Button
-            onClick={handleApply}
-            disabled={saving}
-            className="font-bold"
-          >
+          <Button onClick={handleApply} disabled={saving} className="font-bold">
             {saving ? (
-              <><Loader2 className="h-4 w-4 animate-spin mr-1.5" />Speichert…</>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                Speichert…
+              </>
             ) : (
               "Auswahl übernehmen"
             )}

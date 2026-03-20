@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { getInitials } from "@/lib/initials";
 import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
 import RelatedFindingsSection from "./RelatedFindingsSection";
+import AddToCollectionButton from "./AddToCollectionButton";
 
 const FindingDetailMap = dynamic(() => import("./FindingDetailMap"), {
   ssr: false,
@@ -261,6 +262,10 @@ export default function FindingDetail({
               <Flag className="h-4 w-4" />
               Fund Melden
             </Button>
+          )}
+          {/* Add to collection — visible to any logged-in user on completed findings */}
+          {finding.status === "COMPLETED" && (
+            <AddToCollectionButton findingId={finding.id} />
           )}
           {isOwner && (
             <Button

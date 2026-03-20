@@ -4,6 +4,14 @@ User problems this codebase solves, mapped to their implementations.
 
 ---
 
+## "I want to group all my finds of the same type together — like all Roman coins or all Lüneburger Salzplomben"
+
+Finds of the same typological category can be scattered across many individual find records with no way to connect them conceptually. Pairwise linking would require N×(N-1)/2 links and doesn't scale.
+
+**Implementation:** `Collection` model — named, curator-owned groups with a many-to-many relation to `Finding` (`CollectionFindings`). Any logged-in user can add COMPLETED findings to their own collections from the finding detail page via the „Sammlung" dropdown (supports search + inline creation). Collections are listed at `/collections` with cover image and find count; individual collections at `/collections/[id]` show the full findings list. The sidebar dynamically lists the user's own collections as nav items under „Sammlungen".
+
+---
+
 ## "The exact location of my find must not be publicly visible, but the report still needs to show roughly where it was found"
 
 German archaeology authorities and community members need geographic context (region, county, municipality) without exposing the precise GPS coordinates, which could lead to illegal excavation at the site.

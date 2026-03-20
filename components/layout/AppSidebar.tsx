@@ -5,6 +5,7 @@ import { LocateIcon, SmartphoneIcon, UsersIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/layout/NavMain";
+import { NavCollections } from "@/components/layout/NavCollections";
 import { NavUser } from "@/components/layout/NavUser";
 import {
   Sidebar,
@@ -99,6 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <MobileHeader />
       <SidebarContent>
         <NavMain items={navMain} />
+        <NavCollections />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

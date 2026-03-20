@@ -13,6 +13,7 @@ import { getInitials } from "@/lib/initials";
 import FindingCard from "@/app/(app)/findings/_components/FindingCard";
 import { FindingWithRelations } from "@/types/FindingWithRelations";
 import CollectionFindingDialog from "./CollectionFindingDialog";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 type CollectionWithFindings = {
   id: string;
@@ -51,7 +52,6 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
   };
 
   const handleDeleteCollection = async () => {
-    if (!confirm(`Sammlung „${collection.name}" wirklich löschen?`)) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/collections/${collection.id}`, {
@@ -150,16 +150,23 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
               <Pencil className="h-4 w-4" />
               Bearbeiten
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 border-2 border-foreground text-foreground hover:bg-red-600 hover:text-white hover:border-red-600 text-[14px] font-bold px-3 transition-all duration-150 ease-in-out"
-              disabled={deleting}
-              onClick={handleDeleteCollection}
-            >
-              <Trash2 className="h-4 w-4" />
-              Sammlung löschen
-            </Button>
+            <ConfirmModal
+              title="Sammlung löschen?"
+              description={`„${collection.name}" wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`}
+              confirmLabel="Sammlung löschen"
+              onConfirm={handleDeleteCollection}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 border-2 border-foreground text-foreground hover:bg-red-600 hover:text-white hover:border-red-600 text-[14px] font-bold px-3 transition-all duration-150 ease-in-out"
+                  disabled={deleting}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Sammlung löschen
+                </Button>
+              }
+            />
           </div>
         )}
       </div>

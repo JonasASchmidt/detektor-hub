@@ -1,11 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { LocateIcon, SmartphoneIcon, UsersIcon, X } from "lucide-react";
+import {
+  LocateIcon,
+  SmartphoneIcon,
+  UsersIcon,
+  LayersIcon,
+  X,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/layout/NavMain";
-import { NavCollections } from "@/components/layout/NavCollections";
 import { NavUser } from "@/components/layout/NavUser";
 import {
   Sidebar,
@@ -60,6 +65,11 @@ const navMain = [
     ],
   },
   {
+    title: "Sammlungen",
+    url: "/collections",
+    icon: LayersIcon,
+  },
+  {
     title: "Öffentlich",
     url: "/community",
     icon: UsersIcon,
@@ -100,7 +110,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <MobileHeader />
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavCollections />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

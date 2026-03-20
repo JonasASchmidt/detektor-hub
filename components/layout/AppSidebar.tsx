@@ -11,6 +11,7 @@ import {
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/layout/NavMain";
+import { NavManagement } from "@/components/layout/NavManagement";
 import { NavUser } from "@/components/layout/NavUser";
 import {
   Sidebar,
@@ -110,6 +111,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <MobileHeader />
       <SidebarContent>
         <NavMain items={navMain} />
+        {/* Only visible for officials and platform admins */}
+        {(session?.user?.role === "OFFICIAL" ||
+          session?.user?.role === "ADMIN") && <NavManagement />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

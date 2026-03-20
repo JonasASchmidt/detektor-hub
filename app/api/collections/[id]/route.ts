@@ -21,11 +21,11 @@ export async function GET(
     include: {
       user: { select: { id: true, name: true, image: true } },
       findings: {
-        where: { status: "COMPLETED" },
         include: {
           images: true,
           tags: true,
-          user: { select: { id: true, name: true, image: true } },
+          user: true,
+          comments: { include: { user: true } },
         },
         orderBy: { foundAt: "desc" },
       },

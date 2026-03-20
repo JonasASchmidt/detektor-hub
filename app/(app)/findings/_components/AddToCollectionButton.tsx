@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FolderPlus, Search, Plus, Check } from "lucide-react";
+import { FolderPlus, Search, Plus, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 type CollectionSummary = {
   id: string;
   name: string;
-  _count: { findings: number };
+  // Local count so we can update it optimistically without a page refresh
+  findingCount: number;
 };
 
 interface Props {
@@ -22,6 +23,8 @@ export default function AddToCollectionButton({ findingId }: Props) {
   const [open, setOpen] = useState(false);
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [memberOf, setMemberOf] = useState<Set<string>>(new Set());
+  // Track which collection IDs are currently pending a toggle request
+  const [pending, setPending] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -29,38 +32,55 @@ export default function AddToCollectionButton({ findingId }: Props) {
   const searchRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Load the user's collections and check which ones already contain this finding
+  // Load user's collections and check which already contain this finding
   useEffect(() => {
     if (!open || !session?.user?.id) return;
     setLoading(true);
+
     fetch(`/api/collections?userId=${session.user.id}`)
       .then((r) => r.json())
       .then(async (data) => {
-        const cols: CollectionSummary[] = data.collections ?? [];
-        setCollections(cols);
-        // Check membership for each collection
+        const cols = (data.collections ?? []) as Array<{
+          id: string;
+          name: string;
+          _count: { findings: number };
+          findings: { id: string }[];
+        }>;
+
+        // Check membership: fetch each collection's finding IDs
         const memberIds = new Set<string>();
         await Promise.all(
           cols.map(async (c) => {
             const res = await fetch(`/api/collections/${c.id}`);
             const d = await res.json();
-            const isMember = d.collection?.findings?.some((f: { id: string }) => f.id === findingId);
+            const isMember = (d.collection?.findings ?? []).some(
+              (f: { id: string }) => f.id === findingId
+            );
             if (isMember) memberIds.add(c.id);
           })
         );
+
         setMemberOf(memberIds);
+        setCollections(
+          cols.map((c) => ({ id: c.id, name: c.name, findingCount: c._count.findings }))
+        );
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [open, session?.user?.id, findingId]);
 
-  // Focus search on open
+  // Focus search on open; reset state on close
   useEffect(() => {
-    if (open) setTimeout(() => searchRef.current?.focus(), 50);
-    else { setSearch(""); setCreating(false); setNewName(""); }
+    if (open) {
+      setTimeout(() => searchRef.current?.focus(), 50);
+    } else {
+      setSearch("");
+      setCreating(false);
+      setNewName("");
+    }
   }, [open]);
 
-  // Close on outside click
+  // Close panel on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -79,7 +99,24 @@ export default function AddToCollectionButton({ findingId }: Props) {
   );
 
   const handleToggle = async (collectionId: string) => {
+    if (pending.has(collectionId)) return; // debounce double-clicks
     const isMember = memberOf.has(collectionId);
+
+    // Optimistic update
+    setPending((p) => new Set(p).add(collectionId));
+    setMemberOf((prev) => {
+      const next = new Set(prev);
+      isMember ? next.delete(collectionId) : next.add(collectionId);
+      return next;
+    });
+    setCollections((prev) =>
+      prev.map((c) =>
+        c.id === collectionId
+          ? { ...c, findingCount: c.findingCount + (isMember ? -1 : 1) }
+          : c
+      )
+    );
+
     try {
       const res = await fetch(`/api/collections/${collectionId}/findings`, {
         method: isMember ? "DELETE" : "POST",
@@ -87,14 +124,28 @@ export default function AddToCollectionButton({ findingId }: Props) {
         body: JSON.stringify({ findingId }),
       });
       if (!res.ok) throw new Error();
-      setMemberOf((prev) => {
-        const next = new Set(prev);
-        isMember ? next.delete(collectionId) : next.add(collectionId);
-        return next;
-      });
       toast.success(isMember ? "Aus Sammlung entfernt." : "Zur Sammlung hinzugefügt.");
     } catch {
+      // Revert optimistic update on error
+      setMemberOf((prev) => {
+        const next = new Set(prev);
+        isMember ? next.add(collectionId) : next.delete(collectionId);
+        return next;
+      });
+      setCollections((prev) =>
+        prev.map((c) =>
+          c.id === collectionId
+            ? { ...c, findingCount: c.findingCount + (isMember ? 1 : -1) }
+            : c
+        )
+      );
       toast.error("Fehler beim Aktualisieren.");
+    } finally {
+      setPending((p) => {
+        const next = new Set(p);
+        next.delete(collectionId);
+        return next;
+      });
     }
   };
 
@@ -108,12 +159,16 @@ export default function AddToCollectionButton({ findingId }: Props) {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      const created: CollectionSummary = { ...data.collection, _count: { findings: 0 } };
+      const created: CollectionSummary = {
+        id: data.collection.id,
+        name: data.collection.name,
+        findingCount: 0,
+      };
       setCollections((prev) => [created, ...prev]);
-      // Immediately add the finding to the new collection
-      await handleToggle(created.id);
       setCreating(false);
       setNewName("");
+      // Immediately add the finding to the new collection
+      await handleToggle(created.id);
     } catch {
       toast.error("Fehler beim Erstellen.");
     }
@@ -145,19 +200,27 @@ export default function AddToCollectionButton({ findingId }: Props) {
 
           <div className="max-h-48 overflow-y-auto space-y-0.5">
             {loading && (
-              <p className="text-xs text-muted-foreground px-2 py-1">Lädt…</p>
+              <div className="flex items-center gap-2 px-2 py-2 text-sm text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Lädt…
+              </div>
             )}
             {!loading && filtered.length === 0 && !creating && (
-              <p className="text-xs text-muted-foreground px-2 py-1">Keine Sammlungen gefunden.</p>
+              <p className="text-xs text-muted-foreground px-2 py-1">
+                Keine Sammlungen gefunden.
+              </p>
             )}
             {filtered.map((c) => {
               const isMember = memberOf.has(c.id);
+              const isPending = pending.has(c.id);
               return (
                 <button
                   key={c.id}
                   onClick={() => handleToggle(c.id)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted text-left text-sm transition-colors"
+                  disabled={isPending}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted text-left text-sm transition-colors disabled:opacity-60"
                 >
+                  {/* Checkbox indicator */}
                   <span
                     className={`h-4 w-4 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
                       isMember
@@ -165,11 +228,17 @@ export default function AddToCollectionButton({ findingId }: Props) {
                         : "border-muted-foreground/40"
                     }`}
                   >
-                    {isMember && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                    {isPending ? (
+                      <Loader2 className="h-2.5 w-2.5 animate-spin text-white" />
+                    ) : (
+                      isMember && (
+                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                      )
+                    )}
                   </span>
                   <span className="truncate flex-1">{c.name}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {c._count.findings}
+                  <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                    {c.findingCount}
                   </span>
                 </button>
               );
@@ -186,12 +255,20 @@ export default function AddToCollectionButton({ findingId }: Props) {
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreate();
-                  if (e.key === "Escape") { setCreating(false); setNewName(""); }
+                  if (e.key === "Escape") {
+                    setCreating(false);
+                    setNewName("");
+                  }
                 }}
                 className="h-8 text-sm flex-1"
                 maxLength={100}
               />
-              <Button size="sm" className="h-8 px-2 font-bold" onClick={handleCreate} disabled={!newName.trim()}>
+              <Button
+                size="sm"
+                className="h-8 px-2 font-bold"
+                onClick={handleCreate}
+                disabled={!newName.trim()}
+              >
                 OK
               </Button>
             </div>

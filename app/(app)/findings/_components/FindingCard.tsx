@@ -45,7 +45,7 @@ export default function FindingCard({
   const hasLocation = finding.latitude != null && finding.longitude != null;
 
   const handleCardClick = () => {
-    router.push(`findings/${finding.id}`);
+    router.push(`/findings/${finding.id}`);
   };
 
   return (
@@ -182,7 +182,7 @@ export default function FindingCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`findings/${finding.id}`);
+              router.push(`/findings/${finding.id}`);
             }}
             className="flex items-center justify-center h-8 w-8 rounded-lg bg-[#F7F7F7] text-[#444] hover:bg-[#F0F0F0] border border-black/[0.03] transition-all hover:scale-[1.05] active:scale-[0.95] relative"
             title="Kommentare"

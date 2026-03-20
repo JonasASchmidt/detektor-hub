@@ -31,16 +31,20 @@ export function NavCollections() {
   const { state: sidebarState, isMobile, setOpenMobile } = useSidebar();
 
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
+  const [loadingCollections, setLoadingCollections] = useState(false);
   const [open, setOpen] = useState(() => pathname.startsWith("/collections"));
 
-  // Fetch the user's own collections for the sidebar
+  // Re-fetch collections whenever the pathname changes so newly created/deleted
+  // collections appear in the sidebar without requiring a full page reload
   useEffect(() => {
     if (!session?.user?.id) return;
+    setLoadingCollections(true);
     fetch(`/api/collections?userId=${session.user.id}`)
       .then((r) => r.json())
       .then((data) => setCollections(data.collections ?? []))
-      .catch(() => {});
-  }, [session?.user?.id]);
+      .catch(() => {})
+      .finally(() => setLoadingCollections(false));
+  }, [session?.user?.id, pathname]);
 
   const isOnCollections = pathname.startsWith("/collections");
   const isParentActive = sidebarState === "collapsed" ? isOnCollections : pathname === "/collections";
@@ -112,6 +116,15 @@ export function NavCollections() {
                     </Link>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
+
+                {/* Loading skeleton — shown below "Neue Sammlung" while fetching */}
+                {loadingCollections && collections.length === 0 && (
+                  <div className="px-2 py-1 space-y-1.5">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-6 rounded-md bg-muted animate-pulse" />
+                    ))}
+                  </div>
+                )}
 
                 {/* User's collections */}
                 {collections.slice(0, MAX_SIDEBAR_COLLECTIONS).map((c) => {

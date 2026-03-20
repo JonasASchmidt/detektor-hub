@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ChevronLeft, Pencil, Trash2, FolderOpen } from "lucide-react";
+import { ChevronLeft, Pencil, Trash2, FolderOpen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/initials";
 import FindingCard from "@/app/(app)/findings/_components/FindingCard";
 import { FindingWithRelations } from "@/types/FindingWithRelations";
+import CollectionFindingDialog from "./CollectionFindingDialog";
 
 type CollectionWithFindings = {
   id: string;
@@ -35,11 +36,27 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
   const [findings, setFindings] = useState(collection.findings);
   const [deleting, setDeleting] = useState(false);
 
+  // Re-fetch findings from the API after a new finding is added so FindingCard
+  // gets the full data shape (images, tags, comments, user) it needs.
+  const refreshFindings = async () => {
+    try {
+      const res = await fetch(`/api/collections/${collection.id}`);
+      const data = await res.json();
+      if (data.collection?.findings) {
+        setFindings(data.collection.findings);
+      }
+    } catch {
+      // Silently ignore
+    }
+  };
+
   const handleDeleteCollection = async () => {
     if (!confirm(`Sammlung „${collection.name}" wirklich löschen?`)) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/collections/${collection.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/collections/${collection.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error();
       toast.success("Sammlung gelöscht.");
       router.push("/collections");
@@ -58,6 +75,7 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
         body: JSON.stringify({ findingId }),
       });
       if (!res.ok) throw new Error();
+      // Remove from local state immediately — no re-fetch needed
       setFindings((prev) => prev.filter((f) => f.id !== findingId));
       toast.success("Fund aus Sammlung entfernt.");
     } catch {
@@ -69,16 +87,9 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
     <div className="px-6 pb-10 pt-12 md:px-10 md:pt-16 max-w-[800px] mx-auto w-full space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex flex-wrap items-start gap-3">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="h-8 w-8 border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] p-0 transition-all duration-150 ease-in-out shrink-0"
-          >
-            <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
-          </Button>
-          <h1 className="text-4xl font-bold leading-[1.2] flex-1">{collection.name}</h1>
-        </div>
+        <h1 className="text-4xl font-bold leading-[1.2] flex-1">
+          {collection.name}
+        </h1>
 
         {collection.description && (
           <p className="text-base text-muted-foreground leading-relaxed">
@@ -94,13 +105,18 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
                 {getInitials(collection.user.name)}
               </AvatarFallback>
             </Avatar>
-            <Link href={`/profile/${collection.user.id}`} className="hover:underline">
+            <Link
+              href={`/profile/${collection.user.id}`}
+              className="hover:underline"
+            >
               {collection.user.name}
             </Link>
           </span>
           <span>
             Zuletzt aktualisiert{" "}
-            {format(new Date(collection.updatedAt), "d. MMMM yyyy", { locale: de })}
+            {format(new Date(collection.updatedAt), "d. MMMM yyyy", {
+              locale: de,
+            })}
           </span>
           <span className="font-medium text-foreground">
             {findings.length} {findings.length === 1 ? "Fund" : "Funde"}
@@ -110,6 +126,21 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
         {/* Owner actions */}
         {isOwner && (
           <div className="flex gap-2 flex-wrap">
+            <CollectionFindingDialog
+              collectionId={collection.id}
+              existingIds={findings.map((f) => f.id)}
+              onApply={refreshFindings}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 border-2 border-foreground text-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d] text-[14px] font-bold px-3 transition-all duration-150 ease-in-out"
+                >
+                  <Plus className="h-4 w-4" />
+                  Fund hinzufügen
+                </Button>
+              }
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -153,11 +184,16 @@ export default function CollectionDetail({ collection, isOwner }: Props) {
         </div>
       ) : (
         <div className="py-16 text-center text-muted-foreground space-y-2">
-          <FolderOpen className="h-10 w-10 mx-auto text-muted-foreground/30" strokeWidth={1.5} />
+          <FolderOpen
+            className="h-10 w-10 mx-auto text-muted-foreground/30"
+            strokeWidth={1.5}
+          />
           <p>Diese Sammlung enthält noch keine Funde.</p>
-          <p className="text-sm">
-            Füge Funde über die Detailseite eines Funds hinzu.
-          </p>
+          {isOwner && (
+            <p className="text-sm">
+              Klicke auf „Fund hinzufügen" um Funde zur Sammlung hinzuzufügen.
+            </p>
+          )}
         </div>
       )}
     </div>

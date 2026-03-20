@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 
 const createSchema = z.object({
   name: z.string().min(1).max(100),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
 });
 
 // GET /api/collections — returns all collections (public), or filtered by ?userId=

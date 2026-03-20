@@ -4,6 +4,14 @@ User problems this codebase solves, mapped to their implementations.
 
 ---
 
+## "On my phone the app looks broken when I first open it — no burger menu, no proper layout"
+
+On mobile (iPhone 12 mini and similar), the first page load showed the app header without a burger menu and the layout appeared unstyled. Only after a manual reload did the correct mobile layout appear with the burger menu icon and proper viewport padding.
+
+**Implementation:** The root cause was `useIsMobile()` returning `false` during SSR/hydration (value is set in `useEffect`). `AppHeaderBar` used a JS conditional (`isMobile && <Button>`) to render the burger menu, so it was absent from the server-rendered HTML on mobile. Fix: the burger menu button is now always rendered and hidden on desktop via CSS (`md:hidden` class), ensuring it is present in the DOM from the very first paint on mobile devices.
+
+---
+
 ## "I want to group all my finds of the same type together — like all Roman coins or all Lüneburger Salzplomben"
 
 Finds of the same typological category can be scattered across many individual find records with no way to connect them conceptually. Pairwise linking would require N×(N-1)/2 links and doesn't scale.

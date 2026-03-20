@@ -161,6 +161,9 @@ Non-route files inside a route folder must live in `_components/`. `page.tsx`, `
 ### Map loading
 Leaflet must always be loaded with `dynamic(() => import('...'), { ssr: false })`.
 
+### Mobile-responsive rendering (SSR-safe)
+`useIsMobile()` (from `hooks/useMobile.ts`) returns `false` during SSR and initial hydration — the real value is only set in a `useEffect`. **Never use `isMobile` as a JS conditional to show/hide UI elements** that must be visible on first paint (e.g. burger menu, mobile-only buttons). Instead, always render the element and use Tailwind responsive classes (`md:hidden`, `hidden md:block`) so the correct layout is applied from the very first server-rendered paint. Reserve `isMobile` for non-visual logic (e.g. toggling sidebar open state, choosing touch vs mouse interactions).
+
 ### Path aliases
 `@/` maps to the project root (configured in `tsconfig.json`).
 
@@ -171,7 +174,7 @@ Leaflet must always be loaded with `dynamic(() => import('...'), { ssr: false })
 - Active sidebar item: `bg-zinc-300`
 - App header background: `#2d2d2d` (matches `--primary` CSS var)
 - Content panels: `rounded-xl` (12px); menu items: `rounded-md` (6px)
-- App header height: 48px (`h-12`), 12px left padding (`pl-3`)
+- App header height: 52px (`h-[52px]`), 12px left padding (`pl-3`)
 - Foreground: anthracite `--foreground: 0 0% 17.6%`
 - Body line-height: 130% (set in `globals.css`)
 - Ghost action buttons (Bearbeiten, Veröffentlichen, Melden): `h-8 border-2 border-foreground hover:bg-[#2d2d2d] hover:text-white hover:border-[#2d2d2d]`

@@ -65,8 +65,8 @@ export default function FindingsPicker({
     filteredFindings.length < allFindings.length;
 
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-border">
-      <div className="py-4 px-6 space-y-3">
+    <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-white md:dark:bg-gray-900 md:border md:border-border">
+      <div className="py-0 px-0 md:py-4 md:px-6 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-xl font-bold">Funde zuordnen</p>

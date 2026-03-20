@@ -146,8 +146,8 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
         {watchName || (isEditMode ? "Fund bearbeiten" : "Neuer Fund")}
       </h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 min-w-0">
-        <Card className="rounded-xl bg-parchment overflow-hidden border border-border">
-          <div className="py-6 px-6 space-y-5">
+        <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-parchment md:overflow-hidden md:border md:border-border">
+          <div className="py-0 px-0 md:py-6 md:px-6 space-y-5">
             {/* Name */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
@@ -177,7 +177,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                 <Label htmlFor="fieldSessionId">Begehung (optional)</Label>
                 <select
                   id="fieldSessionId"
-                  className="h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 md:h-9 w-full rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-base md:text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   {...register("fieldSessionId")}
                 >
                   <option value="">— keine Begehung —</option>
@@ -191,7 +191,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
             )}
 
             {/* Funddatum + Fundort in one row */}
-            <div className="flex flex-row flex-wrap gap-x-4 gap-y-3 items-end w-full">
+            <div className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-x-4 md:gap-y-3 md:items-end w-full">
               <div className="flex flex-col gap-1.5 shrink-0">
                 <Label>Funddatum</Label>
                 <DatePicker
@@ -336,8 +336,8 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
 
         {/* Advanced options */}
         <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-          <Card className="rounded-xl bg-parchment">
-            <div className="py-4 px-6">
+          <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-parchment md:border md:border-border">
+            <div className="py-0 px-0 md:py-4 md:px-6">
               <CollapsibleTrigger asChild>
                 <button
                   type="button"
@@ -351,10 +351,10 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
               </CollapsibleTrigger>
             </div>
             <CollapsibleContent>
-              <div className="pb-5 px-6 space-y-4">
+              <div className="pb-0 px-0 md:pb-5 md:px-6 space-y-4">
                 {/* Measurements */}
-                <div className="flex flex-row gap-4 flex-wrap">
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                <div className="flex flex-col md:flex-row gap-4 md:flex-wrap">
+                  <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
                     <Label htmlFor="depth">Fundtiefe [cm]</Label>
                     <Input
                       id="depth"
@@ -364,7 +364,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                       {...register("depth")}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                  <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
                     <Label htmlFor="weight">Gewicht [g]</Label>
                     <Input
                       id="weight"
@@ -374,7 +374,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                       {...register("weight")}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                  <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
                     <Label htmlFor="diameter">Durchmesser [cm]</Label>
                     <Input
                       id="diameter"
@@ -396,8 +396,8 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                     {...register("dating")}
                   />
                 </div>
-                <div className="flex flex-row gap-4 flex-wrap">
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                <div className="flex flex-col md:flex-row gap-4 md:flex-wrap">
+                  <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
                     <Label htmlFor="datingFrom">Datierung ab</Label>
                     <Input
                       id="datingFrom"
@@ -407,7 +407,7 @@ export default function FindingsForm({ tagCategories, sessions, findingId, initi
                       {...register("datingFrom")}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                  <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
                     <Label htmlFor="datingTo">Datierung bis</Label>
                     <Input
                       id="datingTo"

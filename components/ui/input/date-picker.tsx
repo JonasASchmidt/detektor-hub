@@ -44,7 +44,7 @@ export default function DatePicker<TFieldValues extends FieldValues>({
         <Button
           variant={"outline"}
           className={cn(
-            "h-8 w-auto justify-start text-left font-normal px-3",
+            "h-11 md:h-9 w-full md:w-auto justify-start text-left font-normal px-3",
             !date && "text-muted-foreground"
           )}
         >

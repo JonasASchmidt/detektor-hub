@@ -20,7 +20,7 @@ export default async function EditCollectionPage({ params }: Props) {
   if (!collection || collection.userId !== session?.user?.id) notFound();
 
   return (
-    <div className="px-6 pb-10 pt-12 md:px-10 md:pt-16 max-w-[560px] mx-auto w-full space-y-6">
+    <div className="px-4 pb-10 pt-12 md:px-10 md:pt-16 max-w-[560px] mx-auto w-full space-y-6">
       <h1 className="text-3xl font-bold">Sammlung bearbeiten</h1>
       <CollectionForm
         collectionId={collection.id}

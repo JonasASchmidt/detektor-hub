@@ -164,6 +164,15 @@ Leaflet must always be loaded with `dynamic(() => import('...'), { ssr: false })
 ### Mobile-responsive rendering (SSR-safe)
 `useIsMobile()` (from `hooks/useMobile.ts`) returns `false` during SSR and initial hydration — the real value is only set in a `useEffect`. **Never use `isMobile` as a JS conditional to show/hide UI elements** that must be visible on first paint (e.g. burger menu, mobile-only buttons). Instead, always render the element and use Tailwind responsive classes (`md:hidden`, `hidden md:block`) so the correct layout is applied from the very first server-rendered paint. Reserve `isMobile` for non-visual logic (e.g. toggling sidebar open state, choosing touch vs mouse interactions).
 
+### Mobile form patterns
+- **Form field heights**: All form controls (Input, Button, Select, DatePicker) use `h-11 md:h-9` — 44px touch target on mobile, 36px on desktop.
+- **Text size**: Form controls use `text-base md:text-sm` — 16px on mobile (prevents iOS auto-zoom), 14px on desktop.
+- **Card panels**: Form cards use `rounded-none border-0 bg-transparent md:rounded-xl md:bg-parchment md:border md:border-border` — no decorative card wrapper on mobile, full card styling on desktop.
+- **Card inner padding**: `py-0 px-0 md:py-6 md:px-6` — no card padding on mobile (page-level padding is sufficient).
+- **Multi-column layouts**: Use `flex-col md:flex-row` to stack fields vertically on mobile and display side-by-side on desktop. Remove `flex-1 min-w-[140px]` on mobile — apply only via `md:flex-1 md:min-w-[140px]`.
+- **Page wrapper padding**: `px-4` on mobile, `md:px-10` on desktop.
+- **Viewport height**: Use `h-dvh` (not `h-screen`) for layouts that need to fill the dynamic viewport height (adapts to Safari address bar etc.).
+
 ### Path aliases
 `@/` maps to the project root (configured in `tsconfig.json`).
 

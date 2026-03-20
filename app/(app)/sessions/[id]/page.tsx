@@ -74,7 +74,7 @@ export default async function SessionDetailPage({
   ).length;
 
   return (
-    <div className="px-6 pb-10 pt-12 md:px-10 md:pt-16 max-w-[800px] mx-auto w-full space-y-6">
+    <div className="px-4 pb-10 pt-12 md:px-10 md:pt-16 max-w-[800px] mx-auto w-full space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NewFindingLoading() {
   return (
-    <div className="max-w-[720px] mx-auto w-full px-6 pb-10 pt-12 md:px-10 md:pt-16 space-y-4">
+    <div className="max-w-[720px] mx-auto w-full px-4 pb-10 pt-12 md:px-10 md:pt-16 space-y-4">
       <Skeleton className="h-10 w-36" />
       <Skeleton className="h-[340px] w-full rounded-xl" />
       <Skeleton className="h-14 w-full rounded-xl" />

@@ -151,8 +151,8 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <Card className="bg-white dark:bg-gray-900 border border-border">
-          <div className="py-6 px-6 space-y-5">
+        <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-white md:dark:bg-gray-900 md:border md:border-border">
+          <div className="py-0 px-0 md:py-6 md:px-6 space-y-5">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -199,7 +199,7 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
               )}
             </div>
 
-            <div className="flex flex-row flex-wrap gap-4 items-end">
+            <div className="flex flex-col md:flex-row md:flex-wrap gap-4 md:items-end">
               <div className="flex flex-col gap-1.5">
                 <Label>Datum (von)</Label>
                 <DatePicker control={control} name="dateFrom" rules={{ required: true }} placeholder="TT.MM.JJJJ" />
@@ -217,7 +217,7 @@ export default function SessionForm({ detectors, allFindings, initialData }: Pro
                 <Label htmlFor="detectorId">Verwendetes Gerät (optional)</Label>
                 <select
                   id="detectorId"
-                  className="h-9 rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 md:h-9 w-full rounded-lg border-2 border-border bg-background hover:bg-white hover:border-foreground px-3 py-1 text-base md:text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   {...register("detectorId")}
                 >
                   <option value="">— kein Gerät ausgewählt —</option>

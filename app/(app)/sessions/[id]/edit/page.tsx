@@ -32,7 +32,7 @@ export default async function EditSessionPage({
   const linkedFindingIds = fieldSession.findings.map((f) => f.id);
 
   return (
-    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 max-w-[720px] mx-auto w-full">
+    <div className="px-4 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 max-w-[720px] mx-auto w-full">
       <SessionForm
         detectors={detectors}
         allFindings={allFindings}

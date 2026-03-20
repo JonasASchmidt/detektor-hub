@@ -218,7 +218,7 @@ export default function FindingDetail({
   ) : null;
 
   return (
-    <div className="max-w-[720px] mx-auto w-full px-6 pb-10 pt-12 md:px-10 md:pt-16 space-y-6">
+    <div className="max-w-[720px] mx-auto w-full px-4 pb-10 pt-12 md:px-10 md:pt-16 space-y-6">
       {/* Title & meta */}
       <div className="space-y-4">
         <h1 className="text-4xl font-bold leading-[1.3]">{finding.name}</h1>

@@ -145,7 +145,7 @@ export default function CommunityPage() {
   return (
     <Suspense
       fallback={
-        <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+        <div className="px-4 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
           <Skeleton className="h-10 w-40" />
           <Skeleton className="h-20 w-full rounded-lg" />
           <div className="space-y-4 pt-4">
@@ -188,7 +188,7 @@ function CommunityPageContent() {
   const showTopSection = topLoading || topWeek?.finding || topYear?.finding;
 
   return (
-    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+    <div className="px-4 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <h1 className="text-4xl font-bold">Öffentlich</h1>
       <CommunityFilters />
 

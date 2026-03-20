@@ -109,8 +109,8 @@ export default function ZoneForm({ initialData }: Props) {
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <Card className="bg-white dark:bg-gray-900 border border-border">
-          <div className="py-6 px-6 space-y-5">
+        <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-white md:dark:bg-gray-900 md:border md:border-border">
+          <div className="py-0 px-0 md:py-6 md:px-6 space-y-5">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -135,8 +135,8 @@ export default function ZoneForm({ initialData }: Props) {
           </div>
         </Card>
 
-        <Card className="bg-white dark:bg-gray-900 border border-border">
-          <div className="py-4 px-6 space-y-3">
+        <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-white md:dark:bg-gray-900 md:border md:border-border">
+          <div className="py-0 px-0 md:py-4 md:px-6 space-y-3">
             <div>
               <p className="text-xl font-bold">Zonenumriss</p>
               <p className="text-xs text-muted-foreground mt-0.5">

@@ -34,7 +34,7 @@ export default async function ZonesPage() {
   `;
 
   return (
-    <div className="px-6 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
+    <div className="px-4 pb-6 pt-12 md:px-10 md:pb-10 md:pt-16 space-y-3 max-w-[720px] mx-auto w-full">
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold mb-0">Zonen</h1>
         <Button

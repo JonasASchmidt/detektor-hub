@@ -21,7 +21,7 @@ export function AppHeaderBar({ activeSession }: Props) {
   };
 
   return (
-    <div className="flex w-full shrink-0 items-center justify-start bg-[#2d2d2d] pl-3 pr-5 z-50 overscroll-none h-[52px] gap-3">
+    <div className="flex w-full shrink-0 items-center justify-start bg-[#2d2d2d] pl-3 pr-5 z-50 overscroll-none h-[52px] gap-3 sticky top-0">
       {/* Always render burger menu, hide on desktop via CSS to avoid
          hydration flash where useIsMobile() starts as false */}
       <Button

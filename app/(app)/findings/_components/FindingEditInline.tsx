@@ -144,7 +144,7 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="max-w-[720px] mx-auto w-full px-6 pb-10 pt-12 md:px-10 md:pt-16 space-y-6">
+      <div className="max-w-[720px] mx-auto w-full px-4 pb-10 pt-12 md:px-10 md:pt-16 space-y-6">
 
         {/* ── Title & meta ───────────────────────────────────────────── */}
         <div className="space-y-4">
@@ -297,20 +297,20 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
         />
 
         {/* ── Details card ───────────────────────────────────────────── */}
-        <Card className="bg-muted p-6 space-y-4 border-black/[0.05] rounded-lg">
+        <Card className="bg-transparent md:bg-muted p-0 md:p-6 space-y-4 border-0 md:border md:border-black/[0.05] rounded-none md:rounded-lg">
           <h2 className="text-xl font-bold">Details</h2>
 
           {/* Measurements */}
-          <div className="flex flex-row gap-4 flex-wrap">
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+          <div className="flex flex-col md:flex-row gap-4 md:flex-wrap">
+            <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
               <Label htmlFor="depth">Fundtiefe [cm]</Label>
               <Input id="depth" type="number" placeholder="Tiefe" {...register("depth")} />
             </div>
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+            <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
               <Label htmlFor="weight">Gewicht [g]</Label>
               <Input id="weight" type="number" placeholder="Gewicht" {...register("weight")} />
             </div>
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+            <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
               <Label htmlFor="diameter">Durchmesser [cm]</Label>
               <Input id="diameter" type="number" placeholder="Durchmesser" {...register("diameter")} />
             </div>
@@ -321,12 +321,12 @@ export default function FindingEditInline({ finding, tagCategories, initialImage
             <Label htmlFor="dating">Datierung (Freitext)</Label>
             <Input id="dating" type="text" placeholder="z. B. Mittelalter, ca. 1200–1400" {...register("dating")} />
           </div>
-          <div className="flex flex-row gap-4 flex-wrap">
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+          <div className="flex flex-col md:flex-row gap-4 md:flex-wrap">
+            <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
               <Label htmlFor="datingFrom">Datierung ab</Label>
               <Input id="datingFrom" type="number" placeholder="Jahr von" {...register("datingFrom")} />
             </div>
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+            <div className="flex flex-col gap-1.5 md:flex-1 md:min-w-[140px]">
               <Label htmlFor="datingTo">Datierung bis</Label>
               <Input id="datingTo" type="number" placeholder="Jahr bis" {...register("datingTo")} />
             </div>

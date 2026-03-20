@@ -25,7 +25,7 @@ export default async function CollectionsPage() {
   const otherCollections = collections.filter((c) => c.userId !== session?.user?.id);
 
   return (
-    <div className="px-6 pb-10 pt-12 md:px-10 md:pt-16 max-w-[960px] mx-auto w-full space-y-8">
+    <div className="px-4 pb-10 pt-12 md:px-10 md:pt-16 max-w-[960px] mx-auto w-full space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Sammlungen</h1>
         {session && (

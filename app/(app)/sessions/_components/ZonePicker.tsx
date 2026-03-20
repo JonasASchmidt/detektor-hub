@@ -34,8 +34,8 @@ export default function ZonePicker({
   onNewZoneCoordsChange,
 }: Props) {
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-border">
-      <div className="py-4 px-6 space-y-3">
+    <Card className="rounded-none border-0 bg-transparent md:rounded-xl md:bg-white md:dark:bg-gray-900 md:border md:border-border">
+      <div className="py-0 px-0 md:py-4 md:px-6 space-y-3">
         <div>
           <p className="text-xl font-bold">Suchzone</p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -46,7 +46,7 @@ export default function ZonePicker({
         <select
           value={selectedZoneId}
           onChange={(e) => onSelectChange(e.target.value)}
-          className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-full h-11 md:h-9 rounded-md border border-input bg-background px-3 py-1 text-base md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="">— keine Zone —</option>
           {zones.map((z) => (

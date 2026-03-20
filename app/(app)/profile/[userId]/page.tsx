@@ -26,7 +26,7 @@ export default async function ProfilePage({ params }: Props) {
   })) as FindingWithRelations[];
 
   return (
-    <div className="px-6 pb-10 pt-12 md:px-10 md:pt-16 max-w-[720px] mx-auto w-full space-y-6">
+    <div className="px-4 pb-10 pt-12 md:px-10 md:pt-16 max-w-[720px] mx-auto w-full space-y-6">
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16 rounded-full">
           <AvatarImage src={user.image ?? undefined} alt={user.name ?? "Profil"} />

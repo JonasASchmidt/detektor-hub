@@ -11,6 +11,16 @@ Format: `[Date] — Branch — Description`
 
 - **Mobile Layout: Burger-Menü erscheint sofort beim ersten Laden** — `AppHeaderBar` renderte den Burger-Menü-Button per JS-Bedingung (`isMobile && ...`), wobei `useIsMobile()` beim SSR/Hydration initial `false` zurückgibt. Auf Mobilgeräten fehlte dadurch das Burger-Menü und die Seite wirkte ohne App-Header beim ersten Laden. Fix: Button wird immer gerendert und per CSS (`md:hidden`) auf Desktop ausgeblendet — so ist er ab dem allerersten Paint sichtbar.
 
+### Mobile-Optimierung
+
+- **Parchment-Panels auf Mobile entfernt** — Card-Container (`bg-parchment`, `bg-white`) werden auf Smartphones transparent/randlos dargestellt, um die volle Bildschirmbreite für Formulare zu nutzen. Auf Desktop (≥ md) bleibt das Card-Styling erhalten.
+- **Formularfelder auf 44px Höhe (Mobile)** — Input, Button, Select, Textarea und DatePicker verwenden `h-11 md:h-9` (44px auf Mobile, 36px auf Desktop) als Apple-empfohlene Touch-Target-Größe.
+- **Vollbreite Formularfelder auf Mobile** — Mehrspaltige Layouts (Maße, Datierung, Datum+Ort) werden auf Smartphones einspaltig (`flex-col md:flex-row`) dargestellt.
+- **Reduzierter Seitenabstand** — Page-Wrapper nutzen `px-4` statt `px-6` auf Mobile für mehr nutzbare Formularbreite.
+- **Kein Auto-Zoom beim Fokussieren (iOS)** — Viewport-Meta mit `maximum-scale=1, user-scalable=false`; Input-Schriftgröße auf `text-base` (16px) auf Mobile gesetzt.
+- **Dynamische Viewport-Höhe** — `h-dvh` statt `h-screen` für korrekte Höhe bei dynamischer Browser-UI (Safari-Adressleiste etc.).
+- **App-Header sticky** — `sticky top-0` auf AppHeaderBar für garantiertes Anhaften am oberen Rand.
+
 ---
 
 ## [2026-03-19] — `feature/collections`

@@ -12,6 +12,30 @@ On mobile (iPhone 12 mini and similar), the first page load showed the app heade
 
 ---
 
+## "On my phone, form fields are tiny, cramped and hard to tap"
+
+Form inputs, buttons and selects were 36px tall with 14px text — too small for comfortable touch interaction on smartphones. The parchment-colored card panels around form sections wasted horizontal space, making fields even narrower.
+
+**Implementation:** All form controls (Input, Button, Select, DatePicker, native `<select>`) now use `h-11 md:h-9` (44px mobile / 36px desktop) and `text-base md:text-sm` (16px / 14px). The 16px font size also prevents iOS Safari from auto-zooming on focus. Card panels are transparent and borderless on mobile (`rounded-none border-0 bg-transparent`), restoring full card styling only on desktop (`md:rounded-xl md:bg-parchment md:border`). Multi-column form rows stack vertically on mobile (`flex-col md:flex-row`). Page wrapper padding reduced from `px-6` to `px-4` on mobile.
+
+---
+
+## "The page zooms in when I tap an input field on my iPhone"
+
+iOS Safari auto-zooms the page when the user focuses a text input with font-size below 16px, then doesn't zoom back out — breaking the layout until a manual pinch-to-zoom.
+
+**Implementation:** Viewport meta tag set to `maximum-scale=1, user-scalable=false` via Next.js `viewport` export in `app/layout.tsx`. All form inputs use `text-base` (16px) on mobile — the threshold below which Safari triggers auto-zoom.
+
+---
+
+## "The app doesn't use the full screen on my phone — there's a gap at the bottom"
+
+The app layout used `h-screen` (100vh), which on mobile Safari equals the maximum viewport height (address bar hidden). When the address bar is visible, the page extends beyond the visible area, causing a scroll gap at the bottom.
+
+**Implementation:** Replaced `h-screen` with `h-dvh` (dynamic viewport height) on `<html>`, `<body>`, and `SidebarProvider`. `dvh` adjusts in real time as the mobile browser UI appears/disappears, ensuring the app always fills exactly the visible area.
+
+---
+
 ## "I want to group all my finds of the same type together — like all Roman coins or all Lüneburger Salzplomben"
 
 Finds of the same typological category can be scattered across many individual find records with no way to connect them conceptually. Pairwise linking would require N×(N-1)/2 links and doesn't scale.

@@ -29,6 +29,7 @@ model User {
   notificationsReceived Notification[] @relation("NotificationRecipient")
   notificationsSent     Notification[] @relation("NotificationActor")
   activityLogs          ActivityLog[]
+  collections           Collection[]
 }
 
 model Account {
@@ -110,6 +111,18 @@ model Finding {
   tags              Tag[]         @relation("FindingTags")
   relatedTo         Finding[]     @relation("RelatedFindings")
   relatedFrom       Finding[]     @relation("RelatedFindings")
+  collections       Collection[]  @relation("CollectionFindings")
+}
+
+model Collection {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  findings    Finding[] @relation("CollectionFindings")
 }
 
 model Image {

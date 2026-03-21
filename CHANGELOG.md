@@ -32,6 +32,27 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-19] — `feature/collections`
+
+### Features
+
+- **Sammlungen** — neues `Collection`-Modell (Name, Beschreibung, Kurator, many-to-many zu `Finding`); ermöglicht typologische Gruppierungen von Funden unabhängig vom Eigentümer
+- **`GET/POST /api/collections`** — alle Sammlungen abrufen (optional gefiltert nach `?userId=`) oder neue erstellen
+- **`GET/PUT/DELETE /api/collections/[id]`** — Sammlungsdetail, Bearbeiten und Löschen (nur Eigentümer)
+- **`POST/DELETE /api/collections/[id]/findings`** — Fund zur Sammlung hinzufügen / entfernen (nur Eigentümer der Sammlung); Ziel-Fund muss COMPLETED oder eigener Fund sein
+- **`/collections`** — Übersichtsseite mit eigenen und anderen Sammlungen, getrennt in zwei Sektionen, Cover-Bild aus erstem Fund
+- **`/collections/new`** — Formular zum Erstellen einer Sammlung
+- **`/collections/[id]`** — Detailseite mit Fundliste (nutzt `FindingCard`); Eigentümer können einzelne Funde per Hover-Button entfernen oder die gesamte Sammlung löschen
+- **`/collections/[id]/edit`** — Name und Beschreibung bearbeiten
+- **`NavCollections`** (`components/layout/NavCollections.tsx`) — dynamischer Sidebar-Eintrag „Sammlungen" mit aufklappbaren Sub-Items pro Sammlung; lädt Sammlungen des eingeloggten Nutzers per API; zeigt max. 8, danach „Alle anzeigen (N)"; „Neue Sammlung"-Button oben
+- **„Sammlung" Button in `FindingDetail`** — öffnet ein Dropdown-Panel mit Checkbox-Liste der eigenen Sammlungen; unterstützt Mehrfach-Zuordnung, Live-Suche und Inline-Erstellung neuer Sammlungen; sichtbar für alle eingeloggten Nutzer bei COMPLETED-Funden
+
+### Schema
+
+- Neues `Collection`-Modell mit impliziter many-to-many Relation zu `Finding` (`CollectionFindings`) und Relation zu `User`
+
+---
+
 ## [2026-03-19] — `feature/related-findings`
 
 ### Features

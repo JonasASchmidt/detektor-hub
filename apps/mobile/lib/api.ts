@@ -42,3 +42,14 @@ export async function apiPatch<T>(path: string, body: T): Promise<Response> {
     body: JSON.stringify(body),
   });
 }
+
+/**
+ * Multipart file upload. Does NOT set Content-Type so that fetch can
+ * automatically include the multipart boundary required by the server.
+ */
+export async function apiUpload(path: string, formData: FormData): Promise<Response> {
+  const token = await getToken();
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return fetch(`${API_URL}${path}`, { method: "POST", headers, body: formData });
+}

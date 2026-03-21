@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSessions } from "@/hooks/useSessions";
@@ -18,6 +19,10 @@ export default function SessionsScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { sessions, isLoading, error, refresh } = useSessions();
+
+  // Refresh the list whenever this tab comes back into focus
+  // (e.g. after returning from the field mode screen)
+  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -32,7 +37,7 @@ export default function SessionsScreen() {
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => router.push("/(app)/session/new")}
+            onPress={() => router.push({ pathname: "/(app)/session/new" })}
           >
             <Ionicons name="add" size={24} color="#fff" />
           </TouchableOpacity>
@@ -66,7 +71,7 @@ export default function SessionsScreen() {
           renderItem={({ item }) => (
             <SessionCard
               session={item}
-              onPress={() => router.push(`/(app)/session/${item.id}`)}
+              onPress={() => router.push({ pathname: "/(app)/session/[id]", params: { id: item.id } })}
             />
           )}
           ListEmptyComponent={
@@ -75,7 +80,7 @@ export default function SessionsScreen() {
               <Text style={styles.emptyText}>Noch keine Begehungen</Text>
               <TouchableOpacity
                 style={styles.createButton}
-                onPress={() => router.push("/(app)/session/new")}
+                onPress={() => router.push({ pathname: "/(app)/session/new" })}
               >
                 <Text style={styles.createButtonText}>Session erstellen</Text>
               </TouchableOpacity>

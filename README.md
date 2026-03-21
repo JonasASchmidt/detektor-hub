@@ -1,6 +1,6 @@
 # Sondlr
 
-A web platform for legal registration of archaeological metal detector finds in Germany. Connects volunteer detectorists ("Sondler*innen") with state archaeology authorities (Landesdenkmalämter).
+A web platform for legal registration of archaeological metal detector finds in Germany. Connects volunteer detectorists ("Sondler\*innen") with state archaeology authorities (Landesdenkmalämter).
 
 **UI and domain language: German.**
 
@@ -19,6 +19,7 @@ A web platform for legal registration of archaeological metal detector finds in 
 ## Getting Started
 
 ```bash
+pnpm dev
 npm run dev           # Start dev server (Turbopack)
 npm run build         # Build for production
 npm run lint          # ESLint
@@ -27,23 +28,33 @@ npx prisma studio     # Open Prisma GUI
 ```
 
 Default seed accounts:
+
 - `demo@detektorhub.de` / `password123` (Max Sondler)
 - `jonas.a.schmidt@gmail.com` / `password123` (JonasASchmidt)
 
 ---
 
+## Mobile App
+
+```bash
+npx next dev # Start dev server in apps/web
+npx expo start --clear # Start expo in apps/mobile
+```
+
+---
+
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
-| Auth | NextAuth v4, JWT, credentials provider |
-| Database | PostgreSQL + PostGIS via Prisma ORM |
-| Images | Cloudinary |
-| UI | shadcn/ui, Radix UI, Tailwind CSS, lucide-react |
-| Maps | Leaflet + react-leaflet (SSR-disabled via `dynamic`) |
-| Validation | Zod (shared between API routes and forms) |
-| Notifications | Sonner (toast) |
+| Layer         | Technology                                           |
+| ------------- | ---------------------------------------------------- |
+| Framework     | Next.js 16 (App Router, TypeScript, Turbopack)       |
+| Auth          | NextAuth v4, JWT, credentials provider               |
+| Database      | PostgreSQL + PostGIS via Prisma ORM                  |
+| Images        | Cloudinary                                           |
+| UI            | shadcn/ui, Radix UI, Tailwind CSS, lucide-react      |
+| Maps          | Leaflet + react-leaflet (SSR-disabled via `dynamic`) |
+| Validation    | Zod (shared between API routes and forms)            |
+| Notifications | Sonner (toast)                                       |
 
 ---
 
@@ -79,6 +90,7 @@ See `PROBLEMS.md` for user problems this codebase solves.
 See `CHANGELOG.md` for a history of changes.
 
 ### Planned features
+
 - **Melde-workflow modal** — guided find registration with authority lookup, pre-filled form, and preset selection
 - **Email notifications** — notify find owners when a comment is posted on their find
 - **In-app notifications** — `Notification` model exists in schema; UI panel exists (`NotificationCenter`); backend delivery not yet wired

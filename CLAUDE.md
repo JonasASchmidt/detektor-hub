@@ -24,10 +24,17 @@ These apply to every session, every change, no exceptions:
 
 ## Commands
 
+Run from the **monorepo root** (`d:\DetektorHub\detektor-hub`):
+
 ```bash
-npm run dev          # Start dev server with Turbopack
-npm run build        # prisma generate + next build
-npm run lint         # ESLint
+pnpm dev             # Start web dev server with Turbopack (delegates to apps/web)
+pnpm build           # Build web app (delegates to apps/web)
+pnpm lint            # Lint web app (delegates to apps/web)
+```
+
+Run from **`apps/web/`** for Prisma and other web-specific commands:
+
+```bash
 npx prisma studio    # Open Prisma Studio GUI
 npx prisma migrate dev --name <migration_name>  # Create and apply new migration
 npx prisma generate  # Regenerate TypeScript types from schema
@@ -36,7 +43,7 @@ npx prisma db seed   # Run seed (creates demo users, finds, images, comments)
 ```
 
 **Do not run the dev server from Claude** — user starts it in their terminal to avoid zombie processes.
-**Do not run `npm install` from Claude** — let user run it in their terminal (slow in sandbox).
+**Do not run `pnpm install` from Claude** — let user run it in their terminal (slow in sandbox).
 
 No test runner is configured yet.
 
@@ -44,14 +51,31 @@ No test runner is configured yet.
 
 ## Architecture
 
+### Monorepo Structure
+
+This is a **pnpm workspace monorepo**. Package manager: `pnpm`. Do not use `npm` for installs.
+
+```
+detektor-hub/            # workspace root
+  apps/
+    web/                 # Next.js 16 web app (all existing code lives here)
+    mobile/              # Expo React Native app (to be created)
+  packages/
+    shared/              # Shared Zod schemas, TypeScript types, API client
+  pnpm-workspace.yaml
+  package.json           # workspace root — scripts delegate to apps/web
+```
+
+All paths in this document under `lib/`, `components/`, `app/`, etc. are relative to `apps/web/` unless stated otherwise.
+
 ### Stack
-- **Next.js 16** (App Router, TypeScript) with Turbopack in dev
+- **Next.js 16** (App Router, TypeScript) with Turbopack in dev — lives in `apps/web/`
 - **Auth**: NextAuth v4 with JWT strategy and credentials provider — auth config in `lib/auth.ts`; session includes `user.id` and `user.role`
 - **Database**: PostgreSQL + PostGIS via Prisma ORM — schema in `prisma/schema.prisma`
 - **Images**: Cloudinary — utilities in `lib/cloudinary.ts`
 - **UI**: shadcn/ui components (in `components/ui/`) + Radix UI primitives, Tailwind CSS, lucide-react icons
 - **Maps**: Leaflet + react-leaflet — always lazy-loaded with `dynamic(..., { ssr: false })` due to SSR incompatibility
-- **Validation**: Zod schemas in `schemas/` — shared between API routes and forms
+- **Validation**: Zod schemas in `schemas/` — shared between API routes and forms; will migrate to `packages/shared/` when mobile app needs them
 - **Notifications (toast)**: Sonner via `components/ui/sonner.tsx`
 
 ### Route Structure

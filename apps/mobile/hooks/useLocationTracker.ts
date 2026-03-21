@@ -1,8 +1,16 @@
+/**
+ * GPS route tracker using expo-location.
+ * Works in Expo Go (foreground only). Background tracking requires a dev build.
+ *
+ * Changes from the previous version:
+ *   - stopTracking() no longer calls the server API. It returns the collected
+ *     RoutePoints so the caller (FieldMode) can persist them to SQLite and
+ *     include them in the session sync at the end.
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
-import { apiFetch } from "@/lib/api";
 
-interface RoutePoint {
+export interface RoutePoint {
   lat: number;
   lng: number;
 }
@@ -31,12 +39,7 @@ function haversineDistance(a: RoutePoint, b: RoutePoint): number {
   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
-/**
- * GPS route tracker using expo-location.
- * Works in Expo Go (foreground only). Background tracking requires a dev build.
- * On stop, PATCHes the collected route to /api/mobile/sessions/[id]/route.
- */
-export function useLocationTracker(sessionId: string | null) {
+export function useLocationTracker() {
   const [state, setState] = useState<LocationTrackerState>({
     isTracking: false,
     points: [],
@@ -45,32 +48,13 @@ export function useLocationTracker(sessionId: string | null) {
   });
 
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  // pointsRef mirrors state.points but is always current (no React batching lag)
   const pointsRef = useRef<RoutePoint[]>([]);
 
-  const syncToServer = useCallback(
-    async (points: RoutePoint[]) => {
-      if (!sessionId || points.length < 2) return;
-      const coordinates = points.map((p) => [p.lng, p.lat] as [number, number]);
-      try {
-        await apiFetch(`/api/mobile/sessions/${sessionId}/route`, {
-          method: "PATCH",
-          body: JSON.stringify({ coordinates }),
-        });
-      } catch {
-        // Non-critical — route stays in memory if this fails
-      }
-    },
-    [sessionId]
-  );
-
   const startTracking = useCallback(async () => {
-    // Request foreground permission
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      setState((prev) => ({
-        ...prev,
-        error: "GPS-Berechtigung verweigert.",
-      }));
+      setState((prev) => ({ ...prev, error: "GPS-Berechtigung verweigert." }));
       return;
     }
 
@@ -80,7 +64,7 @@ export function useLocationTracker(sessionId: string | null) {
     subscriptionRef.current = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
-        distanceInterval: 5, // call at every 5m movement minimum
+        distanceInterval: 5, // fire at every 5 m of movement (minimum)
       },
       (location) => {
         const { latitude, longitude, accuracy } = location.coords;
@@ -94,7 +78,7 @@ export function useLocationTracker(sessionId: string | null) {
         const point: RoutePoint = { lat: latitude, lng: longitude };
         const last = pointsRef.current[pointsRef.current.length - 1];
 
-        // Only record if moved far enough
+        // Only record if the device has actually moved far enough
         if (last && haversineDistance(last, point) < MIN_DISTANCE_M) {
           setState((prev) => ({
             ...prev,
@@ -114,17 +98,16 @@ export function useLocationTracker(sessionId: string | null) {
     );
   }, []);
 
-  const stopTracking = useCallback(() => {
+  /**
+   * Stop GPS tracking and return the collected route points.
+   * The caller is responsible for persisting the route (e.g. via saveSessionRoute).
+   */
+  const stopTracking = useCallback((): RoutePoint[] => {
     subscriptionRef.current?.remove();
     subscriptionRef.current = null;
-    syncToServer(pointsRef.current);
     setState((prev) => ({ ...prev, isTracking: false }));
-  }, [syncToServer]);
-
-  // Stop when sessionId is cleared
-  useEffect(() => {
-    if (!sessionId && state.isTracking) stopTracking();
-  }, [sessionId, state.isTracking, stopTracking]);
+    return pointsRef.current;
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {

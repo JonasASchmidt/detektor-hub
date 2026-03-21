@@ -1,12 +1,16 @@
 /**
- * FieldMode — the core mobile field experience.
+ * FieldMode — offline-first field experience.
  *
- * Equivalent to apps/web/app/field — combines:
- *  - Session selector / creator
- *  - GPS route tracking
- *  - Quick find form (name, GPS, photo, conductivity, description)
+ * All writes (sessions, finds, images) go to local SQLite first via lib/db.ts.
+ * Nothing is sent to the server during the session. When the user taps
+ * "Begehung beenden", syncLocalSession() / syncOrphanFinds() flushes
+ * everything in one go, with a progress overlay.
  *
- * Used by both session/new.tsx (create new) and session/[id].tsx (resume existing).
+ * Session ID conventions:
+ *   - Sessions created here have a 'local_xxx' ID until synced.
+ *   - When resuming an already-synced session (initialSession.id is a real
+ *     UUID), finds are stored with the server ID as session_id in SQLite.
+ *     syncOrphanFinds() handles the upload in that case.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -21,37 +25,52 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
-import { apiFetch, apiPost, apiUpload } from "@/lib/api";
+
+import { apiFetch } from "@/lib/api";
 import { applyNamingScheme } from "@/lib/namingScheme";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
+import { useNetInfo } from "@/hooks/useNetInfo";
+import {
+  createLocalSession,
+  createLocalFind,
+  cacheImageLocally,
+  linkImageToFind,
+  getPendingSessions,
+  saveSessionRoute,
+} from "@/lib/db";
+import { syncLocalSession, syncOrphanFinds, SyncProgress } from "@/lib/sync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ActiveSession {
+  id: string; // 'local_xxx' or server UUID
+  name: string;
+  namingScheme: string | null;
+  isLocalOnly: boolean; // true = created offline, false = synced session being resumed
+}
 
 interface OpenSession {
   id: string;
   name: string;
   namingScheme: string | null;
+  isLocalOnly: boolean;
+  findCount: number;
 }
 
-interface ActiveSession extends OpenSession {}
-
-interface UploadedImage {
-  id: string;
-  url: string;
+/** A photo captured during the session but not yet submitted with a find. */
+interface PendingPhoto {
+  /** Camera temp URI — used for thumbnail display only. */
+  thumbUri: string;
+  /** Permanent path in documentDirectory — used for upload at sync. */
+  localPath: string;
 }
-
-interface Props {
-  /** Pre-select an existing session on mount (used by session/[id].tsx). */
-  initialSession?: ActiveSession;
-}
-
-// ─── GPS single-point fetch ───────────────────────────────────────────────────
 
 interface GpsPoint {
   lat: number;
@@ -59,10 +78,16 @@ interface GpsPoint {
   accuracy: number;
 }
 
+interface Props {
+  /** Pre-select an existing session on mount (used by session/[id].tsx). */
+  initialSession?: { id: string; name: string; namingScheme: string | null };
+}
+
+// ─── GPS single-point fetch ───────────────────────────────────────────────────
+
 async function fetchCurrentPosition(): Promise<GpsPoint> {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== "granted") throw new Error("GPS-Berechtigung verweigert.");
-
   const loc = await Location.getCurrentPositionAsync({
     accuracy: Location.Accuracy.BestForNavigation,
   });
@@ -77,10 +102,18 @@ async function fetchCurrentPosition(): Promise<GpsPoint> {
 
 export default function FieldMode({ initialSession }: Props) {
   const router = useRouter();
+  const { isOnline } = useNetInfo();
 
-  // Session state
+  // ── Session state ──────────────────────────────────────────────────────────
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(
-    initialSession ?? null
+    initialSession
+      ? {
+          id: initialSession.id,
+          name: initialSession.name,
+          namingScheme: initialSession.namingScheme,
+          isLocalOnly: initialSession.id.startsWith("local_"),
+        }
+      : null
   );
   const [openSessions, setOpenSessions] = useState<OpenSession[]>([]);
   const [showSessionPicker, setShowSessionPicker] = useState(false);
@@ -88,46 +121,76 @@ export default function FieldMode({ initialSession }: Props) {
   const [newSessionScheme, setNewSessionScheme] = useState("");
   const [creatingSession, setCreatingSession] = useState(false);
 
-  // Route tracking
+  // ── GPS tracking ──────────────────────────────────────────────────────────
   const { isTracking, points, accuracy: trackAccuracy, error: trackError, startTracking, stopTracking } =
-    useLocationTracker(activeSession?.id ?? null);
+    useLocationTracker();
 
-  // Find form state
+  // ── Find form state ───────────────────────────────────────────────────────
   const [findName, setFindName] = useState("");
   const [description, setDescription] = useState("");
   const [conductivity, setConductivity] = useState("");
   const [gps, setGps] = useState<GpsPoint | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
-  const [images, setImages] = useState<UploadedImage[]>([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
+  const [cachingPhoto, setCachingPhoto] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSubmitName, setLastSubmitName] = useState<string | null>(null);
   const [sessionFindCount, setSessionFindCount] = useState(0);
 
-  // Auto-name from naming scheme
+  // ── Sync overlay state ────────────────────────────────────────────────────
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
+
+  // ── Auto-name from naming scheme ──────────────────────────────────────────
   const autoName = useMemo(() => {
     if (!activeSession?.namingScheme) return null;
     return applyNamingScheme(activeSession.namingScheme, activeSession.name, sessionFindCount + 1);
   }, [activeSession, sessionFindCount]);
 
-  // ─── Load open sessions ──────────────────────────────────────────────────
+  // ─── Load resumable sessions ───────────────────────────────────────────────
 
   const loadOpenSessions = useCallback(async () => {
     try {
-      const res = await apiFetch("/api/mobile/sessions?open=true");
-      if (!res.ok) return;
-      const { fieldSessions } = await res.json();
-      setOpenSessions(fieldSessions);
+      // Local pending sessions (created offline or not yet ended)
+      const local = await getPendingSessions();
+      const localMapped: OpenSession[] = local.map((s) => ({
+        id: s.id,
+        name: s.name,
+        namingScheme: s.namingScheme,
+        isLocalOnly: true,
+        findCount: s.findCount,
+      }));
+
+      // Server sessions without dateTo (open, already synced)
+      // Only fetch if online; silently skip if offline.
+      let serverSessions: OpenSession[] = [];
+      if (isOnline) {
+        const res = await apiFetch("/api/mobile/sessions?open=true");
+        if (res.ok) {
+          const { fieldSessions } = await res.json();
+          serverSessions = (fieldSessions as Array<{ id: string; name: string; namingScheme: string | null; findings: unknown[] }>)
+            // Exclude any that are already in local (shouldn't happen, but guard against duplicates)
+            .filter((s) => !local.some((l) => l.serverId === s.id))
+            .map((s) => ({
+              id: s.id,
+              name: s.name,
+              namingScheme: s.namingScheme ?? null,
+              isLocalOnly: false,
+              findCount: Array.isArray(s.findings) ? s.findings.length : 0,
+            }));
+        }
+      }
+
+      setOpenSessions([...localMapped, ...serverSessions]);
     } catch {
-      // non-critical
+      // Non-critical — show what we have
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     loadOpenSessions();
   }, [loadOpenSessions]);
 
-  // ─── Session management ──────────────────────────────────────────────────
+  // ─── Session management ────────────────────────────────────────────────────
 
   async function handleCreateSession() {
     if (!newSessionName.trim()) {
@@ -136,14 +199,17 @@ export default function FieldMode({ initialSession }: Props) {
     }
     setCreatingSession(true);
     try {
-      const res = await apiPost("/api/mobile/sessions", {
+      const session = await createLocalSession({
         name: newSessionName.trim(),
         namingScheme: newSessionScheme.trim() || null,
         dateFrom: new Date().toISOString(),
       });
-      if (!res.ok) throw new Error();
-      const { fieldSession } = await res.json();
-      setActiveSession({ id: fieldSession.id, name: fieldSession.name, namingScheme: fieldSession.namingScheme });
+      setActiveSession({
+        id: session.id,
+        name: session.name,
+        namingScheme: session.namingScheme,
+        isLocalOnly: true,
+      });
       setNewSessionName("");
       setNewSessionScheme("");
       setShowSessionPicker(false);
@@ -156,31 +222,102 @@ export default function FieldMode({ initialSession }: Props) {
   }
 
   function handleSelectSession(s: OpenSession) {
-    setActiveSession(s);
+    setActiveSession({
+      id: s.id,
+      name: s.name,
+      namingScheme: s.namingScheme,
+      isLocalOnly: s.isLocalOnly,
+    });
     setShowSessionPicker(false);
     setSessionFindCount(0);
   }
 
-  function handleEndSession() {
-    Alert.alert("Begehung beenden", "Möchtest du die aktive Begehung beenden?", [
-      { text: "Abbrechen", style: "cancel" },
-      {
-        text: "Beenden",
-        style: "destructive",
-        onPress: () => {
-          if (isTracking) stopTracking();
-          setActiveSession(null);
-          setGps(null);
-          setImages([]);
-          setLastSubmitName(null);
-          // Navigate back to the sessions list
-          router.replace("/(app)/sessions" as never);
+  async function handleEndSession() {
+    Alert.alert(
+      "Begehung beenden",
+      sessionFindCount > 0
+        ? `${sessionFindCount} Funde werden jetzt synchronisiert.`
+        : "Möchtest du die Begehung beenden?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Beenden & Sync",
+          style: "destructive",
+          onPress: () => void runEndSession(),
         },
-      },
-    ]);
+      ]
+    );
   }
 
-  // ─── GPS ─────────────────────────────────────────────────────────────────
+  async function runEndSession() {
+    if (!activeSession) return;
+
+    // Stop GPS tracking and capture the route points
+    const routePoints = isTracking ? stopTracking() : points;
+    const dateTo = new Date().toISOString();
+
+    // Persist route to SQLite for local sessions so it survives a crash
+    if (activeSession.isLocalOnly) {
+      await saveSessionRoute(activeSession.id, routePoints).catch(() => {});
+    }
+
+    // ── Attempt sync if online ──────────────────────────────────────────────
+    if (isOnline === false) {
+      // Offline — data is already in SQLite, just navigate back
+      Alert.alert(
+        "Offline",
+        "Keine Verbindung. Deine Funde sind lokal gespeichert und werden synchronisiert sobald du wieder online bist."
+      );
+      resetSessionState();
+      router.replace("/(app)/sessions" as never);
+      return;
+    }
+
+    setSyncProgress({ message: "Vorbereiten …", fraction: 0 });
+    try {
+      if (activeSession.isLocalOnly) {
+        await syncLocalSession(activeSession.id, routePoints, dateTo, setSyncProgress);
+      } else {
+        await syncOrphanFinds(activeSession.id, setSyncProgress);
+        // PATCH dateTo on the server session
+        await apiFetch(`/api/mobile/sessions/${activeSession.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ dateTo }),
+        });
+      }
+      setSyncProgress(null);
+      resetSessionState();
+      router.replace("/(app)/sessions" as never);
+    } catch (err) {
+      console.error("[FieldMode] sync failed:", err);
+      setSyncProgress(null);
+      Alert.alert(
+        "Sync fehlgeschlagen",
+        `${err instanceof Error ? err.message : "Unbekannter Fehler."}\n\nDeine Funde sind lokal gespeichert. Du kannst sie später aus der Session-Liste synchronisieren.`,
+        [
+          {
+            text: "Trotzdem beenden",
+            style: "destructive",
+            onPress: () => {
+              resetSessionState();
+              router.replace("/(app)/sessions" as never);
+            },
+          },
+          { text: "Zurück", style: "cancel" },
+        ]
+      );
+    }
+  }
+
+  function resetSessionState() {
+    setActiveSession(null);
+    setGps(null);
+    setPendingPhotos([]);
+    setLastSubmitName(null);
+    setSessionFindCount(0);
+  }
+
+  // ─── GPS ──────────────────────────────────────────────────────────────────
 
   async function handleFetchGps() {
     setGpsLoading(true);
@@ -194,7 +331,7 @@ export default function FieldMode({ initialSession }: Props) {
     }
   }
 
-  // ─── Photos ──────────────────────────────────────────────────────────────
+  // ─── Photos ───────────────────────────────────────────────────────────────
 
   async function handleTakePhoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -210,61 +347,56 @@ export default function FieldMode({ initialSession }: Props) {
     if (result.canceled || !result.assets[0]) return;
 
     const asset = result.assets[0];
-    setUploadingImage(true);
+    setCachingPhoto(true);
     try {
-      // Fetch the local file as a blob — more reliable than the { uri, name, type } trick
-      // across different Expo/RN versions and Android content URIs.
-      const fileResponse = await fetch(asset.uri);
-      const blob = await fileResponse.blob();
-
-      const formData = new FormData();
-      formData.append("file", blob, asset.fileName ?? "photo.jpg");
-
-      const res = await apiUpload("/api/mobile/images", formData);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error ?? `HTTP ${res.status}`);
-      }
-      const img = await res.json();
-      setImages((prev) => [...prev, { id: img.id, url: img.url }]);
-    } catch (err) {
-      Alert.alert("Fehler", `Foto konnte nicht hochgeladen werden: ${err instanceof Error ? err.message : "Unbekannter Fehler"}`);
+      // Copy from temp camera URI to permanent app storage immediately.
+      // The file is now safe even if the app is killed mid-session.
+      // cacheImageLocally is synchronous (expo-file-system v19 File API).
+      const localPath = cacheImageLocally(asset.uri);
+      setPendingPhotos((prev) => [...prev, { thumbUri: asset.uri, localPath }]);
+    } catch {
+      Alert.alert("Fehler", "Foto konnte nicht gespeichert werden.");
     } finally {
-      setUploadingImage(false);
+      setCachingPhoto(false);
     }
   }
 
-  // ─── Submit find ─────────────────────────────────────────────────────────
+  // ─── Submit find ──────────────────────────────────────────────────────────
 
   async function handleSubmitFind() {
     if (!gps) {
       Alert.alert("Fehler", "Bitte zuerst GPS-Koordinaten abrufen.");
       return;
     }
+    if (!activeSession) return;
+
     setSubmitting(true);
     try {
-      const resolvedName = findName.trim() || autoName || undefined;
-      console.log("[FieldMode] submit — autoName:", autoName, "resolvedName:", resolvedName);
-      const res = await apiPost("/api/mobile/findings/draft", {
-        // Prefer explicit name → then auto-name from naming scheme → then undefined (no name)
-        name: resolvedName,
-        location: { lat: gps.lat, lng: gps.lng },
-        description: description.trim() || undefined,
-        conductivity: conductivity ? parseInt(conductivity, 10) : undefined,
-        foundAt: new Date().toISOString(),
-        images: images.map((i) => i.id),
-        fieldSessionId: activeSession?.id ?? null,
-      });
-      if (!res.ok) throw new Error();
-      const { finding } = await res.json();
+      const resolvedName = findName.trim() || autoName || null;
 
-      setLastSubmitName(finding.name ?? "");
+      // Write find to SQLite — no network needed
+      const findId = await createLocalFind({
+        sessionId: activeSession.id,
+        name: resolvedName,
+        lat: gps.lat,
+        lng: gps.lng,
+        description: description.trim() || null,
+        conductivity: conductivity ? parseInt(conductivity, 10) : null,
+        foundAt: new Date().toISOString(),
+      });
+
+      // Link cached photos to this find
+      for (const photo of pendingPhotos) {
+        await linkImageToFind(findId, photo.localPath);
+      }
+
+      setLastSubmitName(resolvedName ?? "");
       setSessionFindCount((c) => c + 1);
       // Reset form but keep GPS for rapid successive finds
       setFindName("");
       setDescription("");
       setConductivity("");
-      setImages([]);
+      setPendingPhotos([]);
     } catch {
       Alert.alert("Fehler", "Fund konnte nicht gespeichert werden.");
     } finally {
@@ -276,30 +408,64 @@ export default function FieldMode({ initialSession }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Sync progress overlay */}
+      <Modal visible={syncProgress !== null} transparent animationType="fade">
+        <View style={styles.syncOverlay}>
+          <View style={styles.syncCard}>
+            <ActivityIndicator color="#2d2d2d" size="large" />
+            <Text style={styles.syncMessage}>{syncProgress?.message ?? ""}</Text>
+            {/* Progress bar */}
+            <View style={styles.progressTrack}>
+              <View
+                style={[styles.progressBar, { width: `${Math.round((syncProgress?.fraction ?? 0) * 100)}%` }]}
+              />
+            </View>
+            <Text style={styles.syncHint}>Bitte warten — nicht schließen</Text>
+          </View>
+        </View>
+      </Modal>
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
+
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle} numberOfLines={1}>
             {activeSession ? activeSession.name : "Felderfassung"}
           </Text>
-          {isTracking && (
-            <View style={styles.trackingBadge}>
-              <Ionicons name="radio" size={10} color="#22c55e" />
-              <Text style={styles.trackingText}>{points.length} Pkt</Text>
-              {trackAccuracy !== null && (
-                <Text style={styles.trackingAccuracy}>±{trackAccuracy}m</Text>
-              )}
-            </View>
-          )}
+          <View style={styles.headerSubRow}>
+            {isTracking && (
+              <View style={styles.trackingBadge}>
+                <Ionicons name="radio" size={10} color="#22c55e" />
+                <Text style={styles.trackingText}>{points.length} Pkt</Text>
+                {trackAccuracy !== null && (
+                  <Text style={styles.trackingAccuracy}>±{trackAccuracy}m</Text>
+                )}
+              </View>
+            )}
+            {/* Offline/online indicator */}
+            {isOnline === false && (
+              <View style={styles.offlineBadge}>
+                <Ionicons name="cloud-offline-outline" size={10} color="#f97316" />
+                <Text style={styles.offlineText}>Offline</Text>
+              </View>
+            )}
+            {activeSession && sessionFindCount > 0 && (
+              <View style={styles.pendingBadge}>
+                <Ionicons name="time-outline" size={10} color="#888" />
+                <Text style={styles.pendingText}>{sessionFindCount} lokal</Text>
+              </View>
+            )}
+          </View>
         </View>
+
         {activeSession ? (
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={[styles.headerBtn, isTracking && styles.headerBtnActive]}
-              onPress={isTracking ? stopTracking : startTracking}
+              onPress={isTracking ? () => stopTracking() : startTracking}
             >
               <Ionicons
                 name={isTracking ? "stop-circle-outline" : "navigate-outline"}
@@ -366,16 +532,29 @@ export default function FieldMode({ initialSession }: Props) {
                   {openSessions.map((s) => (
                     <TouchableOpacity
                       key={s.id}
-                      style={[styles.sessionItem, activeSession?.id === s.id && styles.sessionItemActive]}
+                      style={[
+                        styles.sessionItem,
+                        activeSession?.id === s.id && styles.sessionItemActive,
+                      ]}
                       onPress={() => handleSelectSession(s)}
                     >
                       <Ionicons name="map-outline" size={16} color="#888" />
                       <View style={{ flex: 1 }}>
                         <Text style={styles.sessionItemName}>{s.name}</Text>
-                        {s.namingScheme && (
+                        {s.namingScheme ? (
                           <Text style={styles.sessionItemScheme}>Schema: {s.namingScheme}</Text>
-                        )}
+                        ) : null}
+                        {s.findCount > 0 ? (
+                          <Text style={styles.sessionItemPending}>
+                            {s.isLocalOnly ? `${s.findCount} lokal ausstehend` : `${s.findCount} Funde`}
+                          </Text>
+                        ) : null}
                       </View>
+                      {s.isLocalOnly && (
+                        <View style={styles.localBadge}>
+                          <Ionicons name="time-outline" size={12} color="#f97316" />
+                        </View>
+                      )}
                       {activeSession?.id === s.id && (
                         <Ionicons name="checkmark-circle" size={18} color="#2d2d2d" />
                       )}
@@ -406,7 +585,6 @@ export default function FieldMode({ initialSession }: Props) {
                 <Ionicons name="chevron-down" size={14} color="#888" />
               </TouchableOpacity>
 
-              {/* ── Find form ── */}
               <Text style={styles.sectionTitle}>Fund erfassen</Text>
 
               {/* Name */}
@@ -420,7 +598,8 @@ export default function FieldMode({ initialSession }: Props) {
               />
               {autoName && !findName && (
                 <Text style={styles.hint}>
-                  Leer lassen für: <Text style={{ fontWeight: "600", color: "#444" }}>{autoName}</Text>
+                  Leer lassen für:{" "}
+                  <Text style={{ fontWeight: "600", color: "#444" }}>{autoName}</Text>
                 </Text>
               )}
 
@@ -454,21 +633,23 @@ export default function FieldMode({ initialSession }: Props) {
               <Text style={styles.label}>Fotos</Text>
               <View style={styles.photoRow}>
                 <TouchableOpacity
-                  style={[styles.secondaryButton, uploadingImage && styles.buttonDisabled]}
+                  style={[styles.secondaryButton, cachingPhoto && styles.buttonDisabled]}
                   onPress={handleTakePhoto}
-                  disabled={uploadingImage}
+                  disabled={cachingPhoto}
                 >
-                  {uploadingImage
+                  {cachingPhoto
                     ? <ActivityIndicator color="#2d2d2d" size="small" />
                     : <Ionicons name="camera-outline" size={18} color="#2d2d2d" />}
                   <Text style={styles.secondaryButtonText}>Foto aufnehmen</Text>
                 </TouchableOpacity>
-                {images.map((img) => (
-                  <View key={img.id} style={styles.thumb}>
-                    <Image source={{ uri: img.url }} style={styles.thumbImg} />
+                {pendingPhotos.map((photo, idx) => (
+                  <View key={photo.localPath} style={styles.thumb}>
+                    <Image source={{ uri: photo.thumbUri }} style={styles.thumbImg} />
                     <TouchableOpacity
                       style={styles.thumbRemove}
-                      onPress={() => setImages((prev) => prev.filter((i) => i.id !== img.id))}
+                      onPress={() =>
+                        setPendingPhotos((prev) => prev.filter((_, i) => i !== idx))
+                      }
                     >
                       <Ionicons name="close-circle" size={18} color="#ef4444" />
                     </TouchableOpacity>
@@ -504,20 +685,27 @@ export default function FieldMode({ initialSession }: Props) {
                 <View style={styles.successRow}>
                   <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
                   <Text style={styles.successText}>
-                    Zuletzt: <Text style={{ fontWeight: "600" }}>{lastSubmitName || "(kein Name)"}</Text>
+                    Lokal gespeichert:{" "}
+                    <Text style={{ fontWeight: "600" }}>
+                      {lastSubmitName || "(kein Name)"}
+                    </Text>
                   </Text>
                 </View>
               )}
 
               {/* Submit */}
               <TouchableOpacity
-                style={[styles.primaryButton, styles.submitButton, (!gps || submitting) && styles.buttonDisabled]}
+                style={[
+                  styles.primaryButton,
+                  styles.submitButton,
+                  (!gps || submitting) && styles.buttonDisabled,
+                ]}
                 onPress={handleSubmitFind}
                 disabled={!gps || submitting}
               >
                 {submitting
                   ? <ActivityIndicator color="#fff" />
-                  : <Text style={styles.primaryButtonText}>Fund loggen</Text>}
+                  : <Text style={styles.primaryButtonText}>Fund lokal speichern</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -532,6 +720,32 @@ export default function FieldMode({ initialSession }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
 
+  // Sync overlay
+  syncOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  syncCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 28,
+    width: "80%",
+    alignItems: "center",
+    gap: 16,
+  },
+  syncMessage: { fontSize: 15, fontWeight: "600", color: "#1a1a1a", textAlign: "center" },
+  progressTrack: {
+    width: "100%",
+    height: 6,
+    backgroundColor: "#e5e5e5",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBar: { height: "100%", backgroundColor: "#2d2d2d", borderRadius: 3 },
+  syncHint: { fontSize: 12, color: "#aaa" },
+
   // Header
   header: {
     backgroundColor: "#2d2d2d",
@@ -544,14 +758,22 @@ const styles = StyleSheet.create({
   backButton: { padding: 4 },
   headerCenter: { flex: 1 },
   headerTitle: { fontSize: 16, fontWeight: "700", color: "#fff" },
-  trackingBadge: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  headerSubRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2, flexWrap: "wrap" },
+  trackingBadge: { flexDirection: "row", alignItems: "center", gap: 4 },
   trackingText: { fontSize: 11, color: "#22c55e" },
   trackingAccuracy: { fontSize: 11, color: "#888" },
+  offlineBadge: { flexDirection: "row", alignItems: "center", gap: 3 },
+  offlineText: { fontSize: 11, color: "#f97316" },
+  pendingBadge: { flexDirection: "row", alignItems: "center", gap: 3 },
+  pendingText: { fontSize: 11, color: "#aaa" },
   headerActions: { flexDirection: "row", gap: 6 },
   headerBtn: {
-    width: 32, height: 32, borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     backgroundColor: "rgba(255,255,255,0.1)",
-    alignItems: "center", justifyContent: "center",
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerBtnActive: { backgroundColor: "rgba(34,197,94,0.15)" },
   trackingError: { backgroundColor: "#fef2f2", paddingHorizontal: 16, paddingVertical: 6 },
@@ -608,7 +830,11 @@ const styles = StyleSheet.create({
   // GPS
   row: { flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" },
   gpsInfo: { flexDirection: "row", alignItems: "center", gap: 4, flexShrink: 1 },
-  gpsText: { fontSize: 12, color: "#22c55e", fontFamily: Platform.OS === "ios" ? "Courier" : "monospace" },
+  gpsText: {
+    fontSize: 12,
+    color: "#22c55e",
+    fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
+  },
   gpsAccuracy: { fontSize: 12, color: "#888" },
 
   // Photos
@@ -632,7 +858,13 @@ const styles = StyleSheet.create({
   },
   changeSessionText: { flex: 1, fontSize: 14, fontWeight: "600", color: "#2d2d2d" },
   sessionList: { gap: 6, marginTop: 8 },
-  sessionListLabel: { fontSize: 11, fontWeight: "600", color: "#999", textTransform: "uppercase", letterSpacing: 0.5 },
+  sessionListLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#999",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   sessionItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -647,6 +879,8 @@ const styles = StyleSheet.create({
   sessionItemActive: { borderColor: "#2d2d2d", backgroundColor: "#f9f9f9" },
   sessionItemName: { fontSize: 14, fontWeight: "600", color: "#1a1a1a" },
   sessionItemScheme: { fontSize: 12, color: "#888", marginTop: 1 },
+  sessionItemPending: { fontSize: 12, color: "#f97316", marginTop: 1 },
+  localBadge: { padding: 2 },
 
   // Success feedback
   successRow: { flexDirection: "row", alignItems: "center", gap: 6 },

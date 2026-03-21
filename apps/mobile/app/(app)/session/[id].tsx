@@ -1,7 +1,15 @@
+/**
+ * Session detail screen — loads a session by ID and opens FieldMode.
+ *
+ * ID conventions:
+ *   - 'local_xxx'  → session is pending in SQLite, fetch from local DB
+ *   - anything else → session is synced, fetch from /api/mobile/sessions/:id
+ */
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { apiFetch } from "@/lib/api";
+import { getLocalSession } from "@/lib/db";
 import FieldMode from "@/components/FieldMode";
 
 interface SessionData {
@@ -10,7 +18,6 @@ interface SessionData {
   namingScheme: string | null;
 }
 
-/** Loads the session by ID and opens FieldMode with it pre-selected. */
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [session, setSession] = useState<SessionData | null>(null);
@@ -20,10 +27,26 @@ export default function SessionDetailScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiFetch(`/api/field-sessions/${id}`);
-        if (!res.ok) throw new Error();
-        const { fieldSession } = await res.json();
-        setSession({ id: fieldSession.id, name: fieldSession.name, namingScheme: fieldSession.namingScheme ?? null });
+        if (id.startsWith("local_")) {
+          // ── Pending local session ─────────────────────────────────────────
+          const local = await getLocalSession(id);
+          if (!local) throw new Error("Nicht gefunden.");
+          setSession({
+            id: local.id,
+            name: local.name,
+            namingScheme: local.namingScheme,
+          });
+        } else {
+          // ── Synced server session ─────────────────────────────────────────
+          const res = await apiFetch(`/api/mobile/sessions/${id}`);
+          if (!res.ok) throw new Error();
+          const { fieldSession } = await res.json();
+          setSession({
+            id: fieldSession.id,
+            name: fieldSession.name,
+            namingScheme: fieldSession.namingScheme ?? null,
+          });
+        }
       } catch {
         setError(true);
       } finally {

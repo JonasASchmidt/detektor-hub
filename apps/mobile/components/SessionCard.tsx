@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import type { MobileSession } from "@/hooks/useSessions";
+import type { SessionListItem } from "@/hooks/useSessions";
 
 interface SessionCardProps {
-  session: MobileSession;
+  session: SessionListItem;
   onPress: () => void;
 }
 
@@ -17,12 +17,19 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
     ? `${formatDate(session.dateFrom)} – ${formatDate(session.dateTo)}`
     : formatDate(session.dateFrom);
 
-  const findingCount = session.findings.length;
-
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.main}>
-        <Text style={styles.name} numberOfLines={1}>{session.name}</Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>{session.name}</Text>
+          {/* Orange clock badge for sessions not yet synced */}
+          {session.isPending && (
+            <View style={styles.pendingBadge}>
+              <Ionicons name="time-outline" size={11} color="#f97316" />
+              <Text style={styles.pendingText}>ausstehend</Text>
+            </View>
+          )}
+        </View>
 
         {session.description ? (
           <Text style={styles.description} numberOfLines={1}>
@@ -38,8 +45,9 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
 
           <View style={styles.metaItem}>
             <Ionicons name="search-outline" size={13} color="#888" />
-            <Text style={styles.metaText}>
-              {findingCount} {findingCount === 1 ? "Fund" : "Funde"}
+            <Text style={[styles.metaText, session.isPending && styles.metaTextPending]}>
+              {session.findCount} {session.findCount === 1 ? "Fund" : "Funde"}
+              {session.isPending ? " lokal" : ""}
             </Text>
           </View>
 
@@ -87,11 +95,34 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    marginBottom: 2,
+  },
   name: {
     fontSize: 15,
     fontWeight: "600",
     color: "#1a1a1a",
-    marginBottom: 2,
+    flexShrink: 1,
+  },
+  pendingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#fff7ed",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+  },
+  pendingText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#f97316",
   },
   description: {
     fontSize: 13,
@@ -112,5 +143,8 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 12,
     color: "#888",
+  },
+  metaTextPending: {
+    color: "#f97316",
   },
 });

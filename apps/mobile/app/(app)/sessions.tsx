@@ -6,23 +6,61 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSessions } from "@/hooks/useSessions";
 import SessionCard from "@/components/SessionCard";
 import { useAuth } from "@/context/AuthContext";
+import { useNetInfo } from "@/hooks/useNetInfo";
+import { getPendingSessions } from "@/lib/db";
+import { syncLocalSession } from "@/lib/sync";
+import type { SyncProgress } from "@/lib/sync";
 
 export default function SessionsScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { sessions, isLoading, error, refresh } = useSessions();
+  const { isOnline } = useNetInfo();
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
-  // Refresh the list whenever this tab comes back into focus
-  // (e.g. after returning from the field mode screen)
+  // Refresh whenever this tab comes back into focus
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+
+  const pendingCount = sessions.filter((s) => s.isPending).length;
+
+  /** Sync all pending sessions — triggered manually by the user. */
+  async function handleSyncAll() {
+    if (!isOnline) {
+      Alert.alert("Offline", "Keine Verbindung. Bitte versuche es später noch einmal.");
+      return;
+    }
+    setSyncing(true);
+    setSyncMessage("Ausstehende Begehungen synchronisieren …");
+    try {
+      const pending = await getPendingSessions();
+      for (let i = 0; i < pending.length; i++) {
+        const s = pending[i];
+        setSyncMessage(`${s.name} (${i + 1}/${pending.length}) …`);
+        const onProgress = (p: SyncProgress) => setSyncMessage(p.message);
+        await syncLocalSession(s.id, [], new Date().toISOString(), onProgress);
+      }
+      setSyncMessage(null);
+      await refresh();
+    } catch (err) {
+      setSyncMessage(null);
+      Alert.alert(
+        "Sync fehlgeschlagen",
+        err instanceof Error ? err.message : "Unbekannter Fehler."
+      );
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -35,6 +73,25 @@ export default function SessionsScreen() {
           ) : null}
         </View>
         <View style={styles.headerActions}>
+          {/* Offline indicator */}
+          {isOnline === false && (
+            <View style={styles.offlinePill}>
+              <Ionicons name="cloud-offline-outline" size={13} color="#f97316" />
+              <Text style={styles.offlinePillText}>Offline</Text>
+            </View>
+          )}
+          {/* Sync button — only when there are pending sessions and we're online */}
+          {pendingCount > 0 && isOnline && (
+            <TouchableOpacity
+              style={[styles.iconButton, styles.syncButton]}
+              onPress={handleSyncAll}
+              disabled={syncing}
+            >
+              {syncing
+                ? <ActivityIndicator color="#f97316" size="small" />
+                : <Ionicons name="cloud-upload-outline" size={20} color="#f97316" />}
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => router.push({ pathname: "/(app)/session/new" })}
@@ -46,6 +103,29 @@ export default function SessionsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Sync status bar */}
+      {syncing && syncMessage && (
+        <View style={styles.syncBar}>
+          <ActivityIndicator color="#f97316" size="small" />
+          <Text style={styles.syncBarText} numberOfLines={1}>{syncMessage}</Text>
+        </View>
+      )}
+
+      {/* Pending banner */}
+      {pendingCount > 0 && !syncing && (
+        <TouchableOpacity
+          style={styles.pendingBanner}
+          onPress={isOnline ? handleSyncAll : undefined}
+          activeOpacity={isOnline ? 0.7 : 1}
+        >
+          <Ionicons name="time-outline" size={16} color="#f97316" />
+          <Text style={styles.pendingBannerText}>
+            {pendingCount} {pendingCount === 1 ? "Begehung" : "Begehungen"} ausstehend
+            {isOnline ? " — Tippen zum Synchronisieren" : " — wartet auf Verbindung"}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Content */}
       {isLoading && sessions.length === 0 ? (
@@ -71,7 +151,9 @@ export default function SessionsScreen() {
           renderItem={({ item }) => (
             <SessionCard
               session={item}
-              onPress={() => router.push({ pathname: "/(app)/session/[id]", params: { id: item.id } })}
+              onPress={() =>
+                router.push({ pathname: "/(app)/session/[id]", params: { id: item.id } })
+              }
             />
           )}
           ListEmptyComponent={
@@ -118,6 +200,21 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
     gap: 8,
+    alignItems: "center",
+  },
+  offlinePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(249,115,22,0.15)",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  offlinePillText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#f97316",
   },
   iconButton: {
     width: 36,
@@ -126,6 +223,39 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.12)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  syncButton: {
+    backgroundColor: "rgba(249,115,22,0.15)",
+  },
+  syncBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#fff7ed",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#fed7aa",
+  },
+  syncBarText: {
+    fontSize: 13,
+    color: "#f97316",
+    flex: 1,
+  },
+  pendingBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#fff7ed",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#fed7aa",
+  },
+  pendingBannerText: {
+    fontSize: 13,
+    color: "#f97316",
+    flex: 1,
   },
   list: {
     padding: 16,

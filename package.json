@@ -1,0 +1,13 @@
+{
+  "name": "detektor-hub-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint"
+  },
+  "engines": {
+    "node": ">=20.16.0",
+    "pnpm": ">=9.0.0"
+  }
+}

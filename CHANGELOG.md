@@ -5,6 +5,20 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-21] — `feature/monorepo-setup`
+
+### Infrastructure
+
+- **Monorepo conversion** — restructured repository as a pnpm workspace monorepo in preparation for a native Expo mobile app
+- Moved all Next.js web app files into `apps/web/` (git history preserved via `git mv`)
+- Added `pnpm-workspace.yaml` at repo root declaring `apps/*` and `packages/*` workspaces
+- Added root `package.json` with workspace-level `dev`, `build`, `lint` scripts that delegate to `apps/web`
+- Created `packages/shared/` skeleton — will hold Zod schemas and TypeScript types shared between web and mobile
+- Updated `.gitignore` for monorepo layout (nested `node_modules`, `**/.next/`)
+- Updated `CLAUDE.md` with new directory structure, pnpm commands, and monorepo conventions
+
+---
+
 ## [2026-03-19] — `feature/collections`
 
 ### Features

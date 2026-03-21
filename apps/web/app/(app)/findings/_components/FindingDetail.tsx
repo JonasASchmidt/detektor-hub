@@ -36,7 +36,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/initials";
-import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
+import { RelatedFindingSummary } from "@detektor-hub/shared";
 import RelatedFindingsSection from "./RelatedFindingsSection";
 import AddToCollectionButton from "./AddToCollectionButton";
 

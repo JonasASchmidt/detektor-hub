@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { fieldSessionSchema } from "@/schemas/field-session";
+import { fieldSessionSchema } from "@detektor-hub/shared";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";

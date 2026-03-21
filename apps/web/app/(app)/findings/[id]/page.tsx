@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import FindingDetail from "../_components/FindingDetail";
 import { FindingWithRelations } from "@/types/FindingWithRelations";
-import { RelatedFindingSummary } from "@/types/RelatedFindingSummary";
+import { RelatedFindingSummary } from "@detektor-hub/shared";
 
 interface Props {
   params: Promise<{

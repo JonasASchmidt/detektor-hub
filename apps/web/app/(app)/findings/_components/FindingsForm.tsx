@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
+import { findingSchemaCompleted, FindingFormData } from "@detektor-hub/shared";
 import TagPicker from "@/components/ui/input/tag-picker/tag-picker";
 import ImageDetailDialog from "@/components/images/ImageDetailDialog";
 

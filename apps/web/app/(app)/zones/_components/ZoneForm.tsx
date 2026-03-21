@@ -9,7 +9,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { zoneSchema, ZoneFormData } from "@/schemas/zone";
+import { zoneSchema, ZoneFormData } from "@detektor-hub/shared";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";

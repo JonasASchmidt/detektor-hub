@@ -3,7 +3,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findingSchemaCompleted } from "@/schemas/finding";
+import { findingSchemaCompleted } from "@detektor-hub/shared";
 import { logActivity } from "@/lib/activityLog";
 import { lookupAdminUnits } from "@/lib/geo";
 

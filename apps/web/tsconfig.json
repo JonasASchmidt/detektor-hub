@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@detektor-hub/shared": [
+        "../../packages/shared/src/index.ts"
       ]
     }
   },

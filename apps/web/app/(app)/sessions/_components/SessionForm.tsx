@@ -10,7 +10,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fieldSessionSchema, FieldSessionFormData } from "@/schemas/field-session";
+import { fieldSessionSchema, FieldSessionFormData } from "@detektor-hub/shared";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Detector } from "@prisma/client";

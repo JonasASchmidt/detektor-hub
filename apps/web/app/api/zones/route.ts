@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { zoneSchema } from "@/schemas/zone";
+import { zoneSchema } from "@detektor-hub/shared";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";

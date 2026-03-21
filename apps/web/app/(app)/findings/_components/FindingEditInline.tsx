@@ -24,7 +24,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { findingSchemaCompleted, FindingFormData } from "@/schemas/finding";
+import { findingSchemaCompleted, FindingFormData } from "@detektor-hub/shared";
 import { getInitials } from "@/lib/initials";
 import ImageDetailDialog from "@/components/images/ImageDetailDialog";
 import ImageGallery from "@/components/images/ImageGallery";

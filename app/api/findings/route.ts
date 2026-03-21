@@ -20,11 +20,20 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("q") || "";
-  const orderBy = searchParams.get("orderBy") || "createdAt";
-  const order = searchParams.get("order") || "desc";
   const tag = searchParams.get("tag");
   const page = parseInt(searchParams.get("page") || "1");
-  const pageSize = parseInt(searchParams.get("pageSize") || "20");
+
+  // Validate orderBy/order against allowlist to prevent invalid Prisma queries
+  const ALLOWED_ORDER_FIELDS = new Set(["createdAt", "foundAt", "name", "updatedAt"]);
+  const ALLOWED_ORDER_DIRS = new Set(["asc", "desc"]);
+  const rawOrderBy = searchParams.get("orderBy") || "createdAt";
+  const rawOrder = searchParams.get("order") || "desc";
+  const orderBy = ALLOWED_ORDER_FIELDS.has(rawOrderBy) ? rawOrderBy : "createdAt";
+  const order = ALLOWED_ORDER_DIRS.has(rawOrder) ? rawOrder : "desc";
+
+  // Cap pageSize to prevent excessive queries
+  const rawPageSize = parseInt(searchParams.get("pageSize") || "20");
+  const pageSize = Math.min(Math.max(rawPageSize, 1), 100);
 
   // New filter params
   const status = searchParams.get("status");
@@ -80,7 +89,7 @@ export async function GET(req: Request) {
   try {
     const findings = await prisma.finding.findMany({
       where,
-      include: { images: true, tags: true, user: true },
+      include: { images: true, tags: true, user: { select: { id: true, name: true, image: true } } },
       orderBy: { [orderBy]: order },
       skip,
       take: pageSize,

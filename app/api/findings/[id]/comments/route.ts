@@ -20,6 +20,10 @@ export async function POST(
     return NextResponse.json({ error: "Text erforderlich." }, { status: 400 });
   }
 
+  if (text.trim().length > 5000) {
+    return NextResponse.json({ error: "Kommentar zu lang (max. 5000 Zeichen)." }, { status: 400 });
+  }
+
   // Allow comments on own findings (any status) or completed findings of others
   const finding = await prisma.finding.findUnique({ where: { id }, select: { status: true, userId: true } });
   const isOwner = finding?.userId === session.user.id;

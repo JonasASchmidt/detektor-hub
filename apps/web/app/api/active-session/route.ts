@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: "lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
   });
 
   return NextResponse.json({ activeSession: fieldSession });

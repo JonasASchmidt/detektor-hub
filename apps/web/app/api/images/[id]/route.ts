@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import cloudinary from "@/lib/cloudinary";
 import { z } from "zod";
@@ -13,6 +15,11 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   const body = await req.json();
   const parsed = patchSchema.safeParse(body);
@@ -22,7 +29,7 @@ export async function PATCH(
   }
 
   const image = await prisma.image.findUnique({ where: { id } });
-  if (!image) {
+  if (!image || image.userId !== session.user.id) {
     return NextResponse.json({ error: "Foto nicht gefunden." }, { status: 404 });
   }
 
@@ -43,6 +50,11 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const force = searchParams.get("force") === "true";
@@ -53,7 +65,7 @@ export async function DELETE(
     include: { finding: true },
   });
 
-  if (!existingImage) {
+  if (!existingImage || existingImage.userId !== session.user.id) {
     return NextResponse.json({ error: "Foto nicht gefunden." }, { status: 404 });
   }
 

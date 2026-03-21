@@ -19,6 +19,33 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-20] — `feature/security-hardening`
+
+### Security Fixes (HIGH)
+
+- **Auth guards on tag endpoints** — `POST /api/tags`, `PUT /api/tags` now require authenticated session
+- **Auth guards on tag-category endpoints** — `POST /api/tag-categories`, `PATCH /api/tag-categories/[id]`, `DELETE /api/tag-categories/[id]` now require authenticated session
+- **Auth + ownership on image endpoints** — `PATCH /api/images/[id]`, `DELETE /api/images/[id]` now require auth and verify image ownership
+- **Fix bulk images auth** — `POST /api/images/bulk` now uses `getServerSession(authOptions)` instead of bare `getServerSession()`, uses `session.user.id` directly instead of secondary DB lookup
+- **Auth guards on geo endpoints** — `GET /api/geo/admin-units` and `GET /api/geo/admin-units/polygon` now require authenticated session
+- **Auth guard on detectors endpoint** — `GET /api/detectors` now requires authenticated session
+
+### Security Fixes (MEDIUM)
+
+- **Registration endpoint hardened** — input length limits (name 100, email 254, password 128 chars), email format validation, password hash stripped from response
+- **Findings API no longer leaks full User object** — `GET /api/findings` now uses `user: { select: { id, name, image } }` instead of `user: true`
+- **orderBy/order allowlist validation** — `GET /api/findings` and `GET /api/community/findings` now validate sort params against allowlists, cap `pageSize` to 100
+- **Active session cookie hardened** — added `httpOnly: true` and `secure` flag (production only)
+- **Comment max length** — `POST /api/findings/[id]/comments` now enforces 5000 character limit
+- **Vote targetType allowlist** — `POST /api/votes` now only accepts `"FINDING"` as targetType
+- **HTTP security headers** — added `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` to all responses via `next.config.ts`
+
+### Bug Fixes
+
+- Removed debug marker `XXX` from tag-categories error message
+
+---
+
 ## [2026-03-19] — `feature/collections`
 
 ### Features

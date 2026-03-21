@@ -8,7 +8,14 @@ export default function AppLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#2d2d2d" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#2d2d2d",
+        }}
+      >
         <ActivityIndicator color="#fff" />
       </View>
     );
@@ -19,16 +26,15 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: "#2d2d2d",
         tabBarInactiveTintColor: "#999",
-        headerStyle: { backgroundColor: "#2d2d2d" },
-        headerTintColor: "#fff",
       }}
     >
       <Tabs.Screen
         name="sessions"
         options={{
-          title: "Feldsessions",
+          title: "Begehungen",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map-outline" size={size} color={color} />
           ),

@@ -18,7 +18,7 @@
       "bundleIdentifier": "de.sondlr.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Sondlr benötigt deinen Standort, um Funde zu erfassen.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Feldsession aufzuzeichnen.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Begehung aufzuzeichnen.",
         "NSCameraUsageDescription": "Sondlr benötigt die Kamera, um Fotos von Funden zu machen."
       }
     },
@@ -47,7 +47,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Feldsession aufzuzeichnen."
+          "locationAlwaysAndWhenInUsePermission": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Begehung aufzuzeichnen."
         }
       ]
     ],

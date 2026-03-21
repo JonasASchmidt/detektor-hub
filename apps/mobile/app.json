@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Sondlr",
+    "slug": "sondlr",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "sondlr",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2d2d2d"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "de.sondlr.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Sondlr benötigt deinen Standort, um Funde zu erfassen.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Feldsession aufzuzeichnen.",
+        "NSCameraUsageDescription": "Sondlr benötigt die Kamera, um Fotos von Funden zu machen."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2d2d2d"
+      },
+      "package": "de.sondlr.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Sondlr benötigt deinen Standort im Hintergrund, um deine Route während einer Feldsession aufzuzeichnen."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

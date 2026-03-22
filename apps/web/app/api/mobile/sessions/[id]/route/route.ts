@@ -26,15 +26,15 @@ export async function PATCH(
     return NextResponse.json({ error: "Mindestens 2 Koordinaten erforderlich." }, { status: 400 });
   }
 
-  const geoJson = JSON.stringify({
-    type: "LineString",
-    coordinates,
-  });
+  const geoJson = JSON.stringify({ type: "LineString", coordinates });
 
-  await prisma.fieldSession.update({
-    where: { id },
-    data: { routeGeoJson: geoJson },
-  });
+  // PostGIS geometry fields cannot be set via prisma.update — use raw SQL
+  // matching the pattern in /api/field-sessions/[id]/route/route.ts
+  await prisma.$executeRaw`
+    UPDATE "FieldSession"
+    SET route = ST_GeomFromGeoJSON(${geoJson})
+    WHERE id = ${id}
+  `;
 
   return NextResponse.json({ ok: true });
 }

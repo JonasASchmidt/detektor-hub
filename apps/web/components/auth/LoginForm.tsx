@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentPropsWithoutRef<"div">) {
   const { data: session } = useSession();
   const router = useRouter();
   const [formData, setFormData] = useState({

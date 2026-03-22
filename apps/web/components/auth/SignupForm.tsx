@@ -15,7 +15,7 @@ import { signIn, useSession } from "next-auth/react";
 export function SignupForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",

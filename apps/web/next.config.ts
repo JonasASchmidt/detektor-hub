@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Transpile workspace packages that ship raw TypeScript source
+  transpilePackages: ["@detektor-hub/shared"],
   experimental: {
     // Disable Turbopack persistent cache — causes SST write crashes on macOS
     turbopackFileSystemCacheForDev: false,

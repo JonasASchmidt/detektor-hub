@@ -6,6 +6,7 @@
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint"
   },
+  "packageManager": "pnpm@10.32.1",
   "engines": {
     "node": ">=20.16.0",
     "pnpm": ">=9.0.0"

@@ -5,6 +5,36 @@ Format: `[Date] — Branch — Description`
 
 ---
 
+## [2026-03-22] — `feature/monorepo-setup`
+
+### Mobile App — Offline-First Field Mode
+
+- **Offline-first architecture** — all field captures (sessions, finds, photos) are written to local SQLite first; nothing is sent to the server during a session; sync happens in one batch when the user taps "Begehung beenden"
+- **`lib/db.ts`** — SQLite schema (`offline_sessions`, `offline_finds`, `offline_images`) with a Promise-based singleton that prevents the race condition causing `NativeDatabase NullPointerException` on Android
+- **`lib/sync.ts`** — sync engine: creates session on server → uploads images via `{ uri, name, type }` RN multipart → submits finds; `saveSessionServerId` persists the server ID immediately after session creation to prevent duplicate sessions on retry
+- **`lib/namingScheme.ts`** — shared with web; generates auto-names for finds from session naming scheme tokens (`{session}`, `{n}`, `{n:03}`, `{date}`)
+- **`hooks/useNetInfo.ts`** — wraps `@react-native-community/netinfo`; exposes `isOnline: boolean | null`; used to show offline badge and gate sync
+- **`hooks/useLocationTracker.ts`** — refactored: `stopTracking()` no longer calls the server API; it returns the collected `RoutePoint[]` so `FieldMode` can persist them to SQLite and include them in the session sync
+- **`hooks/useSessions.ts`** — rewritten to merge two sources: local SQLite pending sessions (shown first with pending badge) and server synced sessions; silently degrades when offline
+- **`components/FieldMode.tsx`** — major rewrite for offline-first: session creation writes to SQLite (`createLocalSession`); photo capture copies to permanent `expo-file-system` path (`cacheImageLocally`) and links to find on submit; find logging is instant / no network; end-session triggers sync overlay with progress bar; handles mid-sync failure gracefully (data stays in SQLite, user can retry from sessions list)
+- **Sync progress overlay** — Modal with progress bar and fraction indicator shown during end-session sync; "Trotzdem beenden" option lets the user navigate away and sync later from the sessions list
+- **Offline fallback** — if device is offline when ending a session the user is informed that data is safe locally and will sync when reconnected
+
+### Mobile App — Bug Fixes
+
+- **`NativeDatabase NullPointerException`** — fixed DB singleton race condition; concurrent `getDb()` calls now all await the same `initDb()` Promise instead of each opening their own connection
+- **Duplicate server sessions on retry** — `saveSessionServerId` is called immediately after `POST /api/mobile/sessions` succeeds; subsequent retries skip session creation and continue with finds
+- **Image upload `Network request failed`** — switched from `fetch(uri).blob()` + FormData (blob not serialised correctly by RN) to the `{ uri, name, type }` object approach, which works reliably for `file://` URIs we cache ourselves
+- **`expo install` using npm in pnpm workspace** — use `pnpm add <pkg>` from `apps/mobile/` instead; `expo install` always falls back to npm which cannot resolve `workspace:*` protocol
+
+### Dependencies Added (`apps/mobile`)
+
+- `expo-sqlite` — local SQLite database for offline find/session buffering
+- `expo-file-system` — permanent image cache (copies camera temp URIs before they expire)
+- `@react-native-community/netinfo` — connectivity detection
+
+---
+
 ## [2026-03-21] — `feature/monorepo-setup`
 
 ### Infrastructure

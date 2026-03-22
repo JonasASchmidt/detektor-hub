@@ -58,25 +58,34 @@ This is a **pnpm workspace monorepo**. Package manager: `pnpm`. Do not use `npm`
 ```
 detektor-hub/            # workspace root
   apps/
-    web/                 # Next.js 16 web app (all existing code lives here)
-    mobile/              # Expo React Native app (to be created)
+    web/                 # Next.js 16 web app
+    mobile/              # Expo SDK 54 React Native app (iOS + Android)
   packages/
-    shared/              # Shared Zod schemas, TypeScript types, API client
+    shared/              # Shared Zod schemas and TypeScript types (used by both apps)
   pnpm-workspace.yaml
   package.json           # workspace root — scripts delegate to apps/web
 ```
 
-All paths in this document under `lib/`, `components/`, `app/`, etc. are relative to `apps/web/` unless stated otherwise.
+All paths in this document under `lib/`, `components/`, `app/`, etc. are relative to `apps/web/` unless stated otherwise. Paths under `apps/mobile/` are explicitly prefixed.
 
-### Stack
+### Web Stack
 - **Next.js 16** (App Router, TypeScript) with Turbopack in dev — lives in `apps/web/`
 - **Auth**: NextAuth v4 with JWT strategy and credentials provider — auth config in `lib/auth.ts`; session includes `user.id` and `user.role`
 - **Database**: PostgreSQL + PostGIS via Prisma ORM — schema in `prisma/schema.prisma`
 - **Images**: Cloudinary — utilities in `lib/cloudinary.ts`
 - **UI**: shadcn/ui components (in `components/ui/`) + Radix UI primitives, Tailwind CSS, lucide-react icons
 - **Maps**: Leaflet + react-leaflet — always lazy-loaded with `dynamic(..., { ssr: false })` due to SSR incompatibility
-- **Validation**: Zod schemas in `schemas/` — shared between API routes and forms; will migrate to `packages/shared/` when mobile app needs them
+- **Validation**: Zod schemas in `schemas/` (web-only) and `packages/shared/src/` (shared with mobile)
 - **Notifications (toast)**: Sonner via `components/ui/sonner.tsx`
+
+### Mobile Stack (`apps/mobile/`)
+- **Expo SDK 54** with Expo Router v6 (file-based routing, same mental model as Next.js App Router)
+- **Auth**: Bearer JWT tokens — `POST /api/mobile/login` returns a NextAuth-compatible token stored in `expo-secure-store`; all mobile API routes use `getMobileSession(req)` in `apps/web/lib/mobile-auth.ts`
+- **Offline-first**: all field writes go to local SQLite (`expo-sqlite`) via `lib/db.ts`; images cached to device filesystem (`expo-file-system`); sync to server happens in one batch at session end via `lib/sync.ts`
+- **Connectivity**: `@react-native-community/netinfo` via `hooks/useNetInfo.ts` — gates sync and shows offline badge
+- **GPS**: `expo-location` foreground tracking in `hooks/useLocationTracker.ts`; background tracking requires a dev build (not available in Expo Go)
+- **Camera**: `expo-image-picker` — images are copied from temp camera URI to permanent app storage immediately after capture
+- **Navigation**: Expo Router tabs — `(app)/sessions` and `(app)/session/new` + `(app)/session/[id]`
 
 ### Route Structure
 
@@ -127,6 +136,14 @@ app/
     user/                 # User profile update
     auth/                 # NextAuth handler + register
     geo/admin-units/      # Reverse geocoding: coordinates → Bundesland/Landkreis/Gemeinde
+    mobile/
+      login/             # POST — verifies credentials, returns NextAuth-compatible Bearer JWT
+      sessions/          # GET (list, ?open=true filter), POST (create)
+        [id]/            # PATCH (update dateTo / close session)
+          route/         # PATCH (save GPS route as GeoJSON LineString)
+      findings/
+        draft/           # POST — create DRAFT finding (used by mobile sync engine)
+      images/            # POST — multipart upload to Cloudinary, returns image record
 ```
 
 ### Key Data Models (Prisma)
@@ -209,6 +226,46 @@ Required in `.env.local`:
 - `POSTGRES_URL_NON_POOLING` — direct connection (for migrations)
 - `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+---
+
+## Mobile Patterns & Conventions
+
+### Offline-first field capture
+All session, find, and image writes from `FieldMode` go to SQLite first — never directly to the server during a session. Sync happens once at session end via `syncLocalSession()` (for sessions created offline) or `syncOrphanFinds()` (for finds added to an already-synced server session). This means:
+- No network dependency during capture — works in dead zones
+- One batch of API calls instead of many small ones
+- Data is safe even if the app crashes mid-session (buffer persists in SQLite)
+
+### SQLite singleton (`apps/mobile/lib/db.ts`)
+Use a Promise-based singleton — not a plain variable singleton — to avoid the Android `NativeDatabase NullPointerException`. Concurrent `getDb()` calls from multiple components must all await the same `initDb()` Promise:
+```ts
+let _dbPromise: Promise<SQLiteDatabase> | null = null;
+function getDb() {
+  if (!_dbPromise) _dbPromise = initDb().catch(err => { _dbPromise = null; throw err; });
+  return _dbPromise;
+}
+```
+
+### Session ID convention
+- Sessions created offline have IDs prefixed `local_` (e.g. `local_abc123`) until synced
+- After sync, `server_id` is written to SQLite; the local ID remains the primary key
+- `saveSessionServerId()` must be called immediately after `POST /api/mobile/sessions` succeeds — before uploading finds — to prevent duplicate sessions if sync crashes mid-way
+
+### Mobile image upload
+Use the `{ uri, name, type }` FormData object — **not** `fetch(uri).blob()`. React Native's FormData implementation handles `{ uri, name, type }` natively for `file://` URIs. The blob approach silently fails on Android:
+```ts
+formData.append("file", { uri: localPath, name: "photo.jpg", type: "image/jpeg" } as unknown as Blob);
+```
+
+### Installing packages in `apps/mobile`
+**Never use `npx expo install`** — it falls back to npm which cannot resolve pnpm's `workspace:*` protocol. Use pnpm directly:
+```bash
+cd apps/mobile && pnpm add <package-name>
+```
+
+### Bearer auth for mobile API routes
+All routes under `app/api/mobile/` use `getMobileSession(req)` from `lib/mobile-auth.ts` instead of `getServerSession`. The helper decodes the `Authorization: Bearer <token>` header using `next-auth/jwt` `decode` with `NEXTAUTH_SECRET`.
 
 ---
 
